@@ -1,0 +1,523 @@
+﻿@page "/trains"
+@using MediatR
+@using Railway_Ticket_Booking.Application.Commands
+@using Railway_Ticket_Booking.Application.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@inject IMediator Mediator
+
+<div class="container">
+    <h3 class="text-center">Train Management</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>@(isEditing ? "Update Train" : "Create New Train")</h4>
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
+                    @message
+                </div>
+            }
+            <EditForm Model="@(isEditing ? updateTrainCommand : (object)newTrainCommand)" OnValidSubmit="@(isEditing ? UpdateTrain : CreateTrain)">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Train Number</label>
+                    @if (isEditing)
+                    {
+                        <InputText class="form-control" @bind-Value="updateTrainCommand.TrainNumber" placeholder="e.g., 12043" />
+                    }
+                    else
+                    {
+                        <InputText class="form-control" @bind-Value="newTrainCommand.TrainNumber" placeholder="e.g., 12043" />
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Train Name</label>
+                    @if (isEditing)
+                    {
+                        <InputText class="form-control" @bind-Value="updateTrainCommand.Name" placeholder="e.g., Shatabdi Express" />
+                    }
+                    else
+                    {
+                        <InputText class="form-control" @bind-Value="newTrainCommand.Name" placeholder="e.g., Shatabdi Express" />
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Train Type</label>
+                    @if (isEditing)
+                    {
+                        <InputSelect class="form-control" @bind-Value="updateTrainCommand.TrainType">
+                            <option value="">Select Type</option>
+                            <option value="Express">Express</option>
+                            <option value="Superfast">Superfast</option>
+                            <option value="Passenger">Passenger</option>
+                            <option value="Mail">Mail</option>
+                            <option value="Shatabdi">Shatabdi</option>
+                            <option value="Rajdhani">Rajdhani</option>
+                            <option value="Duronto">Duronto</option>
+                            <option value="Vande Bharat">Vande Bharat</option>
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <InputSelect class="form-control" @bind-Value="newTrainCommand.TrainType">
+                            <option value="">Select Type</option>
+                            <option value="Express">Express</option>
+                            <option value="Superfast">Superfast</option>
+                            <option value="Passenger">Passenger</option>
+                            <option value="Mail">Mail</option>
+                            <option value="Shatabdi">Shatabdi</option>
+                            <option value="Rajdhani">Rajdhani</option>
+                            <option value="Duronto">Duronto</option>
+                            <option value="Vande Bharat">Vande Bharat</option>
+                        </InputSelect>
+                    }
+                </div>
+
+                @if (isEditing)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <div class="form-check form-switch">
+                            <InputCheckbox class="form-check-input" @bind-Value="updateTrainCommand.IsActive" />
+                            <label class="form-check-label">
+                                @(updateTrainCommand.IsActive ? "Active" : "Inactive")
+                            </label>
+                        </div>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label">Total Seats</label>
+                    @if (isEditing)
+                    {
+                        <InputNumber class="form-control" @bind-Value="updateTrainCommand.TotalSeats" min="1" max="2000" />
+                    }
+                    else
+                    {
+                        <InputNumber class="form-control" @bind-Value="newTrainCommand.TotalSeats" min="1" max="2000" />
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <h5>Train Classes</h5>
+                    @{
+                        var currentClasses = isEditing ? updateTrainCommand.Classes : newTrainCommand.Classes;
+                    }
+                    @for (int i = 0; i < currentClasses.Count; i++)
+                    {
+                        var index = i; // Capture for lambda
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Class Name</label>
+                                        <InputSelect class="form-control" @bind-Value="currentClasses[index].ClassName">
+                                            <option value="">Select Class</option>
+                                            <option value="AC First Class">AC First Class</option>
+                                            <option value="AC 2 Tier">AC 2 Tier</option>
+                                            <option value="AC 3 Tier">AC 3 Tier</option>
+                                            <option value="Sleeper">Sleeper</option>
+                                            <option value="General">General</option>
+                                            <option value="Chair Car">Chair Car</option>
+                                            <option value="Executive Chair Car">Executive Chair Car</option>
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Seat Count</label>
+                                        <InputNumber class="form-control" @bind-Value="currentClasses[index].SeatCount" min="1" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Base Price (₹)</label>
+                                        <InputNumber class="form-control" @bind-Value="currentClasses[index].BasePrice" min="0" step="0.01" />
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveClass(index)">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    <button type="button" class="btn btn-secondary btn-sm mb-3" @onclick="AddClass">
+                        Add Class
+                    </button>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" disabled="@(isCreating || isUpdating)">
+                        @if (isEditing)
+                        {
+                            @if (isUpdating)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <text>Updating...</text>
+                            }
+                            else
+                            {
+                                <text>Update Train</text>
+                            }
+                        }
+                        else
+                        {
+                            @if (isCreating)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <text>Creating...</text>
+                            }
+                            else
+                            {
+                                <text>Create Train</text>
+                            }
+                        }
+                    </button>
+
+                    @if (isEditing)
+                    {
+                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
+                            Cancel
+                        </button>
+                    }
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="col-md-6">
+            <h4>All Trains</h4>
+
+            @if (trains == null)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <p class="text-center mt-2">Loading trains...</p>
+            }
+            else if (!trains.Any())
+            {
+                <div class="alert alert-info">
+                    <h5>No trains found</h5>
+                    <p>Create your first train using the form on the left.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Train Number</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Total Seats</th>
+                                <th>Classes</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var train in trains)
+                            {
+                                <tr class="@(isEditing && selectedTrainId == train.Id ? "table-warning" : "")">
+                                    <td>
+                                        <strong>@train.TrainNumber</strong>
+                                    </td>
+                                    <td>@train.Name</td>
+                                    <td>
+                                        <span class="badge bg-info">@train.TrainType</span>
+                                    </td>
+                                    <td>@train.TotalSeats</td>
+                                    <td>
+                                        @if (train.Classes?.Any() == true)
+                                        {
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach (var trainClass in train.Classes.Take(2))
+                                                {
+                                                    <small class="badge bg-secondary">@trainClass.ClassName</small>
+                                                }
+                                                @if (train.Classes.Count > 2)
+                                                {
+                                                    <small class="text-muted">+@(train.Classes.Count - 2) more</small>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">No classes</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(train.IsActive ? "bg-success" : "bg-secondary")">
+                                            @train.StatusText
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>@train.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                    @onclick="() => EditTrain(train)"
+                                                    disabled="@(isCreating || isUpdating)">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                    @onclick="() => ToggleTrainStatus(train)"
+                                                    disabled="@(isCreating || isUpdating)">
+                                                @(train.IsActive ? "Deactivate" : "Activate")
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Total Trains: <strong>@trains.Count</strong> |
+                        Active: <strong>@trains.Count(t => t.IsActive)</strong> |
+                        Total Seats: <strong>@trains.Sum(t => t.TotalSeats)</strong>
+                    </small>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateTrainCommand newTrainCommand = new CreateTrainCommand();
+    private UpdateTrainCommand updateTrainCommand = new UpdateTrainCommand();
+    private List<Train> trains = new List<Train>();
+    private string message = string.Empty;
+    private bool isSuccess = false;
+    private bool isCreating = false;
+    private bool isUpdating = false;
+    private bool isEditing = false;
+    private string selectedTrainId = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize with one empty class
+        if (!newTrainCommand.Classes.Any())
+        {
+            newTrainCommand.Classes.Add(new TrainClass());
+        }
+
+        await LoadTrains();
+    }
+
+    private async Task LoadTrains()
+    {
+        try
+        {
+            trains = await Mediator.Send(new GetAllTrainsQuery());
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading trains: {ex.Message}";
+            isSuccess = false;
+        }
+    }
+
+    private async Task CreateTrain()
+    {
+        isCreating = true;
+        message = string.Empty;
+
+        try
+        {
+            // Validate that we have at least one class with valid data
+            var validClasses = newTrainCommand.Classes
+                .Where(c => !string.IsNullOrWhiteSpace(c.ClassName) && c.SeatCount > 0)
+                .ToList();
+
+            if (!validClasses.Any())
+            {
+                message = "Please add at least one train class with valid seat count.";
+                isSuccess = false;
+                return;
+            }
+
+            // Update the command with only valid classes
+            newTrainCommand.Classes = validClasses;
+
+            // Calculate total seats from classes
+            newTrainCommand.TotalSeats = validClasses.Sum(c => c.SeatCount);
+
+            var trainId = await Mediator.Send(newTrainCommand);
+            message = "Train created successfully!";
+            isSuccess = true;
+
+            // Reset form
+            newTrainCommand = new CreateTrainCommand();
+            newTrainCommand.Classes.Add(new TrainClass()); // Add one empty class
+
+            await LoadTrains(); // Refresh the list
+        }
+        catch (Exception ex)
+        {
+            message = $"Error creating train: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private async Task UpdateTrain()
+    {
+        isUpdating = true;
+        message = string.Empty;
+
+        try
+        {
+            // Validate that we have at least one class with valid data
+            var validClasses = updateTrainCommand.Classes
+                .Where(c => !string.IsNullOrWhiteSpace(c.ClassName) && c.SeatCount > 0)
+                .ToList();
+
+            if (!validClasses.Any())
+            {
+                message = "Please add at least one train class with valid seat count.";
+                isSuccess = false;
+                return;
+            }
+
+            // Update the command with only valid classes
+            updateTrainCommand.Classes = validClasses;
+
+            // Calculate total seats from classes
+            updateTrainCommand.TotalSeats = validClasses.Sum(c => c.SeatCount);
+
+            var result = await Mediator.Send(updateTrainCommand);
+
+            if (result)
+            {
+                message = "Train updated successfully!";
+                isSuccess = true;
+                CancelEdit(); // Exit edit mode
+                await LoadTrains(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to update train. Please try again.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating train: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    private void EditTrain(Train train)
+    {
+        isEditing = true;
+        selectedTrainId = train.Id;
+        message = string.Empty;
+
+        // Copy train data to update command
+        updateTrainCommand = new UpdateTrainCommand
+            {
+                Id = train.Id,
+                TrainNumber = train.TrainNumber,
+                Name = train.Name,
+                TrainType = train.TrainType,
+                TotalSeats = train.TotalSeats,
+                IsActive = train.IsActive,
+                RouteIds = new List<string>(train.RouteIds ?? new List<string>()),
+                Classes = train.Classes?.Select(c => new TrainClass
+                {
+                    ClassName = c.ClassName,
+                    SeatCount = c.SeatCount,
+                    BasePrice = c.BasePrice,
+                    Amenities = new List<string>(c.Amenities ?? new List<string>())
+                }).ToList() ?? new List<TrainClass>()
+            };
+
+        // Ensure at least one class for editing
+        if (!updateTrainCommand.Classes.Any())
+        {
+            updateTrainCommand.Classes.Add(new TrainClass());
+        }
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        selectedTrainId = string.Empty;
+        updateTrainCommand = new UpdateTrainCommand();
+        //message = string.Empty;
+    }
+
+    private async Task ToggleTrainStatus(Train train)
+    {
+        try
+        {
+            var updateCommand = new UpdateTrainCommand
+                {
+                    Id = train.Id,
+                    TrainNumber = train.TrainNumber,
+                    Name = train.Name,
+                    TrainType = train.TrainType,
+                    TotalSeats = train.TotalSeats,
+                    IsActive = !train.IsActive, // Toggle status
+                    RouteIds = train.RouteIds ?? new List<string>(),
+                    Classes = train.Classes ?? new List<TrainClass>()
+                };
+
+            var result = await Mediator.Send(updateCommand);
+
+            if (result)
+            {
+                message = $"Train {(train.IsActive ? "deactivated" : "activated")} successfully!";
+                isSuccess = true;
+                await LoadTrains(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to update train status.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating train status: {ex.Message}";
+            isSuccess = false;
+        }
+    }
+
+    private void AddClass()
+    {
+        if (isEditing)
+        {
+            updateTrainCommand.Classes.Add(new TrainClass());
+        }
+        else
+        {
+            newTrainCommand.Classes.Add(new TrainClass());
+        }
+    }
+
+    private void RemoveClass(int index)
+    {
+        var currentClasses = isEditing ? updateTrainCommand.Classes : newTrainCommand.Classes;
+        if (currentClasses.Count > 1)
+        {
+            currentClasses.RemoveAt(index);
+        }
+    }
+}

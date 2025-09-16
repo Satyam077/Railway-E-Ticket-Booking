@@ -1,0 +1,744 @@
+@page "/train-schedules"
+@using MediatR
+@using Railway_Ticket_Booking.Application.TrainSchedules.Commands
+@using Railway_Ticket_Booking.Application.TrainSchedules.Queries
+@using Railway_Ticket_Booking.Application.Queries
+@using Railway_Ticket_Booking.Application.Routes.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@inject IMediator Mediator
+@inject IJSRuntime JSRuntime
+
+<div class="container">
+    <h3 class="text-center">Train Schedule Management</h3>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>@(isEditing ? "Update Schedule" : "Create New Schedule")</h4>
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
+                    @message
+                </div>
+            }
+            <EditForm Model="@(isEditing ? updateScheduleCommand : (object)newScheduleCommand)" OnValidSubmit="@(isEditing ? UpdateSchedule : CreateSchedule)">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Train</label>
+                    @if (isEditing)
+                    {
+                        <InputSelect class="form-control" @bind-Value="updateScheduleCommand.TrainId">
+                            <option value="">Select Train</option>
+                            @foreach (var train in trains)
+                            {
+                                <option value="@train.Id">@train.DisplayName</option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <InputSelect class="form-control" @bind-Value="newScheduleCommand.TrainId">
+                            <option value="">Select Train</option>
+                            @foreach (var train in trains)
+                            {
+                                <option value="@train.Id">@train.DisplayName</option>
+                            }
+                        </InputSelect>
+                    }
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Route</label>
+                    @if (isEditing)
+                    {
+                        <InputSelect class="form-control" @bind-Value="updateScheduleCommand.RouteId" @onchange="OnRouteChanged">
+                            <option value="">Select Route</option>
+                            @foreach (var route in routes)
+                            {
+                                <option value="@route.Id">@GetRouteDisplayName(route)</option>
+                            }
+                        </InputSelect>
+                    }
+                    else
+                    {
+                        <InputSelect class="form-control" @bind-Value="newScheduleCommand.RouteId" @onchange="OnRouteChanged">
+                            <option value="">Select Route</option>
+                            @foreach (var route in routes)
+                            {
+                                <option value="@route.Id">@GetRouteDisplayName(route)</option>
+                            }
+                        </InputSelect>
+                    }
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Departure Date</label>
+                            @if (isEditing)
+                            {
+                                <InputDate class="form-control" @bind-Value="updateScheduleCommand.DepartureDate" />
+                            }
+                            else
+                            {
+                                <InputDate class="form-control" @bind-Value="newScheduleCommand.DepartureDate" />
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Arrival Date</label>
+                            @if (isEditing)
+                            {
+                                <InputDate class="form-control" @bind-Value="updateScheduleCommand.ArrivalDate" />
+                            }
+                            else
+                            {
+                                <InputDate class="form-control" @bind-Value="newScheduleCommand.ArrivalDate" />
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (isEditing)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <div class="form-check form-switch">
+                            <InputCheckbox class="form-check-input" @bind-Value="updateScheduleCommand.IsActive" />
+                            <label class="form-check-label">
+                                @(updateScheduleCommand.IsActive ? "Active" : "Inactive")
+                            </label>
+                        </div>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <h5>Schedule Stations</h5>
+                    @{
+                        var currentStations = isEditing ? updateScheduleCommand.Stations : newScheduleCommand.Stations;
+                    }
+                    @for (int i = 0; i < currentStations.Count; i++)
+                    {
+                        var index = i; // Capture for lambda
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Station</label>
+                                        <InputSelect class="form-control" @bind-Value="currentStations[index].StationId">
+                                            <option value="">Select Station</option>
+                                            @foreach (var station in stations)
+                                            {
+                                                <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Order</label>
+                                        <InputNumber class="form-control" @bind-Value="currentStations[index].StationOrder" min="1" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Platform</label>
+                                        <InputText class="form-control" @bind-Value="currentStations[index].PlatformNumber" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check form-switch mt-4">
+                                            <InputCheckbox class="form-check-input" @bind-Value="currentStations[index].IsMajorStation" />
+                                            <label class="form-check-label">Major</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Scheduled Arrival</label>
+                                        <input type="datetime-local" class="form-control" @bind="currentStations[index].ScheduledArrival" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Scheduled Departure</label>
+                                        <input type="datetime-local" class="form-control" @bind="currentStations[index].ScheduledDeparture" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Halt Duration (min)</label>
+                                        <InputNumber @bind-Value="currentStations[index].HaltMinutes"
+                                                     class="form-control"
+                                                     min="0" max="120" />
+                                    </div>
+                                    <div class="col-md-3 mt-4">
+                                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveStation(index)">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                @if (currentStations[index].ActualArrival != null || currentStations[index].ActualDeparture != null)
+                                {
+                                    <div class="row mt-2">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Actual Arrival</label>
+                                            <input type="datetime-local" class="form-control" @bind="currentStations[index].ActualArrival" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Actual Departure</label>
+                                            <input type="datetime-local" class="form-control" @bind="currentStations[index].ActualDeparture" />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    <button type="button" class="btn btn-secondary btn-sm mb-3" @onclick="AddStation">
+                        Add Station
+                    </button>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" disabled="@(isCreating || isUpdating)">
+                        @if (isEditing)
+                        {
+                            @if (isUpdating)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <text>Updating...</text>
+                            }
+                            else
+                            {
+                                <text>Update Schedule</text>
+                            }
+                        }
+                        else
+                        {
+                            @if (isCreating)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <text>Creating...</text>
+                            }
+                            else
+                            {
+                                <text>Create Schedule</text>
+                            }
+                        }
+                    </button>
+
+                    @if (isEditing)
+                    {
+                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
+                            Cancel
+                        </button>
+                    }
+                </div>
+            </EditForm>
+        </div>
+
+        <div class="col-md-6">
+            <h4>All Train Schedules</h4>
+
+            @if (trainSchedules == null)
+            {
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <p class="text-center mt-2">Loading schedules...</p>
+            }
+            else if (!trainSchedules.Any())
+            {
+                <div class="alert alert-info">
+                    <h5>No schedules found</h5>
+                    <p>Create your first train schedule using the form on the left.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Train</th>
+                                <th>Route</th>
+                                <th>Schedule</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var schedule in trainSchedules)
+                            {
+                                <tr class="@(isEditing && selectedScheduleId == schedule.Id ? "table-warning" : "")">
+                                    <td>
+                                        <div>
+                                            <strong>@GetTrainName(schedule.TrainId)</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <small>@GetRouteInfo(schedule.RouteId)</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <small>
+                                                <strong>Dep:</strong> @schedule.DepartureDate.ToString("MMM dd, yyyy HH:mm")
+                                                <br>
+                                                <strong>Arr:</strong> @schedule.ArrivalDate.ToString("MMM dd, yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(schedule.IsActive ? "bg-success" : "bg-secondary")">
+                                            @(schedule.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                        @if (schedule.Stations?.Any() == true)
+                                        {
+                                            <br>
+                                            <small class="text-muted">@schedule.Stations.Count stations</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                    @onclick="() => EditSchedule(schedule)"
+                                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                    @onclick="() => ToggleScheduleStatus(schedule)"
+                                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                                @(schedule.IsActive ? "Deactivate" : "Activate")
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                    @onclick="() => DeleteSchedule(schedule)"
+                                                    disabled="@(isCreating || isUpdating || isDeleting)"
+                                                    @onclick:preventDefault="true">
+                                                @if (isDeleting && selectedScheduleId == schedule.Id)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-trash"></i>
+                                                }
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Total Schedules: <strong>@trainSchedules.Count</strong> |
+                        Active: <strong>@trainSchedules.Count(s => s.IsActive)</strong>
+                    </small>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateTrainScheduleCommand newScheduleCommand = new CreateTrainScheduleCommand();
+    private UpdateTrainScheduleCommand updateScheduleCommand = new UpdateTrainScheduleCommand();
+    private List<TrainSchedule> trainSchedules = new List<TrainSchedule>();
+    private List<Train> trains = new List<Train>();
+    private List<Railway_Ticket_Booking.Domain.Entities.Route> routes = new List<Railway_Ticket_Booking.Domain.Entities.Route>();
+    private List<Station> stations = new List<Station>();
+    private string message = string.Empty;
+    private bool isSuccess = false;
+    private bool isCreating = false;
+    private bool isUpdating = false;
+    private bool isDeleting = false;
+    private bool isEditing = false;
+    private string selectedScheduleId = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize with default values
+        newScheduleCommand.DepartureDate = DateTime.Today.AddDays(1);
+        newScheduleCommand.ArrivalDate = DateTime.Today.AddDays(1).AddHours(6);
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var loadSchedulesTask = LoadSchedules();
+            var loadTrainsTask = LoadTrains();
+            var loadRoutesTask = LoadRoutes();
+            var loadStationsTask = LoadStations();
+
+            await Task.WhenAll(loadSchedulesTask, loadTrainsTask, loadRoutesTask, loadStationsTask);
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading data: {ex.Message}";
+            isSuccess = false;
+        }
+    }
+
+    private async Task LoadSchedules()
+    {
+        trainSchedules = await Mediator.Send(new GetAllTrainSchedulesQuery());
+    }
+
+    private async Task LoadTrains()
+    {
+        trains = await Mediator.Send(new GetAllTrainsQuery());
+    }
+
+    private async Task LoadRoutes()
+    {
+        routes = await Mediator.Send(new GetAllRoutesQuery());
+    }
+
+    private async Task LoadStations()
+    {
+        stations = await Mediator.Send(new GetAllStationsQuery());
+    }
+
+    private async Task CreateSchedule()
+    {
+        isCreating = true;
+        message = string.Empty;
+
+        try
+        {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(newScheduleCommand.TrainId))
+            {
+                message = "Please select a train.";
+                isSuccess = false;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(newScheduleCommand.RouteId))
+            {
+                message = "Please select a route.";
+                isSuccess = false;
+                return;
+            }
+
+            if (newScheduleCommand.DepartureDate >= newScheduleCommand.ArrivalDate)
+            {
+                message = "Arrival date must be after departure date.";
+                isSuccess = false;
+                return;
+            }
+
+            // Filter valid stations and sort by order
+            var validStations = newScheduleCommand.Stations
+                .Where(s => !string.IsNullOrWhiteSpace(s.StationId))
+                .OrderBy(s => s.StationOrder)
+                .ToList();
+
+            // Update halt duration from minutes
+            foreach (var station in validStations)
+            {
+                station.HaltDuration = TimeSpan.FromMinutes(station.HaltMinutes);
+            }
+
+            newScheduleCommand.Stations = validStations;
+
+            var scheduleId = await Mediator.Send(newScheduleCommand);
+            message = "Train schedule created successfully!";
+            isSuccess = true;
+
+            // Reset form
+            newScheduleCommand = new CreateTrainScheduleCommand();
+            newScheduleCommand.DepartureDate = DateTime.Today.AddDays(1);
+            newScheduleCommand.ArrivalDate = DateTime.Today.AddDays(1).AddHours(6);
+
+            await LoadSchedules(); // Refresh the list
+        }
+        catch (Exception ex)
+        {
+            message = $"Error creating schedule: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private async Task UpdateSchedule()
+    {
+        isUpdating = true;
+        message = string.Empty;
+
+        try
+        {
+            // Filter valid stations and sort by order
+            var validStations = updateScheduleCommand.Stations
+                .Where(s => !string.IsNullOrWhiteSpace(s.StationId))
+                .OrderBy(s => s.StationOrder)
+                .ToList();
+
+            // Update halt duration from minutes
+            foreach (var station in validStations)
+            {
+                station.HaltDuration = TimeSpan.FromMinutes(station.HaltMinutes);
+            }
+
+            updateScheduleCommand.Stations = validStations;
+
+            var result = await Mediator.Send(updateScheduleCommand);
+
+            if (result)
+            {
+                message = "Train schedule updated successfully!";
+                isSuccess = true;
+                CancelEdit(); // Exit edit mode
+                await LoadSchedules(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to update schedule. Please try again.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating schedule: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    private void EditSchedule(TrainSchedule schedule)
+    {
+        isEditing = true;
+        selectedScheduleId = schedule.Id;
+        message = string.Empty;
+
+        // Copy schedule data to update command
+        updateScheduleCommand = new UpdateTrainScheduleCommand
+            {
+                Id = schedule.Id,
+                TrainId = schedule.TrainId,
+                RouteId = schedule.RouteId,
+                DepartureDate = schedule.DepartureDate,
+                ArrivalDate = schedule.ArrivalDate,
+                IsActive = schedule.IsActive,
+                Stations = schedule.Stations?.Select(s => new ScheduleStation
+                {
+                    StationId = s.StationId,
+                    StationOrder = s.StationOrder,
+                    ScheduledArrival = s.ScheduledArrival,
+                    ScheduledDeparture = s.ScheduledDeparture,
+                    ActualArrival = s.ActualArrival,
+                    ActualDeparture = s.ActualDeparture,
+                    HaltDuration = s.HaltDuration,
+                    IsMajorStation = s.IsMajorStation,
+                    PlatformNumber = s.PlatformNumber
+                }).ToList() ?? new List<ScheduleStation>()
+            };
+
+        // Ensure at least one station for editing
+        if (!updateScheduleCommand.Stations.Any())
+        {
+            updateScheduleCommand.Stations.Add(new ScheduleStation { StationOrder = 1 });
+        }
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        selectedScheduleId = string.Empty;
+        updateScheduleCommand = new UpdateTrainScheduleCommand();
+    }
+
+    private async Task ToggleScheduleStatus(TrainSchedule schedule)
+    {
+        try
+        {
+            var updateCommand = new UpdateTrainScheduleCommand
+                {
+                    Id = schedule.Id,
+                    TrainId = schedule.TrainId,
+                    RouteId = schedule.RouteId,
+                    DepartureDate = schedule.DepartureDate,
+                    ArrivalDate = schedule.ArrivalDate,
+                    IsActive = !schedule.IsActive, // Toggle status
+                    Stations = schedule.Stations ?? new List<ScheduleStation>()
+                };
+
+            var result = await Mediator.Send(updateCommand);
+
+            if (result)
+            {
+                message = $"Schedule {(schedule.IsActive ? "deactivated" : "activated")} successfully!";
+                isSuccess = true;
+                await LoadSchedules(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to update schedule status.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating schedule status: {ex.Message}";
+            isSuccess = false;
+        }
+    }
+
+    private async Task DeleteSchedule(TrainSchedule schedule)
+    {
+        if (!await ConfirmDelete(schedule))
+            return;
+
+        isDeleting = true;
+        selectedScheduleId = schedule.Id;
+        message = string.Empty;
+
+        try
+        {
+            var result = await Mediator.Send(new DeleteTrainScheduleCommand(schedule.Id));
+
+            if (result)
+            {
+                message = $"Schedule for '{GetTrainName(schedule.TrainId)}' deleted successfully!";
+                isSuccess = true;
+                await LoadSchedules(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to delete schedule. Please try again.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error deleting schedule: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isDeleting = false;
+            selectedScheduleId = string.Empty;
+        }
+    }
+
+    private async Task<bool> ConfirmDelete(TrainSchedule schedule)
+    {
+        var trainName = GetTrainName(schedule.TrainId);
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Are you sure you want to delete the schedule for '{trainName}'?\n\nThis action cannot be undone.");
+        return confirmed;
+    }
+
+    private void AddStation()
+    {
+        var currentStations = isEditing ? updateScheduleCommand.Stations : newScheduleCommand.Stations;
+        var newOrder = currentStations.Any() ? currentStations.Max(s => s.StationOrder) + 1 : 1;
+        
+        var newStation = new ScheduleStation 
+        { 
+            StationOrder = newOrder,
+            ScheduledArrival = DateTime.Today.AddHours(8),
+            ScheduledDeparture = DateTime.Today.AddHours(8).AddMinutes(5)
+        };
+        
+        currentStations.Add(newStation);
+    }
+
+    private void RemoveStation(int index)
+    {
+        var currentStations = isEditing ? updateScheduleCommand.Stations : newScheduleCommand.Stations;
+        if (currentStations.Count > 0)
+        {
+            currentStations.RemoveAt(index);
+        }
+    }
+
+    private async Task OnRouteChanged(ChangeEventArgs e)
+    {
+        var routeId = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(routeId))
+        {
+            var selectedRoute = routes.FirstOrDefault(r => r.Id == routeId);
+            if (selectedRoute?.Stations?.Any() == true)
+            {
+                // Auto-populate stations from route
+                var currentStations = isEditing ? updateScheduleCommand.Stations : newScheduleCommand.Stations;
+                currentStations.Clear();
+
+                foreach (var routeStation in selectedRoute.Stations.OrderBy(s => s.StationOrder))
+                {
+                    var scheduleStation = new ScheduleStation
+                    {
+                        StationId = routeStation.StationId,
+                        StationOrder = routeStation.StationOrder,
+                        IsMajorStation = routeStation.IsMajorStation,
+                        HaltDuration = routeStation.HaltDuration,
+                        ScheduledArrival = DateTime.Today.AddHours(8).AddMinutes(routeStation.StationOrder * 30),
+                        ScheduledDeparture = DateTime.Today.AddHours(8).AddMinutes(routeStation.StationOrder * 30 + (int)routeStation.HaltDuration.TotalMinutes)
+                    };
+                    currentStations.Add(scheduleStation);
+                }
+            }
+        }
+    }
+
+    private string GetTrainName(string trainId)
+    {
+        var train = trains.FirstOrDefault(t => t.Id == trainId);
+        return train?.DisplayName ?? "Unknown Train";
+    }
+
+    private string GetRouteDisplayName(Railway_Ticket_Booking.Domain.Entities.Route route)
+    {
+        var sourceName = GetStationName(route.SourceStationId);
+        var destName = GetStationName(route.DestinationStationId);
+        return $"{sourceName} → {destName} ({route.TotalDistance:F1} km)";
+    }
+
+    private string GetRouteInfo(string routeId)
+    {
+        var route = routes.FirstOrDefault(r => r.Id == routeId);
+        if (route == null) return "Unknown Route";
+        
+        var sourceName = GetStationName(route.SourceStationId);
+        var destName = GetStationName(route.DestinationStationId);
+        return $"{sourceName} → {destName}";
+    }
+
+    private string GetStationName(string stationId)
+    {
+        var station = stations.FirstOrDefault(s => s.Id == stationId);
+        return station != null ? $"{station.StationName}" : "Unknown";
+    }
+}
+
+<style>
+    .card {
+        border-left: 4px solid #007bff;
+    }
+    
+    .table-warning {
+        background-color: #fff3cd !important;
+    }
+    
+    .btn-group-vertical .btn {
+        margin-bottom: 2px;
+    }
+    
+    .alert {
+        border-radius: 8px;
+    }
+    
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>

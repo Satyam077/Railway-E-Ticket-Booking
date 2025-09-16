@@ -1,0 +1,863 @@
+﻿@page "/routes"
+@using MediatR
+@using Railway_Ticket_Booking.Application.Queries
+@using Railway_Ticket_Booking.Application.Routes.Commands
+@using Railway_Ticket_Booking.Application.Routes.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@inject IMediator Mediator
+@inject IJSRuntime JSRuntime
+
+<div class="container">
+    <h3 class="text-center">Route Management</h3>
+    <div class="row">
+            <div class="col-md-6">
+                <h4>@(isEditing ? "Update Route" : "Create New Route")</h4>
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
+                    @message
+                </div>
+            }
+                <EditForm Model="@(isEditing ? updateRouteCommand : (object)newRouteCommand)" OnValidSubmit="@(isEditing ? UpdateRoute : CreateRoute)">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Trains</label>
+                    <div class="train-selection-container">
+                        @{
+                            var currentTrainIds = isEditing ? updateRouteCommand.TrainIds : newRouteCommand.TrainIds;
+                        }
+                        
+                        <!-- Selected Trains Display -->
+                        @if (currentTrainIds.Any())
+                        {
+                            <div class="selected-trains mb-2">
+                                <h6 class="mb-2">Selected Trains:</h6>
+                                <div class="selected-trains-list">
+                                    @foreach (var trainId in currentTrainIds)
+                                    {
+                                        var train = trains.FirstOrDefault(t => t.Id == trainId);
+                                        if (train != null)
+                                        {
+                                            <span class="badge bg-primary me-2 mb-1 selected-train-badge">
+                                                @train.TrainNumber - @train.Name
+                                                <button type="button" class="btn-close btn-close-white ms-1" 
+                                                        @onclick="() => RemoveTrainFromRoute(trainId)"></button>
+                                            </span>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+                        
+                        <!-- Train Selection Dropdown -->
+                        <div class="input-group">
+                            <select class="form-select" @onchange="OnTrainSelected" value="">
+                                <option value="">Select a train to add...</option>
+                                @foreach (var train in trains.Where(t => !currentTrainIds.Contains(t.Id)))
+                                {
+                                    <option value="@train.Id">@train.TrainNumber - @train.Name (@train.TrainType)</option>
+                                }
+                            </select>
+                            <button class="btn btn-outline-secondary" type="button" @onclick="ClearAllTrains">
+                                Clear All
+                            </button>
+                        </div>
+                        
+                        <small class="form-text text-muted">
+                            Select multiple trains that will operate on this route. You can add trains one by one from the dropdown.
+                        </small>
+                    </div>
+                </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Source Station</label>
+                        @if (isEditing)
+                        {
+                            <InputSelect class="form-control" @bind-Value="updateRouteCommand.SourceStationId">
+                                <option value="">Select Source Station</option>
+                                @foreach (var station in stations)
+                                {
+                                    <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect class="form-control" @bind-Value="newRouteCommand.SourceStationId">
+                                <option value="">Select Source Station</option>
+                                @foreach (var station in stations)
+                                {
+                                    <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                }
+                            </InputSelect>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Destination Station</label>
+                        @if (isEditing)
+                        {
+                            <InputSelect class="form-control" @bind-Value="updateRouteCommand.DestinationStationId">
+                                <option value="">Select Destination Station</option>
+                                @foreach (var station in stations)
+                                {
+                                    <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect class="form-control" @bind-Value="newRouteCommand.DestinationStationId">
+                                <option value="">Select Destination Station</option>
+                                @foreach (var station in stations)
+                                {
+                                    <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                }
+                            </InputSelect>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Distance (KM)</label>
+                        @if (isEditing)
+                        {
+                            <InputNumber class="form-control" @bind-Value="updateRouteCommand.TotalDistance" min="0" step="0.1" />
+                        }
+                        else
+                        {
+                            <InputNumber class="form-control" @bind-Value="newRouteCommand.TotalDistance" min="0" step="0.1" />
+                        }
+                    </div>
+
+                    @if (isEditing)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <div class="form-check form-switch">
+                                <InputCheckbox class="form-check-input" @bind-Value="updateRouteCommand.IsActive" />
+                                <label class="form-check-label">
+                                    @(updateRouteCommand.IsActive ? "Active" : "Inactive")
+                                </label>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <h5>Route Stations</h5>
+                        @{
+                            var currentStations = isEditing ? updateRouteCommand.Stations : newRouteCommand.Stations;
+                        }
+                        @for (int i = 0; i < currentStations.Count; i++)
+                        {
+                            var index = i; // Capture for lambda
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Station</label>
+                                            <InputSelect class="form-control" @bind-Value="currentStations[index].StationId">
+                                                <option value="">Select Station</option>
+                                                @foreach (var station in stations)
+                                                {
+                                                    <option value="@station.Id">@station.StationName</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Order</label>
+                                            <InputNumber class="form-control" @bind-Value="currentStations[index].StationOrder" min="1" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Distance (KM)</label>
+                                            <InputNumber class="form-control" @bind-Value="currentStations[index].DistanceFromSource" min="0" step="0.1" />
+                                        </div>
+                                    </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Arrival</label>
+                                        <input type="time" class="form-control"
+                                               value='@currentStations[index].ArrivalTime.ToString(@"hh\:mm")'
+                                               @onchange='e => currentStations[index].ArrivalTime = TimeSpan.Parse(e.Value?.ToString() ?? "00:00")' />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Departure</label>
+                                        <input type="time" class="form-control"
+                                               value='@currentStations[index].DepartureTime.ToString(@"hh\:mm")'
+                                               @onchange='e => currentStations[index].DepartureTime = TimeSpan.Parse(e.Value?.ToString() ?? "00:00")' />
+                                    </div>
+                                </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Halt Duration (min)</label>
+                                            @* <InputNumber class="form-control" @bind-Value="haltMinutes[index]" min="0" max="120" @onchange="(e) => UpdateHaltDuration(index, e)" /> *@
+                                        <InputNumber @bind-Value="currentStations[index].HaltMinutes"
+                                                     class="form-control"
+                                                     min="0" max="120" />
+
+                                        </div>
+                                        <div class="col-md-5 mt-2">
+                                            <div class="form-check form-switch mt-4">
+                                                <InputCheckbox class="form-check-input" @bind-Value="currentStations[index].IsMajorStation" />
+                                                <label class="form-check-label">Major Station</label>
+                                            </div>
+                                        </div>
+                                    <div class="col-md-2 mt-4">
+                                        <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveStation(index)">
+                                            Remove
+                                        </button>
+                                    </div>
+                                    </div>
+                                
+                                </div>
+                            </div>
+                        }
+                        <button type="button" class="btn btn-secondary btn-sm mb-3" @onclick="AddStation">
+                            Add Station
+                        </button>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" disabled="@(isCreating || isUpdating)">
+                            @if (isEditing)
+                            {
+                                @if (isUpdating)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <text>Updating...</text>
+                                }
+                                else
+                                {
+                                    <text>Update Route</text>
+                                }
+                            }
+                            else
+                            {
+                                @if (isCreating)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <text>Creating...</text>
+                                }
+                                else
+                                {
+                                    <text>Create Route</text>
+                                }
+                            }
+                        </button>
+
+                        @if (isEditing)
+                        {
+                            <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
+                                Cancel
+                            </button>
+                        }
+                    </div>
+                </EditForm>
+
+                
+            </div>
+
+            <div class="col-md-6">
+                <h4>All Routes</h4>
+
+                @if (routes == null)
+                {
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2">Loading routes...</p>
+                }
+                else if (!routes.Any())
+                {
+                    <div class="alert alert-info">
+                        <h5>No routes found</h5>
+                        <p>Create your first route using the form on the left.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Trains</th>
+                                    <th>Distance</th>
+                                    <th>Stations</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var route in routes)
+                                {
+                                    <tr class="@(isEditing && selectedRouteId == route.Id ? "table-warning" : "")">
+                                        <td>
+                                            <div>
+                                                <strong>@GetStationName(route.SourceStationId)</strong>
+                                                <br>
+                                                <i class="bi bi-arrow-down"></i>
+                                                <br>
+                                                <strong>@GetStationName(route.DestinationStationId)</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                @if (route.TrainIds?.Any() == true)
+                                                {
+                                                    <span class="badge bg-success mb-1">@route.TrainIds.Count trains</span>
+                                                    <br>
+                                                    @foreach (var trainId in route.TrainIds.Take(2))
+                                                    {
+                                                        var train = trains.FirstOrDefault(t => t.Id == trainId);
+                                                        if (train != null)
+                                                        {
+                                                            <small class="text-muted">@train.TrainNumber</small><br>
+                                                        }
+                                                    }
+                                                    @if (route.TrainIds.Count > 2)
+                                                    {
+                                                        <small class="text-muted">+@(route.TrainIds.Count - 2) more...</small>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">No trains</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@route.TotalDistance KM</span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <span class="badge bg-secondary">@route.StationCount stations</span>
+                                                @if (route.Stations?.Any(s => s.IsMajorStation) == true)
+                                                {
+                                                    <br>
+                                                    <small class="text-muted">@route.Stations.Count(s => s.IsMajorStation) major</small>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(route.IsActive ? "bg-success" : "bg-secondary")">
+                                                @route.StatusText
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small>@route.CreatedAt.ToString("MMM dd, yyyy")</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group-vertical btn-group-sm">
+                                                <button class="btn btn-outline-primary btn-sm"
+                                                        @onclick="() => EditRoute(route)"
+                                                        disabled="@(isCreating || isUpdating || isDeleting)">
+                                                    <i class="bi bi-pencil"></i> Edit
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm"
+                                                        @onclick="() => ToggleRouteStatus(route)"
+                                                        disabled="@(isCreating || isUpdating || isDeleting)">
+                                                    @(route.IsActive ? "Deactivate" : "Activate")
+                                                </button>
+                                                <button class="btn btn-outline-danger btn-sm"
+                                                        @onclick="() => DeleteRoute(route)"
+                                                        disabled="@(isCreating || isUpdating || isDeleting)"
+                                                        @onclick:preventDefault="true">
+                                                    @if (isDeleting && selectedRouteId == route.Id)
+                                                    {
+                                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-trash"></i>
+                                                    }
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            Total Routes: <strong>@routes.Count</strong> |
+                            Active: <strong>@routes.Count(r => r.IsActive)</strong> |
+                            Total Distance: <strong>@routes.Sum(r => r.TotalDistance).ToString("F1") KM</strong> |
+                            Total Trains: <strong>@routes.Sum(r => r.TrainIds?.Count ?? 0)</strong>
+                        </small>
+                    </div>
+                }
+            </div>
+
+        
+    </div>
+</div>
+
+@code {
+    private CreateRouteCommand newRouteCommand = new CreateRouteCommand();
+    private UpdateRouteCommand updateRouteCommand = new UpdateRouteCommand();
+    private List<Railway_Ticket_Booking.Domain.Entities.Route> routes = new List<Railway_Ticket_Booking.Domain.Entities.Route>();
+    private List<Station> stations = new List<Station>();
+    private List<Train> trains = new List<Train>();
+    private string message = string.Empty;
+    private bool isSuccess = false;
+    private bool isCreating = false;
+    private bool isUpdating = false;
+    private bool isDeleting = false;
+    private bool isEditing = false;
+    private string selectedRouteId = string.Empty;
+
+    // Helper for halt duration conversion
+    private Dictionary<int, int> haltMinutes = new Dictionary<int, int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        trains = await Mediator.Send(new GetAllTrainsQuery());
+
+        // Initialize with one empty station
+        if (!newRouteCommand.Stations.Any())
+        {
+            newRouteCommand.Stations.Add(new RouteStation { StationOrder = 1 });
+            haltMinutes[0] = 0;
+        }
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var loadRoutesTask = LoadRoutes();
+            var loadStationsTask = LoadStations();
+
+            await Task.WhenAll(loadRoutesTask, loadStationsTask);
+        }
+        catch (Exception ex)
+        {
+            message = $"Error loading data: {ex.Message}";
+            isSuccess = false;
+        }
+    }
+
+    private async Task LoadRoutes()
+    {
+        routes = await Mediator.Send(new GetAllRoutesQuery());
+    }
+
+    private async Task LoadStations()
+    {
+        stations = await Mediator.Send(new GetAllStationsQuery());
+    }
+
+    private async Task CreateRoute()
+    {
+        isCreating = true;
+        message = string.Empty;
+
+        try
+        {
+            // Validate that we have at least source and destination
+            if (string.IsNullOrWhiteSpace(newRouteCommand.SourceStationId))
+            {
+                message = "Please select a source station.";
+                isSuccess = false;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(newRouteCommand.DestinationStationId))
+            {
+                message = "Please select a destination station.";
+                isSuccess = false;
+                return;
+            }
+
+            // Validate that at least one train is selected
+            if (!newRouteCommand.TrainIds.Any())
+            {
+                message = "Please select at least one train for this route.";
+                isSuccess = false;
+                return;
+            }
+
+            // Filter valid stations and sort by order
+            var validStations = newRouteCommand.Stations
+                .Where(s => !string.IsNullOrWhiteSpace(s.StationId))
+                .OrderBy(s => s.StationOrder)
+                .ToList();
+
+            newRouteCommand.Stations = validStations;
+
+            var routeId = await Mediator.Send(newRouteCommand);
+            message = "Route created successfully!";
+            isSuccess = true;
+
+            // Reset form
+            newRouteCommand = new CreateRouteCommand();
+            newRouteCommand.Stations.Add(new RouteStation { StationOrder = 1 });
+            haltMinutes.Clear();
+            haltMinutes[0] = 0;
+
+            await LoadRoutes(); // Refresh the list
+        }
+        catch (Exception ex)
+        {
+            message = $"Error creating route: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private async Task UpdateRoute()
+    {
+        isUpdating = true;
+        message = string.Empty;
+
+        try
+        {
+            // Filter valid stations and sort by order
+            var validStations = updateRouteCommand.Stations
+                .Where(s => !string.IsNullOrWhiteSpace(s.StationId))
+                .OrderBy(s => s.StationOrder)
+                .ToList();
+
+            updateRouteCommand.Stations = validStations;
+
+            var result = await Mediator.Send(updateRouteCommand);
+
+            if (result)
+            {
+                message = "Route updated successfully!";
+                isSuccess = true;
+                CancelEdit(); // Exit edit mode
+                await LoadRoutes(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to update route. Please try again.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating route: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    private void EditRoute(Route route)
+    {
+        isEditing = true;
+        selectedRouteId = route.Id;
+        message = string.Empty;
+
+        // Copy route data to update command
+        updateRouteCommand = new UpdateRouteCommand
+            {
+                Id = route.Id,
+                SourceStationId = route.SourceStationId,
+                DestinationStationId = route.DestinationStationId,
+                TotalDistance = route.TotalDistance,
+                IsActive = route.IsActive,
+                TrainIds = new List<string>(route.TrainIds ?? new List<string>()),
+                Stations = route.Stations?.Select(s => new RouteStation
+                {
+                    StationId = s.StationId,
+                    StationOrder = s.StationOrder,
+                    DistanceFromSource = s.DistanceFromSource,
+                    ArrivalTime = s.ArrivalTime,
+                    DepartureTime = s.DepartureTime,
+                    HaltDuration = s.HaltDuration,
+                    IsMajorStation = s.IsMajorStation
+                }).ToList() ?? new List<RouteStation>()
+            };
+
+        // Ensure at least one station for editing
+        if (!updateRouteCommand.Stations.Any())
+        {
+            updateRouteCommand.Stations.Add(new RouteStation { StationOrder = 1 });
+        }
+
+        // Initialize halt minutes
+        haltMinutes.Clear();
+        for (int i = 0; i < updateRouteCommand.Stations.Count; i++)
+        {
+            haltMinutes[i] = (int)updateRouteCommand.Stations[i].HaltDuration.TotalMinutes;
+        }
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+        selectedRouteId = string.Empty;
+        updateRouteCommand = new UpdateRouteCommand();
+        //message = string.Empty;
+        haltMinutes.Clear();
+    }
+
+    private async Task ToggleRouteStatus(Route route)
+    {
+        try
+        {
+            var updateCommand = new UpdateRouteCommand
+                {
+                    Id = route.Id,
+                    SourceStationId = route.SourceStationId,
+                    DestinationStationId = route.DestinationStationId,
+                    TotalDistance = route.TotalDistance,
+                    IsActive = !route.IsActive, // Toggle status
+                    TrainIds = route.TrainIds ?? new List<string>(),
+                    Stations = route.Stations ?? new List<RouteStation>()
+                };
+
+            var result = await Mediator.Send(updateCommand);
+
+            if (result)
+            {
+                message = $"Route {(route.IsActive ? "deactivated" : "activated")} successfully!";
+                isSuccess = true;
+                await LoadRoutes(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to update route status.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating route status: {ex.Message}";
+            isSuccess = false;
+        }
+    }
+
+    private async Task DeleteRoute(Route route)
+    {
+        if (!await ConfirmDelete(route))
+            return;
+
+        isDeleting = true;
+        selectedRouteId = route.Id;
+        message = string.Empty;
+
+        try
+        {
+            var result = await Mediator.Send(new DeleteRouteCommand(route.Id));
+
+            if (result)
+            {
+                message = $"Route '{route.DisplayName}' deleted successfully!";
+                isSuccess = true;
+                await LoadRoutes(); // Refresh the list
+            }
+            else
+            {
+                message = "Failed to delete route. Please try again.";
+                isSuccess = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error deleting route: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isDeleting = false;
+            selectedRouteId = string.Empty;
+        }
+    }
+
+    private async Task<bool> ConfirmDelete(Route route)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Are you sure you want to delete route '{route.DisplayName}'?\n\nThis action cannot be undone.");
+        return confirmed;
+    }
+
+    // private void AddStation()
+    // {
+    //     var currentStations = isEditing ? updateRouteCommand.Stations : newRouteCommand.Stations;
+    //     var newOrder = currentStations.Any() ? currentStations.Max(s => s.StationOrder) + 1 : 1;
+
+    //     currentStations.Add(new RouteStation { StationOrder = newOrder });
+    //     haltMinutes[currentStations.Count - 1] = 0;
+    // }
+    private void AddStation()
+    {
+        var currentStations = isEditing ? updateRouteCommand.Stations : newRouteCommand.Stations;
+        var newOrder = currentStations.Any() ? currentStations.Max(s => s.StationOrder) + 1 : 1;
+        currentStations.Add(new RouteStation { StationOrder = newOrder });
+        ReindexHaltMinutes(currentStations);
+    }
+
+    private void RemoveStation(int index)
+    {
+        var currentStations = isEditing ? updateRouteCommand.Stations : newRouteCommand.Stations;
+        if (currentStations.Count > 1)
+        {
+            currentStations.RemoveAt(index);
+            ReindexHaltMinutes(currentStations);
+        }
+    }
+
+    private void ReindexHaltMinutes(List<RouteStation> stations)
+    {
+        haltMinutes.Clear();
+        for (int i = 0; i < stations.Count; i++)
+        {
+            haltMinutes[i] = (int)stations[i].HaltDuration.TotalMinutes;
+        }
+    }
+
+
+    // private void RemoveStation(int index)
+    // {
+    //     var currentStations = isEditing ? updateRouteCommand.Stations : newRouteCommand.Stations;
+    //     if (currentStations.Count > 1)
+    //     {
+    //         currentStations.RemoveAt(index);
+    //         haltMinutes.Remove(index);
+
+    //         var newHaltMinutes = new Dictionary<int, int>();
+    //         for (int i = 0; i < currentStations.Count; i++)
+    //         {
+    //             if (haltMinutes.ContainsKey(i < index ? i : i + 1))
+    //             {
+    //                 newHaltMinutes[i] = haltMinutes[i < index ? i : i + 1];
+    //             }
+    //         }
+    //         haltMinutes = newHaltMinutes;
+    //     }
+    // }
+
+    private void UpdateHaltDuration(int index, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int minutes))
+        {
+            var currentStations = isEditing ? updateRouteCommand.Stations : newRouteCommand.Stations;
+            if (index < currentStations.Count)
+            {
+                currentStations[index].HaltDuration = TimeSpan.FromMinutes(minutes);
+                haltMinutes[index] = minutes;
+            }
+        }
+    }
+
+    private string GetStationName(string stationId)
+    {
+        var station = stations.FirstOrDefault(s => s.Id == stationId);
+        return station != null ? $"{station.StationName} ({station.StationCode})" : "Unknown Station";
+    }
+
+    // Train selection methods
+    private void OnTrainSelected(ChangeEventArgs e)
+    {
+        var selectedTrainId = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(selectedTrainId))
+        {
+            var currentTrainIds = isEditing ? updateRouteCommand.TrainIds : newRouteCommand.TrainIds;
+            
+            if (!currentTrainIds.Contains(selectedTrainId))
+            {
+                currentTrainIds.Add(selectedTrainId);
+            }
+        }
+    }
+
+    private void RemoveTrainFromRoute(string trainId)
+    {
+        var currentTrainIds = isEditing ? updateRouteCommand.TrainIds : newRouteCommand.TrainIds;
+        currentTrainIds.Remove(trainId);
+    }
+
+    private void ClearAllTrains()
+    {
+        var currentTrainIds = isEditing ? updateRouteCommand.TrainIds : newRouteCommand.TrainIds;
+        currentTrainIds.Clear();
+    }
+}
+
+<style>
+    .train-selection-container {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+    }
+
+    .selected-trains {
+        margin-bottom: 1rem;
+    }
+
+    .selected-trains h6 {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .selected-trains-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .selected-train-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        background-color: #0d6efd !important;
+        color: white;
+    }
+
+    .selected-train-badge .btn-close {
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+        opacity: 0.8;
+    }
+
+    .selected-train-badge .btn-close:hover {
+        opacity: 1;
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .input-group .btn {
+        border-color: #ced4da;
+    }
+
+    .input-group .btn:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #495057;
+        border-top: none;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+    }
+</style>
