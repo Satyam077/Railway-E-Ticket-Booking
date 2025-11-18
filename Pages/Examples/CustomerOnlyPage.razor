@@ -1,0 +1,38 @@
+@page "/customer-only"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Customer")]
+
+<PageTitle>Customer Only Page</PageTitle>
+
+<div class="container mt-4">
+    <div class="alert alert-info">
+        <h3>Welcome, Customer!</h3>
+        <p>This page is only accessible to Customer users.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Customer Dashboard</h4>
+        </div>
+        <div class="card-body">
+            <p>You have successfully accessed a Customer-only page.</p>
+            <p>Your role: <strong>@context.User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</strong></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    private AuthenticationState? context;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            context = await authenticationStateTask;
+        }
+    }
+}
+

@@ -77,11 +77,11 @@
                             <label class="form-label">Departure Date</label>
                             @if (isEditing)
                             {
-                                <InputDate class="form-control" @bind-Value="updateScheduleCommand.DepartureDate" />
+                                <input type="datetime-local" @bind="updateScheduleCommand.DepartureDate" class="form-control" />
                             }
                             else
                             {
-                                <InputDate class="form-control" @bind-Value="newScheduleCommand.DepartureDate" />
+                                <input type="datetime-local" @bind="newScheduleCommand.DepartureDate" class="form-control" />
                             }
                         </div>
                     </div>
@@ -90,11 +90,11 @@
                             <label class="form-label">Arrival Date</label>
                             @if (isEditing)
                             {
-                                <InputDate class="form-control" @bind-Value="updateScheduleCommand.ArrivalDate" />
+                                <input type="datetime-local" @bind="updateScheduleCommand.ArrivalDate" class="form-control" />
                             }
                             else
                             {
-                                <InputDate class="form-control" @bind-Value="newScheduleCommand.ArrivalDate" />
+                                <input type="datetime-local" @bind="newScheduleCommand.ArrivalDate" class="form-control" />
                             }
                         </div>
                     </div>
@@ -161,8 +161,8 @@
                                     <div class="col-md-3">
                                         <label class="form-label">Halt Duration (min)</label>
                                         <InputNumber @bind-Value="currentStations[index].HaltMinutes"
-                                                     class="form-control"
-                                                     min="0" max="120" />
+                                        class="form-control"
+                                        min="0" max="120" />
                                     </div>
                                     <div class="col-md-3 mt-4">
                                         <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveStation(index)">
@@ -297,19 +297,19 @@
                                     <td>
                                         <div class="btn-group-vertical btn-group-sm">
                                             <button class="btn btn-outline-primary btn-sm"
-                                                    @onclick="() => EditSchedule(schedule)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                            @onclick="() => EditSchedule(schedule)"
+                                            disabled="@(isCreating || isUpdating || isDeleting)">
                                                 <i class="bi bi-pencil"></i> Edit
                                             </button>
                                             <button class="btn btn-outline-secondary btn-sm"
-                                                    @onclick="() => ToggleScheduleStatus(schedule)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                            @onclick="() => ToggleScheduleStatus(schedule)"
+                                            disabled="@(isCreating || isUpdating || isDeleting)">
                                                 @(schedule.IsActive ? "Deactivate" : "Activate")
                                             </button>
                                             <button class="btn btn-outline-danger btn-sm"
-                                                    @onclick="() => DeleteSchedule(schedule)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)"
-                                                    @onclick:preventDefault="true">
+                                            @onclick="() => DeleteSchedule(schedule)"
+                                            disabled="@(isCreating || isUpdating || isDeleting)"
+                                            @onclick:preventDefault="true">
                                                 @if (isDeleting && selectedScheduleId == schedule.Id)
                                                 {
                                                     <span class="spinner-border spinner-border-sm" role="status"></span>
@@ -356,9 +356,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Initialize with default values
-        newScheduleCommand.DepartureDate = DateTime.Today.AddDays(1);
-        newScheduleCommand.ArrivalDate = DateTime.Today.AddDays(1).AddHours(6);
+        // Initialize with default values - use local time without timezone conversion
+        newScheduleCommand.DepartureDate = DateTime.Today.AddDays(1).AddHours(8); // Tomorrow at 8 AM
+        newScheduleCommand.ArrivalDate = DateTime.Today.AddDays(1).AddHours(14); // Tomorrow at 2 PM
 
         await LoadData();
     }
@@ -441,17 +441,17 @@
             {
                 station.HaltDuration = TimeSpan.FromMinutes(station.HaltMinutes);
             }
-
+                                                                                                                                    
             newScheduleCommand.Stations = validStations;
-
+                       
             var scheduleId = await Mediator.Send(newScheduleCommand);
             message = "Train schedule created successfully!";
             isSuccess = true;
 
             // Reset form
-            newScheduleCommand = new CreateTrainScheduleCommand();
-            newScheduleCommand.DepartureDate = DateTime.Today.AddDays(1);
-            newScheduleCommand.ArrivalDate = DateTime.Today.AddDays(1).AddHours(6);
+            // newScheduleCommand = new CreateTrainScheduleCommand();
+            // newScheduleCommand.DepartureDate = DateTime.Today.AddDays(1);
+            // newScheduleCommand.ArrivalDate = DateTime.Today.AddDays(1).AddHours(6);
 
             await LoadSchedules(); // Refresh the list
         }
@@ -525,15 +525,15 @@
                 Id = schedule.Id,
                 TrainId = schedule.TrainId,
                 RouteId = schedule.RouteId,
-                DepartureDate = schedule.DepartureDate,
-                ArrivalDate = schedule.ArrivalDate,
+                DepartureDate = schedule.DepartureDate, // Keep original date/time as-is
+                ArrivalDate = schedule.ArrivalDate, // Keep original date/time as-is
                 IsActive = schedule.IsActive,
                 Stations = schedule.Stations?.Select(s => new ScheduleStation
                 {
                     StationId = s.StationId,
                     StationOrder = s.StationOrder,
-                    ScheduledArrival = s.ScheduledArrival,
-                    ScheduledDeparture = s.ScheduledDeparture,
+                    ScheduledArrival = s.ScheduledArrival, // Keep original date/time as-is
+                    ScheduledDeparture = s.ScheduledDeparture, // Keep original date/time as-is
                     ActualArrival = s.ActualArrival,
                     ActualDeparture = s.ActualDeparture,
                     HaltDuration = s.HaltDuration,
@@ -642,11 +642,14 @@
         var currentStations = isEditing ? updateScheduleCommand.Stations : newScheduleCommand.Stations;
         var newOrder = currentStations.Any() ? currentStations.Max(s => s.StationOrder) + 1 : 1;
         
+        // Use the departure date from the form as base time
+        var baseTime = isEditing ? updateScheduleCommand.DepartureDate : newScheduleCommand.DepartureDate;
+        
         var newStation = new ScheduleStation 
         { 
             StationOrder = newOrder,
-            ScheduledArrival = DateTime.Today.AddHours(8),
-            ScheduledDeparture = DateTime.Today.AddHours(8).AddMinutes(5)
+            ScheduledArrival = baseTime.AddMinutes(newOrder * 30),
+            ScheduledDeparture = baseTime.AddMinutes(newOrder * 30 + 5) // 5 minutes halt
         };
         
         currentStations.Add(newStation);
@@ -673,6 +676,9 @@
                 var currentStations = isEditing ? updateScheduleCommand.Stations : newScheduleCommand.Stations;
                 currentStations.Clear();
 
+                // Use the departure date from the form as base time
+                var baseTime = isEditing ? updateScheduleCommand.DepartureDate : newScheduleCommand.DepartureDate;
+                
                 foreach (var routeStation in selectedRoute.Stations.OrderBy(s => s.StationOrder))
                 {
                     var scheduleStation = new ScheduleStation
@@ -681,8 +687,8 @@
                         StationOrder = routeStation.StationOrder,
                         IsMajorStation = routeStation.IsMajorStation,
                         HaltDuration = routeStation.HaltDuration,
-                        ScheduledArrival = DateTime.Today.AddHours(8).AddMinutes(routeStation.StationOrder * 30),
-                        ScheduledDeparture = DateTime.Today.AddHours(8).AddMinutes(routeStation.StationOrder * 30 + (int)routeStation.HaltDuration.TotalMinutes)
+                        ScheduledArrival = baseTime.AddMinutes(routeStation.StationOrder * 30),
+                        ScheduledDeparture = baseTime.AddMinutes(routeStation.StationOrder * 30 + (int)routeStation.HaltDuration.TotalMinutes)
                     };
                     currentStations.Add(scheduleStation);
                 }

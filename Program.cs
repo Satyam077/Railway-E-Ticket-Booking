@@ -1,5 +1,8 @@
 using MediatR;
+using Microsoft.AspNetCore.Components.Authorization;
+using Railway_Ticket_Booking.Application.Services;
 using Railway_Ticket_Booking.Infrastructure;
+using Railway_Ticket_Booking.Infrastructure.Services;
 using Railway_Ticket_Booking.Logging;
 using System.Reflection;
 
@@ -13,6 +16,24 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddSingleton<MongoDbContext>();
+
+// Register JWT Service
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Configure Authentication and Authorization
+builder.Services.AddOptions();
+builder.Services.AddAuthorizationCore(options =>
+{
+    // Define role-based policies
+    options.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("SuperAdmin"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin", "SuperAdmin"));
+    options.AddPolicy("ZonalManagerOnly", policy => policy.RequireRole("ZonalManager", "Admin", "SuperAdmin"));
+    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+    options.AddPolicy("AuthenticatedUsers", policy => policy.RequireAuthenticatedUser());
+});
+
+// Register Custom Authentication State Provider
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 var app = builder.Build();
 

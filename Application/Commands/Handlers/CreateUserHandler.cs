@@ -1,4 +1,5 @@
 using MediatR;
+using Railway_Ticket_Booking.Application.DTOs;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Infrastructure;
 using BCrypt.Net;
@@ -6,7 +7,7 @@ using MongoDB.Driver;
 
 namespace Railway_Ticket_Booking.Application.Commands.Handlers
 {
-    public class CreateUserHandler : IRequestHandler<CreateUserCommand, string>
+    public class CreateUserHandler : IRequestHandler<CreateUserCommand, RegistrationResponseDTO>
     {
         private readonly MongoDbContext _context;
 
@@ -15,16 +16,23 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             _context = context;
         }
 
-        public async Task<string> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+        public async Task<RegistrationResponseDTO> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            // Check if user with email already exists
+            // Normalize email to lowercase for comparison
+            var normalizedEmail = request.Email.ToLowerInvariant();
+            
+            // Check if user with email already exists (case-insensitive)
             var existingUser = await _context.Users
-                .Find(u => u.Email == request.Email)
+                .Find(u => u.Email == normalizedEmail)
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (existingUser != null)
             {
-                throw new InvalidOperationException("User with this email already exists.");
+                return new RegistrationResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "User with this email already exists."
+                };
             }
 
             // Hash the password
@@ -34,7 +42,7 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             {
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                Email = request.Email,
+                Email = normalizedEmail,
                 PhoneNumber = request.PhoneNumber,
                 PasswordHash = hashedPassword,
                 Role = request.Role,
@@ -50,7 +58,16 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             };
 
             await _context.Users.InsertOneAsync(user, cancellationToken: cancellationToken);
-            return user.Id;
+
+            return new RegistrationResponseDTO
+            {
+                UserId = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = user.Role.ToString(),
+                IsSuccess = true,
+                Message = "User registered successfully!"
+            };
         }
     }
 }

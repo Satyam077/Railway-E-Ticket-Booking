@@ -22,8 +22,8 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries
         public string TrainNumber { get; set; } = string.Empty;
         public string TrainName { get; set; } = string.Empty;
         public string TrainType { get; set; } = string.Empty;
-        public DateTime DepartureTime { get; set; } = DateTime.Now;
-        public DateTime ArrivalTime { get; set; } = DateTime.Now;
+        public DateTime DepartureTime { get; set; }// = DateTime.Now;
+        public DateTime ArrivalTime { get; set; } //= DateTime.Now;
 
         //public TimeSpan DepartureTime { get; set; }
         //public TimeSpan ArrivalTime { get; set; }

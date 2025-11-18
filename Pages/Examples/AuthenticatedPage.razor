@@ -1,0 +1,40 @@
+@page "/authenticated"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Authenticated Users Page</PageTitle>
+
+<div class="container mt-4">
+    <div class="alert alert-primary">
+        <h3>Welcome, Authenticated User!</h3>
+        <p>This page is accessible to any authenticated user, regardless of role.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>User Information</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Email:</strong> @context.User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</p>
+            <p><strong>Name:</strong> @context.User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value</p>
+            <p><strong>Role:</strong> @context.User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+            <p><strong>User ID:</strong> @context.User?.FindFirst("UserId")?.Value</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    private AuthenticationState? context;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationStateTask != null)
+        {
+            context = await authenticationStateTask;
+        }
+    }
+}
+

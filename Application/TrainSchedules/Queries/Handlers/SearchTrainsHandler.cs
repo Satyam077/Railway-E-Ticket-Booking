@@ -38,7 +38,7 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                     var route = routes.FirstOrDefault(r => r.Id == schedule.RouteId);
 
                     var routeStations = route.Stations?.ToList();
-                   // var routeStations = route.Stations?.FirstOrDefault(_ => _.StationId == schedule.Id); ;//.ToList();
+                    var routeStation = route.Stations?.FirstOrDefault(_ => _.StationId == schedule.Id);
 
 
                     if (train == null || route == null) continue;

@@ -1,0 +1,28 @@
+@page "/logout"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Railway_Ticket_Booking.Infrastructure.Services
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Clear localStorage
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userId");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userEmail");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userName");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userRole");
+
+        // Notify authentication state changed
+        if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            customProvider.NotifyUserLogout();
+        }
+
+        // Redirect to login page
+        NavigationManager.NavigateTo("/login");
+    }
+}
+
