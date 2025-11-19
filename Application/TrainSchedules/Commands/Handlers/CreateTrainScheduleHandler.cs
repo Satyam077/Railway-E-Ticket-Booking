@@ -16,20 +16,25 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Commands.Handlers
 
         public async Task<string> Handle(CreateTrainScheduleCommand request, CancellationToken cancellationToken)
         {
-            var trainSchedule = new TrainSchedule
+            if (string.IsNullOrWhiteSpace(request.TrainId))
+                throw new ArgumentException("TrainId is required", nameof(request));
+            
+            if (string.IsNullOrWhiteSpace(request.RouteId))
+                throw new ArgumentException("RouteId is required", nameof(request));
+
+            var schedule = new TrainSchedule
             {
                 TrainId = request.TrainId,
                 RouteId = request.RouteId,
-                DepartureDate = request.DepartureDate,
-                ArrivalDate = request.ArrivalDate,
+                RunsOn = request.RunsOn ?? new List<DayOfWeek>(),
                 Stations = request.Stations ?? new List<ScheduleStation>(),
                 IsActive = request.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await _context.TrainSchedules.InsertOneAsync(trainSchedule, cancellationToken: cancellationToken);
-            return trainSchedule.Id;
+            await _context.TrainSchedules.InsertOneAsync(schedule, cancellationToken: cancellationToken);
+            return schedule.Id;
         }
     }
 }

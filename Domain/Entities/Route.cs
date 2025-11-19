@@ -51,6 +51,8 @@ namespace Railway_Ticket_Booking.Domain.Entities
         public string StationId { get; set; }
 
         public int StationOrder { get; set; }
+        public string PlatformNumber { get; set; }
+        public int DayOffset { get; set; }
 
         public double DistanceFromSource { get; set; } // in kilometers
 

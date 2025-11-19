@@ -1,4 +1,4 @@
-using MediatR;
+﻿using MediatR;
 using MongoDB.Driver;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Infrastructure;
@@ -20,123 +20,141 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
 
             try
             {
-                // Get all active train schedules for the requested date
+                // 1️⃣ Load required collections once
+                var trainsTask = _context.Trains.Find(_ => true).ToListAsync(cancellationToken);
+                var routesTask = _context.Routes.Find(_ => true).ToListAsync(cancellationToken);
+                var stationsTask = _context.Stations.Find(_ => true).ToListAsync(cancellationToken);
+
+                // 2️⃣ Get all schedules valid for selected date
                 var schedules = await _context.TrainSchedules
-                    .Find(ts => ts.IsActive && 
-                               ts.DepartureDate.Date <= request.TravelDate.Date &&
-                               ts.ArrivalDate.Date >= request.TravelDate.Date)
+                    .Find(ts =>
+                        ts.IsActive
+                    )
                     .ToListAsync(cancellationToken);
 
-                // Get all trains, routes, and stations for reference
-                var trains = await _context.Trains.Find(_ => true).ToListAsync(cancellationToken);
-                var routes = await _context.Routes.Find(_ => true).ToListAsync(cancellationToken);
-                var stations = await _context.Stations.Find(_ => true).ToListAsync(cancellationToken);
+                var trains = await trainsTask;
+                var routes = await routesTask;
+                var stations = await stationsTask;
+
+                // 3️⃣ Resolve user-selected stations
+                var fromStation = stations.FirstOrDefault(s => s.Id == request.FromStationId);
+                var toStation = stations.FirstOrDefault(s => s.Id == request.ToStationId);
+                if (fromStation == null || toStation == null)
+                    return results;
+
+                // Get the day of week for the travel date
+                var travelDayOfWeek = request.TravelDate.DayOfWeek;
 
                 foreach (var schedule in schedules)
                 {
                     var train = trains.FirstOrDefault(t => t.Id == schedule.TrainId);
                     var route = routes.FirstOrDefault(r => r.Id == schedule.RouteId);
 
-                    var routeStations = route.Stations?.ToList();
-                    var routeStation = route.Stations?.FirstOrDefault(_ => _.StationId == schedule.Id);
+                    if (train == null || route == null)
+                        continue;
 
+                    // Check if train is active
+                    if (!train.IsActive || !schedule.IsActive)
+                        continue;
 
-                    if (train == null || route == null) continue;
-
-                    // Check if route contains both from and to stations
-                    var fromStationInRoute = schedule.Stations?.FirstOrDefault(s => s.StationId == request.FromStationId);
-                    var toStationInRoute = schedule.Stations?.FirstOrDefault(s => s.StationId == request.ToStationId);
-
-                    // Check if route contains both from and to stations
-                    var fromStationRoute = routeStations?.FirstOrDefault(s => s.StationId == request.FromStationId);
-                    var toStationRoute = routeStations?.FirstOrDefault(s => s.StationId == request.ToStationId);
-
-
-                    // If specific stations not found in schedule, check route stations
-                    if (fromStationInRoute == null || toStationInRoute == null)
+                    // Check if train runs on the selected travel date
+                    // If RunsOn is empty or null, train runs daily
+                    if (schedule.RunsOn != null && schedule.RunsOn.Count > 0)
                     {
-                        fromStationInRoute = route.Stations?.FirstOrDefault(s => s.StationId == request.FromStationId) != null ? 
-                            new ScheduleStation { StationId = request.FromStationId } : null;
-                        toStationInRoute = route.Stations?.FirstOrDefault(s => s.StationId == request.ToStationId) != null ? 
-                            new ScheduleStation { StationId = request.ToStationId } : null;
+                        if (!schedule.RunsOn.Contains(travelDayOfWeek))
+                            continue;
                     }
 
-                    if (fromStationInRoute == null || toStationInRoute == null) continue;
+                    var routeStations = route.Stations?.OrderBy(s => s.StationOrder).ToList();
+                    if (routeStations == null || routeStations.Count == 0)
+                        continue;
 
-                    // Ensure from station comes before to station in the route
-                    var fromOrder = schedule.Stations?.FirstOrDefault(s => s.StationId == request.FromStationId)?.StationOrder ??
-                                   route.Stations?.FirstOrDefault(s => s.StationId == request.FromStationId)?.StationOrder ?? 0;
-                    var toOrder = schedule.Stations?.FirstOrDefault(s => s.StationId == request.ToStationId)?.StationOrder ??
-                                 route.Stations?.FirstOrDefault(s => s.StationId == request.ToStationId)?.StationOrder ?? 0;
+                    // 4️⃣ Check route contains FROM and TO
+                    var fromRoute = routeStations.FirstOrDefault(s => s.StationId == request.FromStationId);
+                    var toRoute = routeStations.FirstOrDefault(s => s.StationId == request.ToStationId);
 
-                    if (fromOrder >= toOrder) continue;
+                    if (fromRoute == null || toRoute == null)
+                        continue;
 
-                    var fromStation = stations.FirstOrDefault(s => s.Id == request.FromStationId);
-                    var toStation = stations.FirstOrDefault(s => s.Id == request.ToStationId);
+                    // 5️⃣ Check correct travel direction using route station order
+                    // (Schedule stations may be a subset, so we use route order for validation)
+                    if (fromRoute.StationOrder >= toRoute.StationOrder)
+                        continue;
 
-                    if (fromStation == null || toStation == null) continue;
+                    // 6️⃣ Resolve time from schedule if available, otherwise from route timing
+                    var scheduleStations = schedule.Stations?.OrderBy(s => s.StationOrder).ToList();
+                    var fromSchedule = scheduleStations?.FirstOrDefault(s => s.StationId == request.FromStationId);
+                    var toSchedule = scheduleStations?.FirstOrDefault(s => s.StationId == request.ToStationId);
+                    
+                    // Use schedule times if available, otherwise use route times
+                    TimeSpan departureTimeSpan = fromSchedule?.DepartureTime ?? fromRoute.DepartureTime;
+                    TimeSpan arrivalTimeSpan = toSchedule?.ArrivalTime ?? toRoute.ArrivalTime;
 
-                    //// Calculate departure and arrival times
-                    var departureTime = fromStationInRoute.ScheduledDeparture != DateTime.MinValue ?
-                        fromStationInRoute.ScheduledDeparture : schedule.DepartureDate;
-                    var arrivalTime = toStationInRoute.ScheduledArrival != DateTime.MinValue ?
-                        toStationInRoute.ScheduledArrival : schedule.ArrivalDate;
+                    // Convert TimeSpan into DateTime combining travel date + time
+                    DateTime departTime = request.TravelDate.Date.Add(departureTimeSpan);
+                    DateTime arriveTime = request.TravelDate.Date.Add(arrivalTimeSpan);
 
-                    // Calculate departure and arrival times in Routes
-                    //var departureTime = fromStationRoute.DepartureTime;
-                    //var arrivalTime = toStationRoute.ArrivalTime;
+                    // Handle day offsets for overnight trains
+                    int fromDayOffset = fromSchedule?.DayOffset ?? fromRoute.DayOffset;
+                    int toDayOffset = toSchedule?.DayOffset ?? toRoute.DayOffset;
 
-                    // Create train classes info
+                    // Adjust arrival time based on day offset
+                    arriveTime = arriveTime.AddDays(toDayOffset - fromDayOffset);
+
+                    // Sometimes arrival is next day (overnight trains) - check if arrival time is before departure
+                    if (arriveTime < departTime)
+                    {
+                        arriveTime = arriveTime.AddDays(1);
+                    }
+
                     var classesInfo = train.Classes?.Select(tc => new TrainClassInfo
                     {
                         ClassName = tc.ClassName,
                         Fare = tc.BasePrice,
                         AvailableSeats = tc.SeatCount,
-                        Status = tc.SeatCount > 0 ? "Available" : "Waiting List"
+                        Status = tc.SeatCount > 0 ? "Available" : "WL"
                     }).ToList() ?? new List<TrainClassInfo>();
 
-                    // Filter by class if specified
+                    // Filter class
                     if (request.Class != "All Classes")
                     {
-                        classesInfo = classesInfo.Where(c => c.ClassName.Contains(request.Class, StringComparison.OrdinalIgnoreCase)).ToList();
-                        if (!classesInfo.Any()) continue;
+                        classesInfo = classesInfo
+                            .Where(c => c.ClassName.Contains(request.Class, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+
+                        if (!classesInfo.Any())
+                            continue;
                     }
 
-                    // Filter by available berth if requested
-                    if (request.TrainWithAvailableBerth)
-                    {
-                        if (!classesInfo.Any(c => c.AvailableSeats > 0)) continue;
-                    }
+                    // Only available berth trains
+                    if (request.TrainWithAvailableBerth && !classesInfo.Any(c => c.AvailableSeats > 0))
+                        continue;
 
-                    var searchResult = new TrainSearchResult
+                    // 8️⃣ Build final result
+                    results.Add(new TrainSearchResult
                     {
                         TrainId = train.Id,
                         ScheduleId = schedule.Id,
                         TrainNumber = train.TrainNumber,
                         TrainName = train.Name,
                         TrainType = train.TrainType,
-                        DepartureTime = departureTime,
-                        ArrivalTime = arrivalTime,
-                        Duration = arrivalTime - departureTime,
                         FromStation = fromStation.StationName,
                         ToStation = toStation.StationName,
                         FromStationCode = fromStation.StationCode,
                         ToStationCode = toStation.StationCode,
+                        DepartureTime = departTime,
+                        ArrivalTime = arriveTime,
+                        Duration = arriveTime - departTime,
                         Classes = classesInfo,
                         IsActive = train.IsActive && schedule.IsActive,
-                        RunsOn = GetRunningDays(schedule) // You can implement this based on your requirements
-                    };
-
-                    results.Add(searchResult);
+                        RunsOn = GetRunningDays(schedule)
+                    });
                 }
-
-                // Sort by departure time
                 results = results.OrderBy(r => r.DepartureTime).ToList();
             }
             catch (Exception ex)
             {
-                // Log the exception
-                Console.WriteLine($"Error in SearchTrainsHandler: {ex.Message}");
+                Console.WriteLine($"Error in SearchTrainsHandler: {ex}");
             }
 
             return results;
@@ -144,14 +162,26 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
 
         private List<string> GetRunningDays(TrainSchedule schedule)
         {
-            // This is a simplified implementation
-            // You can enhance this based on your business logic
-            var days = new List<string>();
-            
-            // For now, assume all trains run daily
-            days.AddRange(new[] { "M", "T", "W", "T", "F", "S", "S" });
-            
-            return days;
+            if (schedule.RunsOn == null || schedule.RunsOn.Count == 0)
+            {
+                return new List<string> { "Daily" };
+            }
+
+            var dayAbbreviations = new Dictionary<DayOfWeek, string>
+            {
+                { DayOfWeek.Monday, "Mon" },
+                { DayOfWeek.Tuesday, "Tue" },
+                { DayOfWeek.Wednesday, "Wed" },
+                { DayOfWeek.Thursday, "Thu" },
+                { DayOfWeek.Friday, "Fri" },
+                { DayOfWeek.Saturday, "Sat" },
+                { DayOfWeek.Sunday, "Sun" }
+            };
+
+            return schedule.RunsOn
+                .OrderBy(d => d)
+                .Select(d => dayAbbreviations.ContainsKey(d) ? dayAbbreviations[d] : d.ToString())
+                .ToList();
         }
     }
 }

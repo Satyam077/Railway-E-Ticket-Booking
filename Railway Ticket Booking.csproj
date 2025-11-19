@@ -23,7 +23,6 @@
     <Folder Include="Application\Routes\Interfaces\" />
     <Folder Include="Application\Routes\Queries\" />
     <Folder Include="Infrastructure\Repositories\" />
-    <Folder Include="Users\" />
   </ItemGroup>
 
 </Project>

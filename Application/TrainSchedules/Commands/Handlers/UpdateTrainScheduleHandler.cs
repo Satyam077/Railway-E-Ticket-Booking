@@ -1,5 +1,6 @@
 using MediatR;
 using MongoDB.Driver;
+using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Infrastructure;
 
 namespace Railway_Ticket_Booking.Application.TrainSchedules.Commands.Handlers
@@ -15,19 +16,22 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Commands.Handlers
 
         public async Task<bool> Handle(UpdateTrainScheduleCommand request, CancellationToken cancellationToken)
         {
-            var filter = Builders<Railway_Ticket_Booking.Domain.Entities.TrainSchedule>.Filter.Eq(ts => ts.Id, request.Id);
-            
-            var update = Builders<Railway_Ticket_Booking.Domain.Entities.TrainSchedule>.Update
-                .Set(ts => ts.TrainId, request.TrainId)
-                .Set(ts => ts.RouteId, request.RouteId)
-                .Set(ts => ts.DepartureDate, request.DepartureDate)
-                .Set(ts => ts.ArrivalDate, request.ArrivalDate)
-                .Set(ts => ts.Stations, request.Stations)
-                .Set(ts => ts.IsActive, request.IsActive)
-                .Set(ts => ts.UpdatedAt, DateTime.UtcNow);
+            var filter = Builders<TrainSchedule>.Filter.Eq(s => s.Id, request.Id);
 
-            var result = await _context.TrainSchedules.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
-            return result.ModifiedCount > 0;
+            var update = Builders<TrainSchedule>.Update
+                .Set(s => s.TrainId, request.TrainId)
+                .Set(s => s.RouteId, request.RouteId)
+                .Set(s => s.RunsOn, request.RunsOn ?? new List<DayOfWeek>())
+                .Set(s => s.Stations, request.Stations ?? new List<ScheduleStation>())
+                .Set(s => s.IsActive, request.IsActive)
+                .Set(s => s.UpdatedAt, DateTime.UtcNow);
+
+            var res = await _context.TrainSchedules.UpdateOneAsync(
+                filter,
+                update,
+                cancellationToken: cancellationToken);
+
+            return res.ModifiedCount > 0;
         }
     }
 }

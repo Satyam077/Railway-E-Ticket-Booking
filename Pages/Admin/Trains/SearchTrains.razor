@@ -1,10 +1,11 @@
-@page "/search-trains"
+@page "/"
 @using MediatR
 @using Railway_Ticket_Booking.Application.TrainSchedules.Queries
 @using Railway_Ticket_Booking.Application.Routes.Queries
 @using Railway_Ticket_Booking.Domain.Entities
 @inject IMediator Mediator
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 <div class="search-container">
     <!-- Header Section -->
@@ -37,9 +38,13 @@
                     <i class="fas fa-check-square"></i>
                     PNR STATUS
                 </button>
-                <button class="nav-tab">
-                    <i class="fas fa-chart-bar"></i>
+                <button class="nav-tab active">
+                    <i class="fas fa-check-square"></i>
                     CHARTS / VACANCY
+                </button>
+                <button class="nav-tab active" @onclick="NavigateLogin">
+                    <i class="fas fa-check-square"></i>
+                    Login
                 </button>
             </div>
         </div>
@@ -222,7 +227,7 @@
                             <div class="col-md-4">
                                 <div class="timing-info">
                                     <div class="departure">
-                                        <div class="time">@train.DepartureTime</div>
+                                        <div class="time">@train.DepartureTime.ToString("HH:mm")</div>
                                         <div class="station">@train.FromStationCode</div>
                                     </div>
                                     <div class="journey-line">
@@ -230,7 +235,7 @@
                                         <div class="line"></div>
                                     </div>
                                     <div class="arrival">
-                                        <div class="time">@train.ArrivalTime</div>
+                                        <div class="time">@train.ArrivalTime.ToString("HH:mm")</div>
                                         <div class="station">@train.ToStationCode</div>
                                     </div>
                                 </div>
@@ -241,7 +246,7 @@
                                     {
                                         <div class="class-item">
                                             <span class="class-name">@classInfo.ClassName</span>
-                                            <span class="fare">₹@classInfo.Fare.ToString("N0")</span>
+                                            <span class="fare">Rs.@classInfo.Fare.ToString("N0")</span>
                                             <span class="availability @GetAvailabilityClass(classInfo.Status)">@classInfo.Status</span>
                                         </div>
                                     }
@@ -365,6 +370,10 @@
             "rac" => "text-info",
             _ => "text-secondary"
         };
+    }
+    public void NavigateLogin()
+    {
+        NavigationManager.NavigateTo("/login");
     }
 }
 

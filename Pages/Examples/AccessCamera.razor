@@ -1,0 +1,68 @@
+﻿@page "/examples/access-camera"
+
+<h3>Camera Demo</h3>
+@inject IJSRuntime JS
+
+
+<video id="cameraPreview" width="400" autoplay playsinline></video>
+<br />
+
+<button class="btn btn-primary" @onclick="StartCamera">Start Camera</button>
+<button class="btn btn-danger" @onclick="StopCamera">Stop Camera</button>
+<button class="btn btn-success" @onclick="CapturePhoto">Capture Photo</button>
+
+<br />
+<br />
+<img id="capturedImage" width="400" />
+
+
+
+@code {
+    private async Task StartCamera()
+    {
+        await JS.InvokeVoidAsync("cameraControl.start");
+    }
+
+    private async Task StopCamera()
+    {
+        await JS.InvokeVoidAsync("cameraControl.stop");
+    }
+
+    private async Task CapturePhoto()
+    {
+        string imageData = await JS.InvokeAsync<string>("cameraControl.capture");
+        // For preview in UI
+        await JS.InvokeVoidAsync("eval", $"document.getElementById('capturedImage').src = '{imageData}'");
+        string base64 = await JS.InvokeAsync<string>("cameraControl.capture");
+
+        // Remove prefix
+        base64 = base64.Replace("data:image/png;base64,", "");
+
+        byte[] imageBytes = Convert.FromBase64String(base64);
+
+        // Save to DB
+        await SaveImageToDb(imageBytes, userId: 1);
+        // If you want to upload to server → convert Base64 to byte[]
+        // Then save to database or file system.
+    }
+    public async Task SaveImageToDb(byte[] imageBytes, int userId)
+    {
+        // string connectionString = "your-connection-string-here";
+
+        // using (SqlConnection conn = new SqlConnection(connectionString))
+        // {
+        //     await conn.OpenAsync();
+
+        //     using (SqlCommand cmd = new SqlCommand(
+        //         "INSERT INTO UserPhotos (UserId, Photo) VALUES (@UserId, @Photo)", conn))
+        //     {
+        //         cmd.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+        //         cmd.Parameters.Add("@Photo", SqlDbType.VarBinary).Value = imageBytes;
+
+        //         await cmd.ExecuteNonQueryAsync();
+        //     }
+        // }
+    }
+
+}
+

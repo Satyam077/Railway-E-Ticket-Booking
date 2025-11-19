@@ -15,11 +15,7 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Commands
         [Required]
         public string RouteId { get; set; }
 
-        [Required]
-        public DateTime DepartureDate { get; set; }
-
-        [Required]
-        public DateTime ArrivalDate { get; set; }
+        public List<DayOfWeek> RunsOn { get; set; } = new List<DayOfWeek>();
 
         public List<ScheduleStation> Stations { get; set; } = new List<ScheduleStation>();
 

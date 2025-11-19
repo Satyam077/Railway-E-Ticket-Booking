@@ -1,0 +1,113 @@
+﻿@page "/dashboard"
+@attribute [Authorize(Roles = "Admin,SuperAdmin")]
+
+<PageTitle>Railway Ticket Booking - Home</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+                <h1 class="display-4">Welcome to Railway Ticket Booking</h1>
+                <p class="lead">Your one-stop solution for railway ticket reservations</p>
+                <hr class="my-4">
+                <p>Book your train tickets easily and securely with our advanced booking system.</p>
+                <a class="btn btn-light btn-lg" href="/trains" role="button">View Trains</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸ‘¥ User Management</h5>
+                    <p class="card-text">Register new users and manage existing accounts.</p>
+                    <a href="/users" class="btn btn-primary">Manage Users</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸš† Train Management</h5>
+                    <p class="card-text">Manage trains, schedules, and routes efficiently.</p>
+                    <a href="/trains" class="btn btn-primary">View Trains</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸ“Š Stations Management</h5>
+                    <p class="card-text">View stations, create, edit, delete and other operations.</p>
+                    <a href="/stations" class="btn btn-primary">stations</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸ“Š Routes Management</h5>
+                    <p class="card-text">View Routes and system analytics.</p>
+                    <a href="/routes" class="btn btn-primary">View Routes</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸš† Train schedules Management</h5>
+                    <p class="card-text">Manage trains, schedules, and routes efficiently.</p>
+                    <a href="/train-schedules" class="btn btn-primary">Train schedules</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸ‘¥ Search trains Management</h5>
+                    <p class="card-text">Register new users and manage existing accounts.</p>
+                    <a href="/search-trains" class="btn btn-primary">search-trains</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸ“Š Routes Management</h5>
+                    <p class="card-text">View Routes and system analytics.</p>
+                    <a href="/routes" class="btn btn-primary">View Routes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">ðŸ“Š Stations Management</h5>
+                    <p class="card-text">View stations, create, edit, delete and other operations.</p>
+                    <a href="/stations" class="btn btn-primary">stations</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .jumbotron {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card {
+        margin-bottom: 20px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+</style>
