@@ -11,7 +11,10 @@ namespace Railway_Ticket_Booking.Domain.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [BsonRepresentation(BsonType.String)]
         public Guid BookingId { get; set; } = Guid.NewGuid();
+
+        //public Guid BookingId { get; set; } = Guid.NewGuid();
 
         [Required]
         [StringLength(20)]
@@ -83,6 +86,7 @@ namespace Railway_Ticket_Booking.Domain.Entities
 
     public class Passenger
     {
+        [BsonRepresentation(BsonType.String)]
         public Guid PassengerId { get; set; } = Guid.NewGuid();
 
         [Required]

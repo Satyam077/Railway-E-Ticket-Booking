@@ -1,4 +1,7 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
 using Railway_Ticket_Booking.Domain.Entities;
 
 namespace Railway_Ticket_Booking.Infrastructure
@@ -24,6 +27,7 @@ namespace Railway_Ticket_Booking.Infrastructure
                 // You might want to use a fallback or in-memory database here
             }
         }
+
 
         // Core entities
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");

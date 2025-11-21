@@ -101,3 +101,123 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+
+
+.nav-tab-custom {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+    .nav-tab-custom::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #00b4d8, #48dbfb);
+        transition: all 0.4s ease;
+        transform: translateX(-50%);
+    }
+
+    .nav-tab-custom:hover::before {
+        width: 100%;
+    }
+
+    .nav-tab-custom:hover {
+        background: rgba(0, 180, 216, 0.15) !important;
+        transform: translateY(-2px);
+    }
+
+/* Button hover effects */
+button[style*="background: linear-gradient(135deg, #ff6b6b"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.5) !important;
+}
+
+button[style*="background: linear-gradient(135deg, #00b4d8"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 180, 216, 0.5) !important;
+}
+
+/* Swap button animation */
+button.btn-warning:hover {
+    transform: rotate(180deg) scale(1.1);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.6) !important;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+/* Form input focus effects */
+.form-select:focus,
+.form-control:focus {
+    border-color: #00b4d8 !important;
+    box-shadow: 0 0 0 0.25rem rgba(0, 180, 216, 0.25) !important;
+}
+
+/* Train card enhanced styling */
+.card.border-start {
+    transition: all 0.3s ease;
+}
+
+    .card.border-start:hover {
+        border-left-color: #00b4d8 !important;
+        box-shadow: 0 15px 40px rgba(0, 180, 216, 0.2) !important;
+    }
+
+/* Animated gradient background */
+@keyframes gradientShift {
+    0%
+
+{
+    background-position: 0% 50%;
+}
+
+50% {
+    background-position: 100% 50%;
+}
+
+100% {
+    background-position: 0% 50%;
+}
+
+}
+
+.form-check-input:checked {
+    background-color: #00b4d8 !important;
+    border-color: #00b4d8 !important;
+}
+
+/* Badge pulse animation */
+@keyframes pulse {
+    0%, 100%
+
+{
+    transform: scale(1);
+}
+
+50% {
+    transform: scale(1.05);
+}
+
+}
+
+.badge {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+    .display-4
+
+{
+    font-size: 2rem !important;
+}
+}

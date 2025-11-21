@@ -5,10 +5,23 @@
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center" @onclick="LogOut">
+            <h3>You have been logged out.</h3>
+            <p>Redirecting to login page...</p>
+        </div>
+    </div>
+</div>
+
 @code {
     protected override async Task OnInitializedAsync()
     {
-        // Clear localStorage
+       
+    }
+
+    private async Task LogOut() {
+
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userId");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userEmail");

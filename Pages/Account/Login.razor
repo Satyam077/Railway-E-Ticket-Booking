@@ -1,6 +1,7 @@
 ﻿@page "/login"
 @using MediatR
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.WebUtilities
 @using Railway_Ticket_Booking.Application.Commands
 @using Railway_Ticket_Booking.Application.DTOs
 @using Railway_Ticket_Booking.Infrastructure.Services
@@ -102,9 +103,25 @@
                 message = result.Message;
                 isSuccess = true;
 
-                // Redirect to home or dashboard after successful login
+                // Check if there's a pending booking
+                var pendingBooking = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "pendingBooking");
+                
                 await Task.Delay(1000);
-                NavigationManager.NavigateTo("/dashboard");
+                
+                // Get returnUrl from query string
+                var uri = new Uri(NavigationManager.Uri);
+                var returnUrl = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrlValue) 
+                    ? returnUrlValue.ToString() 
+                    : null;
+
+                if (!string.IsNullOrEmpty(pendingBooking) || returnUrl == "/booking")
+                {
+                    NavigationManager.NavigateTo("/booking");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/dashboard");
+                }
             }
             else
             {

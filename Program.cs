@@ -1,9 +1,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Components.Authorization;
 using Railway_Ticket_Booking.Application.Services;
+using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.Infrastructure;
 using Railway_Ticket_Booking.Infrastructure.Services;
 using Railway_Ticket_Booking.Logging;
+using Railway_Ticket_Booking.PayUServices;
+using Railway_Ticket_Booking.WebSettings;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,11 +14,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddHttpClient(); // Add HttpClient for API calls
 
 // Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddSingleton<MongoDbContext>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<PayuService>();
+builder.Services.Configure<PayuOptions>(
+    builder.Configuration.GetSection("PayU")
+);
+
+
 
 // Register JWT Service
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -48,6 +62,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.MapControllers(); // Map API controllers
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

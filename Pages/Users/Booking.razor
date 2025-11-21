@@ -1,0 +1,397 @@
+@page "/booking"
+@using MediatR
+@using Railway_Ticket_Booking.Application.Bookings.Commands
+@using Railway_Ticket_Booking.Application.Routes.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@using System.Text.Json
+@inject IMediator Mediator
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+@if (!loaded)
+{
+    <p>Loading...</p>
+    return;
+}
+
+<div class="container my-5">
+    @if (bookingData == null)
+    {
+        <div class="alert alert-warning text-center">
+            <h4>No Booking Data Found</h4>
+            <p>Please search for trains and select a class to book.</p>
+            <a href="/" class="btn btn-primary">Search Trains</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- Booking Summary -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-primary text-white rounded-top-4">
+                        <h5 class="mb-0"><i class="fas fa-train me-2"></i>Journey Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="text-primary fw-bold">@bookingData.TrainName</h6>
+                            <p class="text-muted small mb-1">Train #@bookingData.TrainNumber</p>
+                            <span class="badge bg-info">@bookingData.SelectedClass</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">From:</span>
+                            <strong>@bookingData.SourceStationName</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">To:</span>
+                            <strong>@bookingData.DestinationStationName</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Date:</span>
+                            <strong>@bookingData.JourneyDate.ToString("dd MMM, yyyy")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Departure:</span>
+                            <strong>@bookingData.DepartureTime.ToString("HH:mm")</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Arrival:</span>
+                            <strong>@bookingData.ArrivalTime.ToString("HH:mm")</strong>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Passengers:</span>
+                            <strong>@passengers.Count</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Base Fare:</span>
+                            <strong>₹@(bookingData.ClassFare * passengers.Count)</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tax (18%):</span>
+                            <strong>₹@(Math.Round(bookingData.ClassFare * passengers.Count * 0.18m, 2))</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Service Charge:</span>
+                            <strong>₹20</strong>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-0">Total Amount:</h6>
+                            <h5 class="text-primary mb-0">₹@totalAmount.ToString("N2")</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passenger Details Form -->
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-success text-white rounded-top-4">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Passenger Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <EditForm Model="@bookingCommand" OnValidSubmit="HandleBooking">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <!-- Contact Information -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2 mb-3">Contact Information</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                                        <InputText class="form-control" @bind-Value="bookingCommand.ContactEmail" type="email" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phone <span class="text-danger">*</span></label>
+                                        <InputText class="form-control" @bind-Value="bookingCommand.ContactPhone" type="tel" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Passengers -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Passenger Details</h6>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AddPassenger">
+                                            <i class="fas fa-plus me-1"></i>Add Passenger
+                                        </button>
+                                    </div>
+                                </div>
+
+                                @for (int i = 0; i < passengers.Count; i++)
+                                {
+                                    var passenger = passengers[i];
+                                    <div class="card mb-3 border-primary">
+                                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                            <strong>Passenger @(i + 1)</strong>
+                                            @if (passengers.Count > 1)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemovePassenger(i)">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                                    <InputText class="form-control" @bind-Value="passenger.FirstName" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                                    <InputText class="form-control" @bind-Value="passenger.LastName" />
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Age <span class="text-danger">*</span></label>
+                                                    <InputNumber class="form-control" @bind-Value="passenger.Age" />
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                                    <InputSelect class="form-select" @bind-Value="passenger.Gender">
+                                                        <option value="">Select</option>
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Other">Other</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">ID Proof Type</label>
+                                                    <InputSelect class="form-select" @bind-Value="passenger.IdProofType">
+                                                        <option value="">Select</option>
+                                                        <option value="Aadhar">Aadhar</option>
+                                                        <option value="PAN">PAN</option>
+                                                        <option value="Passport">Passport</option>
+                                                        <option value="Driving License">Driving License</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">ID Proof Number</label>
+                                                    <InputText class="form-control" @bind-Value="passenger.IdProofNumber" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Berth Preference</label>
+                                                    <InputSelect class="form-select" @bind-Value="passenger.BerthPreference">
+                                                        <option value="">No Preference</option>
+                                                        <option value="Lower">Lower</option>
+                                                        <option value="Middle">Middle</option>
+                                                        <option value="Upper">Upper</option>
+                                                        <option value="Window">Window</option>
+                                                        <option value="Aisle">Aisle</option>
+                                                    </InputSelect>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Food Preference</label>
+                                                    <InputSelect class="form-select" @bind-Value="passenger.FoodPreference">
+                                                        <option value="">No Preference</option>
+                                                        <option value="Veg">Vegetarian</option>
+                                                        <option value="Non-Veg">Non-Vegetarian</option>
+                                                        <option value="Jain">Jain</option>
+                                                    </InputSelect>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Search
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg px-5" disabled="@isBooking">
+                                    @if (isBooking)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                    }
+                                    <i class="fas fa-check me-2"></i>Confirm Booking
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private BookingData bookingData;
+    private CreateBookingCommand bookingCommand = new CreateBookingCommand();
+    private List<PassengerInfo> passengers = new List<PassengerInfo>();
+    private bool isBooking = false;
+    private decimal totalAmount = 0;
+    private bool loaded = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+    }
+
+    private void InitializeBookingCommand()
+    {
+        bookingCommand.TrainId = bookingData.TrainId;
+        bookingCommand.ScheduleId = bookingData.ScheduleId;
+        bookingCommand.SourceStationId = bookingData.SourceStationId;
+        bookingCommand.DestinationStationId = bookingData.DestinationStationId;
+        bookingCommand.JourneyDate = bookingData.JourneyDate;
+        bookingCommand.SelectedClass = bookingData.SelectedClass;
+        bookingCommand.ClassFare = bookingData.ClassFare;
+        bookingCommand.Quota = bookingData.Quota;
+    }
+
+    private void AddPassenger()
+    {
+        passengers.Add(new PassengerInfo());
+        CalculateTotal();
+        StateHasChanged();
+    }
+
+    private void RemovePassenger(int index)
+    {
+        if (index >= 0 && index < passengers.Count)
+        {
+            passengers.RemoveAt(index);
+            CalculateTotal();
+            StateHasChanged();
+        }
+    }
+
+    private void CalculateTotal()
+    {
+        if (bookingData != null && passengers.Count > 0)
+        {
+            var baseAmount = bookingData.ClassFare * passengers.Count;
+            var taxAmount = Math.Round(baseAmount * 0.18m, 2);
+            var serviceCharge = 20m;
+            totalAmount = baseAmount + taxAmount + serviceCharge;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        CalculateTotal();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                NavigationManager.NavigateTo("/login?returnUrl=/booking");
+                return;
+            }
+
+            // Set UserId immediately after retrieving it
+            bookingCommand.UserId = userId;
+
+            var pendingBookingJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "pendingBooking");
+
+            if (!string.IsNullOrEmpty(pendingBookingJson))
+            {
+                bookingData = JsonSerializer.Deserialize<BookingData>(pendingBookingJson);
+                InitializeBookingCommand();
+            }
+
+            if (passengers.Count == 0)
+                AddPassenger();
+
+            loaded = true;
+            StateHasChanged();
+        }
+    }
+
+
+    private async Task HandleBooking()
+    {
+        isBooking = true;
+
+        try
+        {
+            var userEmail = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userEmail");
+
+            // Set contact email if not provided
+            bookingCommand.ContactEmail = string.IsNullOrEmpty(bookingCommand.ContactEmail) ? userEmail : bookingCommand.ContactEmail;
+            bookingCommand.Passengers = passengers;
+
+            var bookingId = await Mediator.Send(bookingCommand);
+
+            if (!string.IsNullOrEmpty(bookingId))
+            {
+                // Clear pending booking
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "pendingBooking");
+                
+                // Initiate PayU payment
+                await InitiatePayment(bookingId);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Booking failed. Please try again.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}");
+        }
+        finally
+        {
+            isBooking = false;
+        }
+    }
+
+    private async Task InitiatePayment(string bookingId)
+    {
+        try
+        {
+            // Call PayU API to create payment
+            var paymentRequest = new { BookingId = bookingId };
+            var json = JsonSerializer.Serialize(paymentRequest);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var baseUrl = NavigationManager.BaseUri.TrimEnd('/');
+            var response = await HttpClient.PostAsync($"{baseUrl}/api/payu/create", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var htmlContent = await response.Content.ReadAsStringAsync();
+                
+                // Submit PayU form using JavaScript function
+                await JSRuntime.InvokeVoidAsync("submitPayuForm", htmlContent);
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeVoidAsync("alert", $"Payment initiation failed: {errorContent}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error initiating payment: {ex.Message}");
+        }
+    }
+
+    private class BookingData
+    {
+        public string TrainId { get; set; }
+        public string ScheduleId { get; set; }
+        public string TrainName { get; set; }
+        public string TrainNumber { get; set; }
+        public string SourceStationId { get; set; }
+        public string DestinationStationId { get; set; }
+        public string SourceStationName { get; set; }
+        public string DestinationStationName { get; set; }
+        public DateTime JourneyDate { get; set; }
+        public string SelectedClass { get; set; }
+        public decimal ClassFare { get; set; }
+        public DateTime DepartureTime { get; set; }
+        public DateTime ArrivalTime { get; set; }
+        public string Quota { get; set; }
+    }
+}
+

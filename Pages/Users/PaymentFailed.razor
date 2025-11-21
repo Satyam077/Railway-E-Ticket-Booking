@@ -1,0 +1,98 @@
+﻿@page "/payment-failed/{BookingId}"
+
+@using Railway_Ticket_Booking.Infrastructure
+@using MongoDB.Driver
+@inject MongoDbContext Db
+@inject NavigationManager Nav
+
+<PageTitle>Payment Failed</PageTitle>
+
+@if (loading)
+{
+    <div class="text-center mt-5">
+        <h3>Checking payment...</h3>
+    </div>
+}
+else if (error != null)
+{
+    <div class="alert alert-danger mt-4">
+        <h4>Error</h4>
+        <p>@error</p>
+    </div>
+}
+else
+{
+    <div class="container mt-4">
+        <div class="alert alert-danger">
+            <h3 class="fw-bold">❌ Payment Failed!</h3>
+            <p>Your payment could not be processed.</p>
+        </div>
+
+        <div class="card p-4 shadow-sm">
+            <h4 class="fw-bold">Booking Info</h4>
+            <hr />
+
+            <p><strong>Booking ID:</strong> @booking.Id</p>
+            <p><strong>PNR:</strong> @booking.PNR</p>
+            <p><strong>Status:</strong> @booking.Status</p>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-danger" @onclick="RetryPayment">Try Payment Again</button>
+            <button class="btn btn-secondary ms-2" @onclick="GoHome">Go Home</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string BookingId { get; set; }
+
+    Railway_Ticket_Booking.Domain.Entities.Booking booking { get; set; }
+    Railway_Ticket_Booking.Domain.Entities.Payment payment { get; set; }
+    bool loading = true;
+    string error = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(BookingId))
+            {
+                error = "Invalid booking ID.";
+                loading = false;
+                return;
+            }
+
+            booking = await Db.Bookings
+                .Find(b => b.Id == BookingId)
+                .FirstOrDefaultAsync();
+
+            if (booking == null)
+            {
+                error = "Booking not found.";
+                loading = false;
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            error = $"Error loading booking: {ex.Message}";
+            Console.WriteLine($"PaymentFailed Error: {ex}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    void RetryPayment()
+    {
+        // Navigate back to booking page to retry payment
+        Nav.NavigateTo("/booking");
+    }
+
+    void GoHome()
+    {
+        Nav.NavigateTo("/");
+    }
+}

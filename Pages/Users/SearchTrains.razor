@@ -1,0 +1,475 @@
+@page "/"
+@using MediatR
+@using Railway_Ticket_Booking.Application.TrainSchedules.Queries
+@using Railway_Ticket_Booking.Application.Routes.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@using System.Text.Json
+@inject IMediator Mediator
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<!-- Main Container with attractive gradient background -->
+<div class="min-vh-100" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 25%, #2c5364 50%, #0f2027 100%); position: relative; overflow-x: hidden;">
+    
+    <!-- Animated background overlay -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 50%, rgba(0, 180, 216, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(72, 219, 251, 0.15) 0%, transparent 50%); pointer-events: none;"></div>
+    
+    <!-- Header Section with gradient -->
+    <div class="text-white py-4 shadow-lg position-relative" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%); border-bottom: 3px solid #00b4d8;">
+        <div class="container position-relative" style="z-index: 2;">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <i class="fas fa-train fa-3x" style="color: #00b4d8; filter: drop-shadow(0 0 10px rgba(0, 180, 216, 0.5));"></i>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="display-4 fw-bold mb-1" style="background: linear-gradient(to right, #ffffff, #00b4d8, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 2px 10px rgba(0, 180, 216, 0.3);">INDIAN RAILWAYS</h1>
+                    <p class="mb-0 text-uppercase small" style="letter-spacing: 4px; color: #90e0ef; font-weight: 500;">Safety | Security | Punctuality</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <i class="fas fa-ticket-alt fa-3x" style="color: #48dbfb; filter: drop-shadow(0 0 10px rgba(72, 219, 251, 0.5));"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs with modern styling -->
+    <div class="sticky-top shadow-sm position-relative" style="background: linear-gradient(135deg, rgba(30, 60, 114, 0.95) 0%, rgba(42, 82, 152, 0.95) 100%); backdrop-filter: blur(15px); border-bottom: 2px solid rgba(0, 180, 216, 0.3);">
+        <div class="container">
+            <div class="d-flex justify-content-center gap-0">
+                <button class="btn btn-link text-white text-decoration-none px-4 py-3 border-0 position-relative nav-tab-custom">
+                    <i class="fas fa-search me-2"></i>PNR STATUS
+                </button>
+                <button class="btn btn-link text-white text-decoration-none px-4 py-3 border-0 position-relative nav-tab-custom">
+                    <i class="fas fa-chart-bar me-2"></i>CHARTS / VACANCY
+                </button>
+                <button class="btn btn-link text-white text-decoration-none px-4 py-3 border-0 position-relative nav-tab-custom" @onclick="NavigateLogin">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form Section -->
+    <div class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <div class="card border-0 shadow-lg rounded-4">
+                        <div class="card-body p-4 p-md-5">
+                            <h2 class="text-center text-primary fw-bold mb-4 text-uppercase">Book Ticket</h2>
+                            <hr class="border-warning border-3 w-25 mx-auto mb-4" />
+                            
+                            <EditForm Model="searchQuery" OnValidSubmit="HandleSearchTrains">
+                                <div class="row g-4">
+                                    <!-- From Station -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-uppercase small">
+                                            <i class="fas fa-map-marker-alt text-primary me-2"></i>From
+                                        </label>
+                                        <InputSelect class="form-select form-select-lg border-2 rounded-3" @bind-Value="searchQuery.FromStationId">
+                                            <option value="">Select Station</option>
+                                            @foreach (var station in stations)
+                                            {
+                                                <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+
+                                    <!-- Date -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-uppercase small">DD/MM/YYYY *</label>
+                                        <InputDate class="form-control form-control-lg border-2 rounded-3" @bind-Value="searchQuery.TravelDate" />
+                                    </div>
+
+                                    <!-- Swap Button -->
+                                    <div class="col-12 text-center my-2">
+                                        <button type="button" class="btn btn-warning rounded-circle p-3 shadow" style="width: 60px; height: 60px;" @onclick="SwapStations">
+                                            <i class="fas fa-exchange-alt fs-5"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- To Station -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-uppercase small">
+                                            <i class="fas fa-map-marker-alt text-danger me-2"></i>To
+                                        </label>
+                                        <InputSelect class="form-select form-select-lg border-2 rounded-3" @bind-Value="searchQuery.ToStationId">
+                                            <option value="">Select Station</option>
+                                            @foreach (var station in stations)
+                                            {
+                                                <option value="@station.Id">@station.StationName (@station.StationCode)</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+
+                                    <!-- Class Selection -->
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold text-uppercase small">
+                                            <i class="fas fa-couch text-secondary me-2"></i>Classes
+                                        </label>
+                                        <InputSelect class="form-select form-select-lg border-2 rounded-3" @bind-Value="searchQuery.Class">
+                                            <option value="All Classes">All Classes</option>
+                                            <option value="AC First Class">AC First Class (1A)</option>
+                                            <option value="AC 2 Tier">AC 2 Tier (2A)</option>
+                                            <option value="AC 3 Tier">AC 3 Tier (3A)</option>
+                                            <option value="Sleeper">Sleeper (SL)</option>
+                                            <option value="Second Sitting">Second Sitting (2S)</option>
+                                            <option value="Chair Car">Chair Car (CC)</option>
+                                        </InputSelect>
+                                    </div>
+
+                                    <!-- Quota Selection -->
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold text-uppercase small">
+                                            <i class="fas fa-layer-group text-secondary me-2"></i>Quota
+                                        </label>
+                                        <InputSelect class="form-select form-select-lg border-2 rounded-3" style="max-width: 300px;" @bind-Value="searchQuery.Quota">
+                                            <option value="GENERAL">GENERAL</option>
+                                            <option value="LADIES">LADIES</option>
+                                            <option value="SENIOR CITIZEN">SENIOR CITIZEN</option>
+                                            <option value="TATKAL">TATKAL</option>
+                                            <option value="PREMIUM TATKAL">PREMIUM TATKAL</option>
+                                        </InputSelect>
+                                    </div>
+
+                                    <!-- Checkboxes -->
+                                    <div class="col-12">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="form-check p-3 bg-light rounded-3 border">
+                                                    <InputCheckbox class="form-check-input" id="disability" @bind-Value="searchQuery.PersonWithDisability" />
+                                                    <label class="form-check-label fw-semibold" for="disability">Person With Disability</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check p-3 bg-light rounded-3 border">
+                                                    <InputCheckbox class="form-check-input" id="flexible" @bind-Value="searchQuery.FlexibleWithDate" />
+                                                    <label class="form-check-label fw-semibold" for="flexible">Flexible With Date</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check p-3 bg-light rounded-3 border">
+                                                    <InputCheckbox class="form-check-input" id="berth" @bind-Value="searchQuery.TrainWithAvailableBerth" />
+                                                    <label class="form-check-label fw-semibold" for="berth">Available Berth</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check p-3 bg-light rounded-3 border">
+                                                    <InputCheckbox class="form-check-input" id="pass" @bind-Value="searchQuery.RailwayPassConcession" />
+                                                    <label class="form-check-label fw-semibold" for="pass">Railway Pass</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Search Buttons -->
+                                    <div class="col-12 mt-4">
+                                        <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                            <button type="submit" class="btn btn-lg px-5 rounded-pill shadow-lg fw-bold text-white" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); border: none; transition: all 0.3s ease;" disabled="@isSearching">
+                                                @if (isSearching)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                                }
+                                                <i class="fas fa-search me-2"></i>Search Trains
+                                            </button>
+                                            <button type="button" class="btn btn-lg px-4 rounded-pill shadow-lg fw-bold text-white" style="background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%); border: none; transition: all 0.3s ease;">
+                                                <i class="fas fa-robot me-2"></i>Ask DISHA
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Train Image/Badge Section -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-0 shadow-lg rounded-4 text-center p-5 position-relative" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.95) 100%); backdrop-filter: blur(10px);">
+                        <i class="fas fa-train fa-5x mb-3" style="color: #00b4d8; filter: drop-shadow(0 4px 8px rgba(0, 180, 216, 0.3));"></i>
+                        <p class="fw-bold" style="color: #0077b6; font-size: 1.1rem;">Vande Bharat Express</p>
+                        <div class="position-absolute bottom-0 end-0 m-3">
+                            <span class="badge rounded-pill p-3 shadow-lg" style="background: linear-gradient(135deg, #00b4d8 0%, #0096c7 100%); font-size: 0.9rem;">
+                                <i class="fas fa-user me-2"></i>Ask DISHA
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results Section -->
+    @if (searchResults != null && searchResults.Any())
+    {
+        <div class="py-5 bg-white bg-opacity-75">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h3 class="display-6 fw-bold text-primary">Available Trains</h3>
+                    <p class="text-muted">@searchResults.Count trains found for <strong>@GetStationName(searchQuery.FromStationId)</strong> to <strong>@GetStationName(searchQuery.ToStationId)</strong></p>
+                    <span class="badge bg-primary rounded-pill px-4 py-2">
+                        <i class="far fa-calendar-alt me-2"></i>@searchQuery.TravelDate.ToString("dd MMM, yyyy")
+                    </span>
+                </div>
+
+                @foreach (var train in searchResults)
+                {
+                    <div class="card border-0 border-start border-primary border-5 shadow-sm mb-4 rounded-4 overflow-hidden">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center g-3">
+                                <!-- Train Info -->
+                                <div class="col-lg-3">
+                                    <h5 class="fw-bold text-primary mb-2">@train.TrainName</h5>
+                                    <span class="badge bg-light text-dark mb-2">#@train.TrainNumber</span>
+                                    <div class="mb-2">
+                                        <span class="badge bg-info text-uppercase small">@train.TrainType</span>
+                                    </div>
+                                    <div class="small text-muted">
+                                        <small>Runs: </small>
+                                        @foreach (var day in train.RunsOn.Take(7))
+                                        {
+                                            <span class="badge bg-success rounded-circle me-1" style="width: 24px; height: 24px; font-size: 10px; line-height: 14px;">@day.Substring(0,1)</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Timing Info -->
+                                <div class="col-lg-4">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="text-center">
+                                            <div class="fs-4 fw-bold text-primary">@train.DepartureTime.ToString("HH:mm")</div>
+                                            <small class="text-muted fw-semibold">@train.FromStationCode</small>
+                                        </div>
+                                        <div class="flex-grow-1 mx-3 text-center">
+                                            <small class="text-muted d-block mb-1">@FormatDuration(train.Duration)</small>
+                                            <div class="border-top border-primary border-2 position-relative">
+                                                <i class="fas fa-train position-absolute top-50 start-50 translate-middle bg-white px-2 text-primary"></i>
+                                            </div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="fs-4 fw-bold text-primary">@train.ArrivalTime.ToString("HH:mm")</div>
+                                            <small class="text-muted fw-semibold">@train.ToStationCode</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Class Info -->
+                                <div class="col-lg-3">
+                                    @if (selectedTrainId == train.TrainId && selectedClass != null)
+                                    {
+                                        <div class="alert alert-info p-2 mb-2">
+                                            <small class="fw-bold d-block">Selected: @selectedClass.ClassName</small>
+                                            <small class="text-muted">Fare: ₹@selectedClass.Fare.ToString("N0")</small>
+                                        </div>
+                                    }
+                                    @foreach (var classInfo in train.Classes.Take(3))
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded-3 border @(selectedTrainId == train.TrainId && selectedClass?.ClassName == classInfo.ClassName ? "border-primary border-2" : "")" 
+                                             style="cursor: pointer;"
+                                             @onclick="() => SelectClass(train, classInfo)">
+                                            <span class="fw-bold small">@classInfo.ClassName</span>
+                                            <span class="text-primary fw-bold">₹@classInfo.Fare.ToString("N0")</span>
+                                            <span class="badge @GetAvailabilityClass(classInfo.Status) small">@classInfo.AvailableSeats</span>
+                                            <span class="badge @GetAvailabilityClass(classInfo.Status) small">@classInfo.Status</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Book Button -->
+                                <div class="col-lg-2 text-center">
+                                    <button class="btn btn-danger rounded-pill px-4 fw-bold shadow" 
+                                            @onclick="() => BookTrain(train)"
+                                            disabled="@(selectedTrainId != train.TrainId || selectedClass == null)">
+                                        Book Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (hasSearched && (searchResults == null || !searchResults.Any()))
+    {
+        <div class="py-5">
+            <div class="container">
+                <div class="card border-0 shadow-lg rounded-4 mx-auto" style="max-width: 500px;">
+                    <div class="card-body text-center p-5">
+                        <i class="fas fa-search-minus fa-5x text-muted mb-4"></i>
+                        <h4 class="fw-bold text-primary mb-3">No Trains Found</h4>
+                        <p class="text-muted">No trains available for the selected route and date. Please try different stations or date.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private SearchTrainsQuery searchQuery = new SearchTrainsQuery();
+    private List<TrainSearchResult> searchResults = new List<TrainSearchResult>();
+    private List<Station> stations = new List<Station>();
+    private bool isSearching = false;
+    private bool hasSearched = false;
+    private string selectedTrainId = string.Empty;
+    private TrainClassInfo selectedClass = null;
+    private TrainSearchResult selectedTrain = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        searchQuery.TravelDate = DateTime.Today.AddDays(1);
+        await LoadStations();
+    }
+
+    private async Task LoadStations()
+    {
+        try
+        {
+            stations = await Mediator.Send(new GetAllStationsQuery());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading stations: {ex.Message}");
+        }
+    }
+
+    private async Task HandleSearchTrains()
+    {
+        if (string.IsNullOrEmpty(searchQuery.FromStationId) || string.IsNullOrEmpty(searchQuery.ToStationId))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Please select both From and To stations.");
+            return;
+        }
+
+        if (searchQuery.FromStationId == searchQuery.ToStationId)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "From and To stations cannot be the same.");
+            return;
+        }
+
+        isSearching = true;
+        hasSearched = false;
+
+        try
+        {
+            searchResults = await Mediator.Send(searchQuery);
+            hasSearched = true;
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error searching trains: {ex.Message}");
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private void SwapStations()
+    {
+        var temp = searchQuery.FromStationId;
+        searchQuery.FromStationId = searchQuery.ToStationId;
+        searchQuery.ToStationId = temp;
+    }
+
+    private void SelectClass(TrainSearchResult train, TrainClassInfo classInfo)
+    {
+        selectedTrainId = train.TrainId;
+        selectedClass = classInfo;
+        selectedTrain = train;
+        StateHasChanged();
+    }
+
+    private async Task BookTrain(TrainSearchResult train)
+    {
+        if (selectedClass == null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Please select a class first.");
+            return;
+        }
+
+        // Check if user is authenticated
+        var userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+        var authToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(authToken))
+        {
+            // Store booking data in localStorage for after login
+            var bookingData = new
+            {
+                TrainId = train.TrainId,
+                ScheduleId = train.ScheduleId,
+                TrainName = train.TrainName,
+                TrainNumber = train.TrainNumber,
+                SourceStationId = searchQuery.FromStationId,
+                DestinationStationId = searchQuery.ToStationId,
+                SourceStationName = GetStationName(searchQuery.FromStationId),
+                DestinationStationName = GetStationName(searchQuery.ToStationId),
+                JourneyDate = searchQuery.TravelDate,
+                SelectedClass = selectedClass.ClassName,
+                ClassFare = selectedClass.Fare,
+                DepartureTime = train.DepartureTime,
+                ArrivalTime = train.ArrivalTime,
+                Quota = searchQuery.Quota
+            };
+
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "pendingBooking", System.Text.Json.JsonSerializer.Serialize(bookingData));
+            NavigationManager.NavigateTo("/login?returnUrl=/booking");
+        }
+        else
+        {
+            // User is logged in, go directly to booking
+            var bookingData = new
+            {
+                TrainId = train.TrainId,
+                ScheduleId = train.ScheduleId,
+                TrainName = train.TrainName,
+                TrainNumber = train.TrainNumber,
+                SourceStationId = searchQuery.FromStationId,
+                DestinationStationId = searchQuery.ToStationId,
+                SourceStationName = GetStationName(searchQuery.FromStationId),
+                DestinationStationName = GetStationName(searchQuery.ToStationId),
+                JourneyDate = searchQuery.TravelDate,
+                SelectedClass = selectedClass.ClassName,
+                ClassFare = selectedClass.Fare,
+                DepartureTime = train.DepartureTime,
+                ArrivalTime = train.ArrivalTime,
+                Quota = searchQuery.Quota
+            };
+
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "pendingBooking", System.Text.Json.JsonSerializer.Serialize(bookingData));
+            NavigationManager.NavigateTo("/booking");
+        }
+    }
+
+    private string GetStationName(string stationId)
+    {
+        var station = stations.FirstOrDefault(s => s.Id == stationId);
+        return station?.StationName ?? "Unknown";
+    }
+
+    private string FormatDuration(TimeSpan duration)
+    {
+        if (duration.Days > 0)
+        {
+            return $"{duration.Days}d {duration.Hours}h {duration.Minutes}m";
+        }
+        return $"{duration.Hours}h {duration.Minutes}m";
+    }
+
+    private string GetAvailabilityClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "available" => "bg-success text-white",
+            "waiting list" or "wl" => "bg-warning text-dark",
+            "rac" => "bg-info text-white",
+            _ => "bg-secondary text-white"
+        };
+    }
+    public void NavigateLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

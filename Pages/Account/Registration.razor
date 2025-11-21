@@ -13,6 +13,12 @@
     </div>
     <div class="row">
         <div class="col-md-6">
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
+                    @message
+                </div>
+            }
             <h4>@(isEditing ? "Update User" : "Create New User")</h4>
             <EditForm Model="@(isEditing ? updateUserCommand : (object)newUserCommand)" OnValidSubmit="@(isEditing ? UpdateUser : CreateUser)">
                 <DataAnnotationsValidator />
@@ -267,13 +273,6 @@
                     }
                 </div>
             </EditForm>
-
-            @if (!string.IsNullOrEmpty(message))
-            {
-                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
-                    @message
-                </div>
-            }
         </div>
 
         <div class="col-md-6">

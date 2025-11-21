@@ -11,6 +11,7 @@ namespace Railway_Ticket_Booking.Domain.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [BsonRepresentation(BsonType.String)]
         public Guid PaymentId { get; set; } = Guid.NewGuid();
 
         [Required]

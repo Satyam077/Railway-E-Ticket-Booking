@@ -1,19 +1,24 @@
 using MediatR;
 using Railway_Ticket_Booking.Application.DTOs;
 using Railway_Ticket_Booking.Domain.Entities;
+using Railway_Ticket_Booking.Domain.Enums;
+using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.Infrastructure;
 using BCrypt.Net;
 using MongoDB.Driver;
+using Railway_Ticket_Booking.EmailTemplates;
 
 namespace Railway_Ticket_Booking.Application.Commands.Handlers
 {
     public class CreateUserHandler : IRequestHandler<CreateUserCommand, RegistrationResponseDTO>
     {
         private readonly MongoDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public CreateUserHandler(MongoDbContext context)
+        public CreateUserHandler(MongoDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         public async Task<RegistrationResponseDTO> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -58,6 +63,19 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             };
 
             await _context.Users.InsertOneAsync(user, cancellationToken: cancellationToken);
+
+            // Send welcome email
+            try
+            {
+                var emailSubject = $"Welcome to Railway Ticket Booking - Account Created Successfully";
+                var emailBody = EmailTemplate.GenerateRegistrationEmail(user, request.Role);
+                await _emailService.SendEmailAsync(user.Email, emailSubject, emailBody);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the registration
+                Console.WriteLine($"Failed to send registration email: {ex.Message}");
+            }
 
             return new RegistrationResponseDTO
             {
