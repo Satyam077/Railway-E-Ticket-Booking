@@ -2,6 +2,8 @@
 @using MediatR
 @using Microsoft.AspNetCore.Authorization
 @using Railway_Ticket_Booking.Application.Bookings.Queries
+@using Railway_Ticket_Booking.Application.Queries
+@using Railway_Ticket_Booking.Application.Stations.Queries
 @using Railway_Ticket_Booking.Domain.Entities
 @using Railway_Ticket_Booking.Domain.Enums
 @using System.Linq
@@ -135,10 +137,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th>PNR</th>
-                                <th>User ID</th>
-                                <th>Train ID</th>
-                                <th>Source</th>
-                                <th>Destination</th>
+                                <th>User Name</th>
+                                <th>Train</th>
+                                <th>Source Station</th>
+                                <th>Destination Station</th>
                                 <th>Journey Date</th>
                                 <th>Passengers</th>
                                 <th>Status</th>
@@ -155,16 +157,16 @@
                                         <strong class="text-primary">@booking.PNR</strong>
                                     </td>
                                     <td>
-                                        <small>@booking.UserId</small>
+                                        <small>@GetUserName(booking.UserId)</small>
                                     </td>
                                     <td>
-                                        <small>@booking.TrainId</small>
+                                        <small>@GetTrainName(booking.TrainId)</small>
                                     </td>
                                     <td>
-                                        <small>@booking.SourceStationId</small>
+                                        <small>@GetStationName(booking.SourceStationId)</small>
                                     </td>
                                     <td>
-                                        <small>@booking.DestinationStationId</small>
+                                        <small>@GetStationName(booking.DestinationStationId)</small>
                                     </td>
                                     <td>
                                         <small>@booking.JourneyDate.ToString("dd MMM, yyyy")</small>
@@ -216,6 +218,11 @@
     private string selectedActiveStatus = "";
     private string searchPnr = "";
 
+    // Lookup dictionaries for names
+    private Dictionary<string, string> userNames = new Dictionary<string, string>();
+    private Dictionary<string, string> trainNames = new Dictionary<string, string>();
+    private Dictionary<string, string> stationNames = new Dictionary<string, string>();
+
     protected override async Task OnInitializedAsync()
     {
         await LoadBookings();
@@ -226,8 +233,24 @@
         loaded = false;
         try
         {
-            var query = new GetAllBookingsQuery();
-            allBookings = await Mediator.Send(query);
+            // Load bookings and related data in parallel
+            var bookingsTask = Mediator.Send(new GetAllBookingsQuery());
+            var usersTask = Mediator.Send(new GetAllUsersQuery());
+            var trainsTask = Mediator.Send(new GetAllTrainsQuery());
+            var stationsTask = Mediator.Send(new GetAllStationsQuery());
+
+            await Task.WhenAll(bookingsTask, usersTask, trainsTask, stationsTask);
+
+            allBookings = await bookingsTask;
+            var users = await usersTask;
+            var trains = await trainsTask;
+            var stations = await stationsTask;
+
+            // Build lookup dictionaries
+            userNames = users.ToDictionary(u => u.Id, u => $"{u.FirstName} {u.LastName}");
+            trainNames = trains.ToDictionary(t => t.Id, t => $"{t.TrainNumber} - {t.Name}");
+            stationNames = stations.ToDictionary(s => s.Id, s => $"{s.StationName} ({s.StationCode})");
+
             FilterBookings();
         }
         catch (Exception ex)
@@ -241,6 +264,30 @@
             loaded = true;
             StateHasChanged();
         }
+    }
+
+    private string GetUserName(string userId)
+    {
+        if (string.IsNullOrEmpty(userId))
+            return "N/A";
+        
+        return userNames.TryGetValue(userId, out var name) ? name : userId;
+    }
+
+    private string GetTrainName(string trainId)
+    {
+        if (string.IsNullOrEmpty(trainId))
+            return "N/A";
+        
+        return trainNames.TryGetValue(trainId, out var name) ? name : trainId;
+    }
+
+    private string GetStationName(string stationId)
+    {
+        if (string.IsNullOrEmpty(stationId))
+            return "N/A";
+        
+        return stationNames.TryGetValue(stationId, out var name) ? name : stationId;
     }
 
     private void FilterBookings()

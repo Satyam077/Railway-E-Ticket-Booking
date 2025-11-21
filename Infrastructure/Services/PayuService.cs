@@ -3,7 +3,7 @@ using Railway_Ticket_Booking.WebSettings;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-namespace Railway_Ticket_Booking.PayUServices
+namespace Railway_Ticket_Booking.Infrastructure.Services
 {
     public class PayuService
     {
@@ -18,8 +18,8 @@ namespace Railway_Ticket_Booking.PayUServices
             Guid.NewGuid().ToString("N").Substring(0, 20);
 
         public string GenerateHash(string key, string txnid, string amount,
-            string productinfo, string firstname, string email, 
-            string udf1 = "", string udf2 = "", string udf3 = "", 
+            string productinfo, string firstname, string email,
+            string udf1 = "", string udf2 = "", string udf3 = "",
             string udf4 = "", string udf5 = "")
         {
             // PayU hash formula: sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||SALT)
@@ -35,10 +35,10 @@ namespace Railway_Ticket_Booking.PayUServices
         {
             var sb = new StringBuilder();
             // Use test or production URL based on TestMode
-            var payuUrl = _opt.TestMode 
-                ? "https://test.payu.in/_payment" 
+            var payuUrl = _opt.TestMode
+                ? "https://test.payu.in/_payment"
                 : "https://secure.payu.in/_payment";
-            
+
             sb.Append($"<form id='payu' method='post' action='{payuUrl}'>");
             foreach (var d in data)
             {

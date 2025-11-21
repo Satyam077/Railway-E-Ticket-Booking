@@ -5,7 +5,6 @@ using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.Infrastructure;
 using Railway_Ticket_Booking.Infrastructure.Services;
 using Railway_Ticket_Booking.Logging;
-using Railway_Ticket_Booking.PayUServices;
 using Railway_Ticket_Booking.WebSettings;
 using System.Reflection;
 
@@ -28,6 +27,12 @@ builder.Services.AddSingleton<PayuService>();
 builder.Services.Configure<PayuOptions>(
     builder.Configuration.GetSection("PayU")
 );
+
+// Register Seat Allocation Service
+builder.Services.AddScoped<SeatAllocationService>();
+
+// Register Booking Email Service
+builder.Services.AddScoped<BookingEmailService>();
 
 
 

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Railway_Ticket_Booking.Application.Services;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.Infrastructure;
-using Railway_Ticket_Booking.PayUServices;
+using Railway_Ticket_Booking.Infrastructure.Services;
 using Railway_Ticket_Booking.WebSettings;
 using System.Security.Cryptography;
 using System.Text;
@@ -18,12 +19,18 @@ namespace Railway_Ticket_Booking.Controller
         private readonly PayuService _payu;
         private readonly PayuOptions _opt;
         private readonly MongoDbContext _context;
+        private readonly BookingEmailService _bookingEmailService;
 
-        public PayuController(PayuService payu, IOptions<PayuOptions> opt, MongoDbContext context)
+        public PayuController(
+            PayuService payu, 
+            IOptions<PayuOptions> opt, 
+            MongoDbContext context,
+            BookingEmailService bookingEmailService)
         {
             _payu = payu;
             _opt = opt.Value;
             _context = context;
+            _bookingEmailService = bookingEmailService;
         }
 
         [HttpPost("create")]
@@ -150,15 +157,35 @@ namespace Railway_Ticket_Booking.Controller
                 if (status == "success")
                 {
                     payment.Status = PaymentStatus.Completed;
+                    payment.CompletedAt = DateTime.UtcNow;
                     payment.UpdatedAt = DateTime.UtcNow;
 
                     var booking = await _context.Bookings.Find(b => b.Id == bookingId).FirstOrDefaultAsync();
-                    booking.Status = BookingStatus.Confirmed;
+                    if (booking != null)
+                    {
+                        booking.Status = BookingStatus.Confirmed;
+                        booking.UpdatedAt = DateTime.UtcNow;
 
-                    await _context.Payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);
-                    await _context.Bookings.ReplaceOneAsync(b => b.Id == booking.Id, booking);
-                    var redirectUrl = $"{Request.Scheme}://{Request.Host}/booking-confirmation/{booking.Id}";
-                    return Redirect(redirectUrl);
+                        await _context.Payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);
+                        await _context.Bookings.ReplaceOneAsync(b => b.Id == booking.Id, booking);
+
+                        // Send booking confirmation email asynchronously (fire and forget)
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _bookingEmailService.SendBookingConfirmationEmailAsync(booking.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error sending booking confirmation email: {ex.Message}");
+                            }
+                        });
+
+                        var redirectUrl = $"{Request.Scheme}://{Request.Host}/booking-confirmation/{booking.Id}";
+                        return Redirect(redirectUrl);
+                    }
+                    return Content("<h2>Error</h2><p>Booking data missing even though payment succeeded.</p>");
                 }
                 else
                 {
@@ -172,7 +199,7 @@ namespace Railway_Ticket_Booking.Controller
             }
             catch (Exception ex)
             {
-                return Content($"<h2>Error</h2><p>{ex.Message}</p>");
+                return Content("<h2>Payment Error</h2><p>Unable to process payment response.</p>", "text/html");
             }
         }
     }
