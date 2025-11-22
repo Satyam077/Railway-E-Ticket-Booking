@@ -1,9 +1,12 @@
 using MediatR;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Railway_Ticket_Booking.Application.Services;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.Infrastructure;
 using Railway_Ticket_Booking.Infrastructure.Services;
+using Railway_Ticket_Booking.WebSettings;
 
 namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
 {
@@ -11,11 +14,19 @@ namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
     {
         private readonly MongoDbContext _context;
         private readonly CancellationService _cancellationService;
+        private readonly BookingEmailService _bookingEmailService;
+        private readonly PayuService _payuService;
 
-        public CancelBookingHandler(MongoDbContext context, CancellationService cancellationService)
+        public CancelBookingHandler(
+            MongoDbContext context, 
+            CancellationService cancellationService,
+            BookingEmailService bookingEmailService,
+            PayuService payuService)
         {
             _context = context;
             _cancellationService = cancellationService;
+            _bookingEmailService = bookingEmailService;
+            _payuService = payuService;
         }
 
         public async Task<CancelBookingResult> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
@@ -88,6 +99,22 @@ namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
                 // Process refund through payment gateway
                 var refundTransactionId = await ProcessRefund(booking, cancellationResult.RefundAmount);
 
+                // Send cancellation email asynchronously (fire and forget)
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _bookingEmailService.SendCancellationEmailAsync(
+                            booking.Id, 
+                            cancellationResult.RefundAmount, 
+                            cancellationResult.CancellationCharge);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error sending cancellation email: {ex.Message}");
+                    }
+                });
+
                 return new CancelBookingResult
                 {
                     Success = true,
@@ -135,33 +162,104 @@ namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
                     return $"REFUND-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}";
                 }
 
+                // Process refund through PayU
+                string refundTransactionId;
+                PaymentStatus refundStatus = PaymentStatus.Pending;
+
+                if (!string.IsNullOrEmpty(payment.GatewayTransactionId) || !string.IsNullOrEmpty(payment.TransactionId))
+                {
+                    // Use GatewayTransactionId if available, otherwise use TransactionId
+                    var txnId = !string.IsNullOrEmpty(payment.GatewayTransactionId) 
+                        ? payment.GatewayTransactionId 
+                        : payment.TransactionId;
+
+                    // Call PayU refund API
+                    var refundResponse = await _payuService.ProcessRefundAsync(
+                        txnId, 
+                        refundAmount, 
+                        booking.CancellationReason ?? "Booking cancellation");
+
+                    if (refundResponse.Success)
+                    {
+                        refundTransactionId = refundResponse.RefundTransactionId;
+                        refundStatus = PaymentStatus.Refunded;
+                        
+                        Console.WriteLine($"PayU refund successful: {refundTransactionId} for transaction: {txnId}");
+                    }
+                    else
+                    {
+                        // Refund initiated but pending confirmation
+                        refundTransactionId = $"REFUND-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}";
+                        refundStatus = PaymentStatus.Pending;
+                        
+                        Console.WriteLine($"PayU refund pending: {refundResponse.Message}");
+                    }
+                }
+                else
+                {
+                    // No gateway transaction ID, create internal refund reference
+                    refundTransactionId = $"REFUND-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}";
+                    refundStatus = PaymentStatus.Pending;
+                }
+
                 // Create refund details
                 var refundDetails = new RefundDetails
                 {
                     RefundId = Guid.NewGuid(),
-                    RefundTransactionId = $"REFUND-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}",
+                    RefundTransactionId = refundTransactionId,
                     RefundAmount = refundAmount,
-                    RefundStatus = PaymentStatus.Pending, // Will be updated when gateway confirms
+                    RefundStatus = refundStatus,
                     RefundInitiatedAt = DateTime.UtcNow,
                     RefundReason = booking.CancellationReason,
                     RefundReference = booking.PNR,
                     ProcessingDays = 5
                 };
 
+                // Update refund completed date if refund was successful
+                if (refundStatus == PaymentStatus.Refunded)
+                {
+                    refundDetails.RefundCompletedAt = DateTime.UtcNow;
+                }
+
                 // Update payment with refund details
                 payment.Refund = refundDetails;
-                payment.Status = PaymentStatus.PartiallyRefunded; // Will be Refunded when complete
+                
+                // Update payment status based on refund amount
+                if (refundAmount >= payment.Amount)
+                {
+                    payment.Status = PaymentStatus.Refunded;
+                }
+                else
+                {
+                    payment.Status = PaymentStatus.PartiallyRefunded;
+                }
+                
                 payment.UpdatedAt = DateTime.UtcNow;
 
                 await _context.Payments.ReplaceOneAsync(
                     p => p.Id == payment.Id,
                     payment);
 
-                // TODO: Integrate with payment gateway (PayU) to process actual refund
-                // For now, we'll just mark it as initiated
-                // In production, you would call PayU refund API here
+                // If refund was successful, send refund email
+                if (refundStatus == PaymentStatus.Refunded)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _bookingEmailService.SendRefundEmailAsync(
+                                booking.Id, 
+                                refundAmount, 
+                                refundTransactionId);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error sending refund email: {ex.Message}");
+                        }
+                    });
+                }
 
-                return refundDetails.RefundTransactionId;
+                return refundTransactionId;
             }
             catch (Exception ex)
             {

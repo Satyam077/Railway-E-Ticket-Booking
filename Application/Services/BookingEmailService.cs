@@ -110,6 +110,105 @@ namespace Railway_Ticket_Booking.Application.Services
                 .Find(s => s.Id == stationId)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task SendCancellationEmailAsync(string bookingId, decimal refundAmount, decimal cancellationCharge)
+        {
+            try
+            {
+                var booking = await _context.Bookings
+                    .Find(b => b.Id == bookingId)
+                    .FirstOrDefaultAsync();
+
+                if (booking == null)
+                {
+                    Console.WriteLine($"Booking not found: {bookingId}");
+                    return;
+                }
+
+                var paymentTask = LoadPaymentAsync(booking);
+                var trainTask = LoadTrainAsync(booking);
+                var scheduleTask = LoadScheduleAsync(booking);
+                var sourceStationTask = LoadStationAsync(booking.SourceStationId);
+                var destinationStationTask = LoadStationAsync(booking.DestinationStationId);
+
+                await Task.WhenAll(paymentTask, trainTask, scheduleTask, sourceStationTask, destinationStationTask);
+
+                var payment = await paymentTask;
+                var train = await trainTask;
+                var schedule = await scheduleTask;
+                var sourceStation = await sourceStationTask;
+                var destinationStation = await destinationStationTask;
+
+                var emailHtml = EmailTemplate.GenerateCancellationEmail(
+                    booking,
+                    payment,
+                    train,
+                    schedule,
+                    sourceStation,
+                    destinationStation,
+                    refundAmount,
+                    cancellationCharge);
+
+                // Send email
+                var subject = $"Booking Cancelled - PNR: {booking.PNR} | Railway Ticket Booking";
+                await _emailService.SendEmailAsync(booking.ContactEmail, subject, emailHtml);
+
+                Console.WriteLine($"Cancellation email sent to {booking.ContactEmail} for PNR: {booking.PNR}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending cancellation email: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        public async Task SendRefundEmailAsync(string bookingId, decimal refundAmount, string refundTransactionId)
+        {
+            try
+            {
+                var booking = await _context.Bookings
+                    .Find(b => b.Id == bookingId)
+                    .FirstOrDefaultAsync();
+
+                if (booking == null)
+                {
+                    Console.WriteLine($"Booking not found: {bookingId}");
+                    return;
+                }
+
+                var paymentTask = LoadPaymentAsync(booking);
+                var trainTask = LoadTrainAsync(booking);
+                var sourceStationTask = LoadStationAsync(booking.SourceStationId);
+                var destinationStationTask = LoadStationAsync(booking.DestinationStationId);
+
+                await Task.WhenAll(paymentTask, trainTask, sourceStationTask, destinationStationTask);
+
+                var payment = await paymentTask;
+                var train = await trainTask;
+                var sourceStation = await sourceStationTask;
+                var destinationStation = await destinationStationTask;
+
+                var emailHtml = EmailTemplate.GenerateRefundEmail(
+                    booking,
+                    payment,
+                    train,
+                    sourceStation,
+                    destinationStation,
+                    refundAmount,
+                    refundTransactionId);
+
+                // Send email
+                var subject = $"Refund Processed - PNR: {booking.PNR} | Railway Ticket Booking";
+                await _emailService.SendEmailAsync(booking.ContactEmail, subject, emailHtml);
+
+                Console.WriteLine($"Refund email sent to {booking.ContactEmail} for PNR: {booking.PNR}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending refund email: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
     }
 }
 

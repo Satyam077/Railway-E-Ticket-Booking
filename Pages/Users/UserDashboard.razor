@@ -714,5 +714,20 @@ else
         // In production, this would trigger a PDF generation API
         await JSRuntime.InvokeVoidAsync("window.open", $"/booking-confirmation/{bookingId}?download=true", "_blank");
     }
+
+    private class RefundInfo
+    {
+        public string PNR { get; set; }
+        public decimal RefundAmount { get; set; }
+        public int ProcessingDays { get; set; }
+    }
+
+    private class RecommendedTrip
+    {
+        public string FromStation { get; set; }
+        public string FromStationId { get; set; }
+        public string ToStation { get; set; }
+        public string ToStationId { get; set; }
+    }
 }
 

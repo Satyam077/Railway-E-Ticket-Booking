@@ -202,10 +202,114 @@ namespace Railway_Ticket_Booking.Controller
                 return Content("<h2>Payment Error</h2><p>Unable to process payment response.</p>", "text/html");
             }
         }
-    }
 
-    public class PaymentRequest
-    {
-        public string BookingId { get; set; }
+        [HttpPost("refund-callback")]
+        [HttpGet("refund-callback")]
+        public async Task<IActionResult> RefundCallback()
+        {
+            try
+            {
+                string GetValue(string key)
+                {
+                    if (Request.Form.ContainsKey(key))
+                        return Request.Form[key].ToString();
+
+                    if (Request.Query.ContainsKey(key))
+                        return Request.Query[key].ToString();
+
+                    return string.Empty;
+                }
+
+                var status = GetValue("status");
+                var refundTxnId = GetValue("refund_transaction_id");
+                var originalTxnId = GetValue("transaction_id");
+                var refundAmount = GetValue("refund_amount");
+                var message = GetValue("message");
+
+                if (string.IsNullOrEmpty(originalTxnId))
+                {
+                    return Ok(new { status = "error", message = "Invalid refund callback" });
+                }
+
+                // Find payment by transaction ID
+                var payment = await _context.Payments
+                    .Find(p => p.TransactionId == originalTxnId || p.GatewayTransactionId == originalTxnId)
+                    .FirstOrDefaultAsync();
+
+                if (payment == null)
+                {
+                    return Ok(new { status = "error", message = "Payment not found" });
+                }
+
+                // Update refund status
+                if (payment.Refund == null)
+                {
+                    payment.Refund = new RefundDetails();
+                }
+
+                if (status == "success" || status == "1")
+                {
+                    payment.Refund.RefundStatus = PaymentStatus.Refunded;
+                    payment.Refund.RefundCompletedAt = DateTime.UtcNow;
+                    
+                    if (!string.IsNullOrEmpty(refundTxnId))
+                    {
+                        payment.Refund.RefundTransactionId = refundTxnId;
+                    }
+
+                    // Update payment status
+                    if (payment.Refund.RefundAmount >= payment.Amount)
+                    {
+                        payment.Status = PaymentStatus.Refunded;
+                    }
+                    else
+                    {
+                        payment.Status = PaymentStatus.PartiallyRefunded;
+                    }
+
+                    payment.UpdatedAt = DateTime.UtcNow;
+                    await _context.Payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);
+
+                    // Get booking to send refund email
+                    var booking = await _context.Bookings
+                        .Find(b => b.Id == payment.BookingId)
+                        .FirstOrDefaultAsync();
+
+                    if (booking != null)
+                    {
+                        // Send refund email asynchronously
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                await _bookingEmailService.SendRefundEmailAsync(
+                                    booking.Id,
+                                    payment.Refund.RefundAmount,
+                                    payment.Refund.RefundTransactionId);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error sending refund email: {ex.Message}");
+                            }
+                        });
+                    }
+
+                    return Ok(new { status = "success", message = "Refund processed successfully" });
+                }
+                else
+                {
+                    payment.Refund.RefundStatus = PaymentStatus.Failed;
+                    payment.UpdatedAt = DateTime.UtcNow;
+                    await _context.Payments.ReplaceOneAsync(p => p.Id == payment.Id, payment);
+
+                    return Ok(new { status = "failed", message = message ?? "Refund failed" });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing refund callback: {ex.Message}");
+                return Ok(new { status = "error", message = "Unable to process refund callback" });
+            }
+        }
     }
 }

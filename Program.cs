@@ -23,7 +23,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddSingleton<PayuService>();
+builder.Services.AddScoped<PayuService>();
 builder.Services.Configure<PayuOptions>(
     builder.Configuration.GetSection("PayU")
 );
