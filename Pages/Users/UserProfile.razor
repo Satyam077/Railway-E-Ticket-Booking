@@ -1,0 +1,342 @@
+@page "/profile"
+@using MediatR
+@using Railway_Ticket_Booking.Application.Queries
+@using Railway_Ticket_Booking.Application.DTOs
+@using Railway_Ticket_Booking.Domain.Entities
+@using Railway_Ticket_Booking.Domain.Enums
+@using Railway_Ticket_Booking.Infrastructure
+@using MongoDB.Driver
+@inject IMediator Mediator
+@inject MongoDbContext Db
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+<PageTitle>My Profile</PageTitle>
+
+@if (loading)
+{
+    <div class="container my-5">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="mt-4 text-muted">Loading profile...</h4>
+        </div>
+    </div>
+}
+else if (error != null)
+{
+    <div class="container my-5">
+        <div class="alert alert-danger shadow-sm">
+            <h4><i class="fas fa-exclamation-triangle me-2"></i>Error</h4>
+            <p class="mb-0">@error</p>
+        </div>
+        <div class="text-center mt-4">
+            <button class="btn btn-primary" @onclick="GoToHome">Go to Home</button>
+        </div>
+    </div>
+}
+else if (user != null)
+{
+    <div class="container my-5">
+        <!-- Profile Header -->
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+            <div class="card-header bg-primary text-white rounded-top-4 py-4">
+                <div class="d-flex align-items-center">
+                    <div class="me-4">
+                        <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h3 class="mb-1 fw-bold">@user.FullName</h3>
+                        <p class="mb-1">
+                            <span class="badge bg-light text-primary me-2">@GetRoleName(user.Role)</span>
+                            @if (user.IsEmailVerified)
+                            {
+                                <span class="badge bg-success me-2"><i class="fas fa-check-circle me-1"></i>Email Verified</span>
+                            }
+                            @if (user.IsPhoneVerified)
+                            {
+                                <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Phone Verified</span>
+                            }
+                        </p>
+                        <p class="mb-0 text-white-50">
+                            <i class="fas fa-envelope me-2"></i>@user.Email
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Personal Information -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 mb-4">
+                    <div class="card-header bg-info text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">First Name</small>
+                                <strong>@user.FirstName</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Last Name</small>
+                                <strong>@user.LastName</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Email</small>
+                                <strong>@user.Email</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Phone Number</small>
+                                <strong>@user.PhoneNumber</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Date of Birth</small>
+                                <strong>@user.DateOfBirth.ToString("dd MMM, yyyy")</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Age</small>
+                                <strong>@user.Age years</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Gender</small>
+                                <strong>@(string.IsNullOrEmpty(user.Gender) ? "Not specified" : user.Gender)</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Role</small>
+                                <span class="badge bg-primary">@GetRoleName(user.Role)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 mb-4">
+                    <div class="card-header bg-success text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <small class="text-muted d-block">Address</small>
+                                <strong>@(string.IsNullOrEmpty(user.Address) ? "Not provided" : user.Address)</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">City</small>
+                                <strong>@(string.IsNullOrEmpty(user.City) ? "Not provided" : user.City)</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">State</small>
+                                <strong>@(string.IsNullOrEmpty(user.State) ? "Not provided" : user.State)</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Pin Code</small>
+                                <strong>@(string.IsNullOrEmpty(user.PinCode) ? "Not provided" : user.PinCode)</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Country</small>
+                                <strong>@(string.IsNullOrEmpty(user.Country) ? "India" : user.Country)</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Information -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 mb-4">
+                    <div class="card-header bg-warning text-dark rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Account Information</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Account Status</small>
+                                @if (user.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Email Verification</small>
+                                @if (user.IsEmailVerified)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Verified</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-times me-1"></i>Not Verified</span>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Phone Verification</small>
+                                @if (user.IsPhoneVerified)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Verified</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-times me-1"></i>Not Verified</span>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted d-block">Member Since</small>
+                                <strong>@user.CreatedAt.ToString("dd MMM, yyyy")</strong>
+                            </div>
+                            @if (user.LastLoginAt.HasValue)
+                            {
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Last Login</small>
+                                    <strong>@user.LastLoginAt.Value.ToString("dd MMM, yyyy HH:mm")</strong>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Statistics -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 mb-4">
+                    <div class="card-header bg-secondary text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Booking Statistics</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                    <div>
+                                        <small class="text-muted d-block">Total Bookings</small>
+                                        <h4 class="mb-0 fw-bold text-primary">@totalBookings</h4>
+                                    </div>
+                                    <i class="fas fa-ticket-alt fa-3x text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                    <div>
+                                        <small class="text-muted d-block">Confirmed Bookings</small>
+                                        <h4 class="mb-0 fw-bold text-success">@confirmedBookings</h4>
+                                    </div>
+                                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                                    <div>
+                                        <small class="text-muted d-block">Cancelled Bookings</small>
+                                        <h4 class="mb-0 fw-bold text-danger">@cancelledBookings</h4>
+                                    </div>
+                                    <i class="fas fa-times-circle fa-3x text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-outline-primary me-2">
+                <i class="fas fa-home me-2"></i>Go to Home
+            </a>
+            <a href="/my-bookings" class="btn btn-primary">
+                <i class="fas fa-ticket-alt me-2"></i>View My Bookings
+            </a>
+        </div>
+    </div>
+}
+
+@code {
+    private User user { get; set; }
+    private bool loading = true;
+    private string error = null;
+    private string userId = null;
+    private int totalBookings = 0;
+    private int confirmedBookings = 0;
+    private int cancelledBookings = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Get user ID from localStorage
+            userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            if (string.IsNullOrEmpty(userId))
+            {
+                Nav.NavigateTo("/login?returnUrl=/profile");
+                return;
+            }
+
+            // Load user details
+            var query = new GetUserByIdQuery(userId);
+            user = await Mediator.Send(query);
+
+            if (user == null)
+            {
+                error = "User not found.";
+                loading = false;
+                return;
+            }
+
+            // Load booking statistics
+            await LoadBookingStatistics();
+        }
+        catch (Exception ex)
+        {
+            error = $"Error loading profile: {ex.Message}";
+            Console.WriteLine($"UserProfile Error: {ex}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadBookingStatistics()
+    {
+        try
+        {
+            var bookings = await Db.Bookings
+                .Find(b => b.UserId == userId)
+                .ToListAsync();
+
+            totalBookings = bookings.Count;
+            confirmedBookings = bookings.Count(b => b.Status == BookingStatus.Confirmed);
+            cancelledBookings = bookings.Count(b => b.Status == BookingStatus.Cancelled);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading booking statistics: {ex.Message}");
+        }
+    }
+
+    private string GetRoleName(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.SuperAdmin => "Super Admin",
+            UserRole.Admin => "Admin",
+            UserRole.ZonalManager => "Zonal Manager",
+            UserRole.Customer => "Customer",
+            _ => role.ToString()
+        };
+    }
+
+    private void GoToHome()
+    {
+        Nav.NavigateTo("/");
+    }
+}
+

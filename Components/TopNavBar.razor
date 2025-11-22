@@ -1,0 +1,156 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Railway_Ticket_Booking.Infrastructure.Services
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="fas fa-train me-2"></i>Railway Ticket Booking
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-home me-1"></i>Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/search-trains">
+                        <i class="fas fa-search me-1"></i>Search Trains
+                    </a>
+                </li>
+                @if (isAuthenticated)
+                {
+                    @if (userRole == "Customer")
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/user-dashboard">
+                                <i class="fas fa-tachometer-alt me-1"></i>My Dashboard
+                            </a>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my-bookings">
+                            <i class="fas fa-ticket-alt me-1"></i>My Bookings
+                        </a>
+                    </li>
+                }
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                @if (isAuthenticated)
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="me-2">
+                                <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div class="d-none d-md-block text-start">
+                                <div class="fw-bold" style="font-size: 0.9rem;">@userName</div>
+                                <div class="text-white-50" style="font-size: 0.75rem;">@userRole</div>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                            <li>
+                                <div class="dropdown-header">
+                                    <div class="fw-bold">@userName</div>
+                                    <small class="text-muted">@userEmail</small>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="/profile">
+                                    <i class="fas fa-user-circle me-2"></i>View Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/my-bookings">
+                                    <i class="fas fa-ticket-alt me-2"></i>My Bookings
+                                </a>
+                            </li>
+                            @if (userRole == "Admin" || userRole == "SuperAdmin")
+                            {
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="/dashboard">
+                                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                    </a>
+                                </li>
+                            }
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/registration">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private bool isAuthenticated = false;
+    private string userName = "";
+    private string userEmail = "";
+    private string userRole = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserInfo();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadUserInfo();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUserInfo()
+    {
+        try
+        {
+            var authToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+            isAuthenticated = !string.IsNullOrEmpty(authToken);
+
+            if (isAuthenticated)
+            {
+                userName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName") ?? "User";
+                userEmail = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userEmail") ?? "";
+                userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? "Customer";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading user info: {ex.Message}");
+        }
+    }
+}
+

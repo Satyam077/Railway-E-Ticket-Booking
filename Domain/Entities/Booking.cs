@@ -70,73 +70,13 @@ namespace Railway_Ticket_Booking.Domain.Entities
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation properties
         public string PaymentId { get; set; }
 
-        // Helper methods
         [BsonIgnore]
         public int PassengerCount => Passengers?.Count ?? 0;
 
         [BsonIgnore]
         public bool IsCancellable => Status == BookingStatus.Confirmed && 
-                                   JourneyDate > DateTime.Now.AddHours(4);
-    }
-
-    public class Passenger
-    {
-        [BsonRepresentation(BsonType.String)]
-        public Guid PassengerId { get; set; } = Guid.NewGuid();
-
-        [Required]
-        [StringLength(50)]
-        public string FirstName { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string LastName { get; set; }
-
-        public int Age { get; set; }
-
-        [StringLength(10)]
-        public string Gender { get; set; } // Male, Female, Other
-
-        [StringLength(50)]
-        public string IdProofType { get; set; } // Aadhar, PAN, Passport, etc.
-
-        [StringLength(50)]
-        public string IdProofNumber { get; set; }
-
-        [StringLength(20)]
-        public string BerthPreference { get; set; } // Upper, Middle, Lower, Window, Aisle
-
-        [StringLength(50)]
-        public string FoodPreference { get; set; } // Veg, Non-Veg, Jain, etc.
-
-        public bool IsChild => Age < 12;
-
-        public bool IsSenior => Age >= 60;
-
-        [BsonIgnore]
-        public string FullName => $"{FirstName} {LastName}";
-    }
-
-    public class BookedSeat
-    {
-        public string SeatId { get; set; }
-
-        public string PassengerId { get; set; }
-
-        [StringLength(10)]
-        public string CoachNumber { get; set; }
-
-        [StringLength(10)]
-        public string SeatNumber { get; set; }
-
-        public SeatClass Class { get; set; }
-
-        public decimal Price { get; set; }
-
-        [BsonIgnore]
-        public string FullSeatNumber => $"{CoachNumber}-{SeatNumber}";
+                                   (JourneyDate - DateTime.Now).TotalHours >= 4; // IRCTC rule: At least 4 hours before departure
     }
 }

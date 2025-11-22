@@ -31,6 +31,9 @@ builder.Services.Configure<PayuOptions>(
 // Register Seat Allocation Service
 builder.Services.AddScoped<SeatAllocationService>();
 
+// Register Cancellation Service
+builder.Services.AddScoped<CancellationService>();
+
 // Register Booking Email Service
 builder.Services.AddScoped<BookingEmailService>();
 

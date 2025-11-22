@@ -10,5 +10,4 @@
         public string SmtpPass { get; set; }
         public bool UseSsl { get; set; }
     }
-
 }

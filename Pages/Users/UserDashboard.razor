@@ -1,0 +1,718 @@
+@page "/user-dashboard"
+@page "/my-dashboard"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@using MediatR
+@using Railway_Ticket_Booking.Application.Bookings.Queries
+@using Railway_Ticket_Booking.Application.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@using Railway_Ticket_Booking.Domain.Enums
+@using Railway_Ticket_Booking.Infrastructure
+@using MongoDB.Driver
+@inject IMediator Mediator
+@inject MongoDbContext Db
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+<PageTitle>My Dashboard - Railway Ticket Booking</PageTitle>
+
+@if (loading)
+{
+    <div class="container my-5">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="mt-4 text-muted">Loading your dashboard...</h4>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container-fluid my-4">
+        <!-- Welcome Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-white p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-1 fw-bold">Welcome back, @userName!</h2>
+                                <p class="mb-0 opacity-75">Manage your bookings and plan your next journey</p>
+                            </div>
+                            <div class="text-end">
+                                <a href="/search-trains" class="btn btn-light btn-lg">
+                                    <i class="fas fa-search me-2"></i>Book New Ticket
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widgets Row -->
+        <div class="row g-4 mb-4">
+            <!-- Next Journey Widget -->
+            @if (nextJourney != null)
+            {
+                <div class="col-lg-6">
+                    <div class="card shadow-lg border-0 rounded-4 h-100">
+                        <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                            <h5 class="mb-0"><i class="fas fa-train me-2"></i>Next Journey</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h6 class="text-primary fw-bold mb-1">@GetStationName(nextJourney.SourceStationId)</h6>
+                                    <i class="fas fa-arrow-right text-muted"></i>
+                                    <h6 class="text-success fw-bold mb-1 mt-2">@GetStationName(nextJourney.DestinationStationId)</h6>
+                                </div>
+                                <span class="badge @GetStatusBadgeClass(nextJourney.Status) fs-6">
+                                    @nextJourney.Status.ToString()
+                                </span>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Journey Date</small>
+                                    <strong>@nextJourney.JourneyDate.ToString("dd MMM, yyyy")</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">PNR</small>
+                                    <strong class="text-primary">@nextJourney.PNR</strong>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="/booking-confirmation/@nextJourney.Id" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-2"></i>View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Profile & KYC Status Widget -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4 h-100">
+                    <div class="card-header bg-info text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Profile & KYC Status</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Profile Completion</span>
+                                <span class="fw-bold">@profileCompletion%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: @profileCompletion%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-envelope me-2"></i>Email Verification</span>
+                                @if (user?.IsEmailVerified == true)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Verified</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-times me-1"></i>Not Verified</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-phone me-2"></i>Phone Verification</span>
+                                @if (user?.IsPhoneVerified == true)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Verified</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-times me-1"></i>Not Verified</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="/profile" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user-circle me-2"></i>View Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last 5 Bookings & Refund in Progress -->
+        <div class="row g-4 mb-4">
+            <!-- Last 5 Bookings Widget -->
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-success text-white rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Recent Bookings</h5>
+                        <a href="/my-bookings" class="text-white text-decoration-none">View All <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (recentBookings.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>PNR</th>
+                                            <th>Route</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Amount</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var booking in recentBookings)
+                                        {
+                                            <tr>
+                                                <td><strong class="text-primary">@booking.PNR</strong></td>
+                                                <td>
+                                                    <small>@GetStationName(booking.SourceStationId)</small><br />
+                                                    <i class="fas fa-arrow-right text-muted"></i><br />
+                                                    <small>@GetStationName(booking.DestinationStationId)</small>
+                                                </td>
+                                                <td>@booking.JourneyDate.ToString("dd MMM, yyyy")</td>
+                                                <td>
+                                                    <span class="badge @GetStatusBadgeClass(booking.Status)">
+                                                        @booking.Status.ToString()
+                                                    </span>
+                                                </td>
+                                                <td><strong>₹@booking.FinalAmount.ToString("N2")</strong></td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <a href="/booking-confirmation/@booking.Id" class="btn btn-outline-primary" title="View">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        @if (booking.Status == BookingStatus.Confirmed)
+                                                        {
+                                                            <button class="btn btn-outline-success" @onclick="() => DownloadTicket(booking.Id)" title="Download">
+                                                                <i class="fas fa-download"></i>
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No bookings yet</p>
+                                <a href="/search-trains" class="btn btn-primary">Book Your First Ticket</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Refund in Progress Widget -->
+            <div class="col-lg-4">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-warning text-dark rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Refund in Progress</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (refundsInProgress.Any())
+                        {
+                            @foreach (var refund in refundsInProgress)
+                            {
+                                <div class="mb-3 p-3 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong class="text-primary">@refund.PNR</strong>
+                                            <br />
+                                            <small class="text-muted">@refund.RefundAmount.ToString("N2")</small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">Processing</span>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Expected in @refund.ProcessingDays days
+                                    </small>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <p class="text-muted mb-0">No pending refunds</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming & Past Journeys -->
+        <div class="row g-4 mb-4">
+            <!-- Upcoming Journeys -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Upcoming Journeys</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (upcomingBookings.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var booking in upcomingBookings)
+                                {
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">
+                                                    <strong class="text-primary">@booking.PNR</strong>
+                                                    <span class="badge @GetStatusBadgeClass(booking.Status) ms-2">
+                                                        @booking.Status.ToString()
+                                                    </span>
+                                                </h6>
+                                                <p class="mb-1">
+                                                    <small>@GetStationName(booking.SourceStationId)</small>
+                                                    <i class="fas fa-arrow-right text-muted mx-2"></i>
+                                                    <small>@GetStationName(booking.DestinationStationId)</small>
+                                                </p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>@booking.JourneyDate.ToString("dd MMM, yyyy")
+                                                    <span class="ms-3"><i class="fas fa-rupee-sign me-1"></i>@booking.FinalAmount.ToString("N2")</span>
+                                                </small>
+                                            </div>
+                                            <div class="btn-group-vertical btn-group-sm">
+                                                <a href="/booking-confirmation/@booking.Id" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (booking.Status == BookingStatus.Confirmed)
+                                                {
+                                                    <button class="btn btn-outline-success" @onclick="() => DownloadTicket(booking.Id)" title="Download">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                    @if (IsBookingCancellable(booking))
+                                                    {
+                                                        <a href="/cancel-booking/@booking.Id" class="btn btn-outline-danger">
+                                                            <i class="fas fa-times"></i>
+                                                        </a>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No upcoming journeys</p>
+                                <a href="/search-trains" class="btn btn-primary btn-sm">Book Now</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past Journeys -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-secondary text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Past Journeys</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (pastBookings.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var booking in pastBookings)
+                                {
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">
+                                                    <strong class="text-primary">@booking.PNR</strong>
+                                                    <span class="badge @GetStatusBadgeClass(booking.Status) ms-2">
+                                                        @booking.Status.ToString()
+                                                    </span>
+                                                </h6>
+                                                <p class="mb-1">
+                                                    <small>@GetStationName(booking.SourceStationId)</small>
+                                                    <i class="fas fa-arrow-right text-muted mx-2"></i>
+                                                    <small>@GetStationName(booking.DestinationStationId)</small>
+                                                </p>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>@booking.JourneyDate.ToString("dd MMM, yyyy")
+                                                    <span class="ms-3"><i class="fas fa-rupee-sign me-1"></i>@booking.FinalAmount.ToString("N2")</span>
+                                                </small>
+                                            </div>
+                                            <div class="btn-group-vertical btn-group-sm">
+                                                <a href="/booking-confirmation/@booking.Id" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (booking.Status == BookingStatus.Confirmed || booking.Status == BookingStatus.Cancelled)
+                                                {
+                                                    <button class="btn btn-outline-success" @onclick="() => DownloadTicket(booking.Id)" title="Download">
+                                                        <i class="fas fa-download"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No past journeys</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History & Recommended Trips -->
+        <div class="row g-4 mb-4">
+            <!-- Payment History -->
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-info text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment History</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (paymentHistory.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Transaction ID</th>
+                                            <th>Date</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Booking</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var payment in paymentHistory)
+                                        {
+                                            <tr>
+                                                <td><small class="text-muted">@payment.TransactionId</small></td>
+                                                <td>@payment.PaymentDate.ToString("dd MMM, yyyy HH:mm")</td>
+                                                <td><strong>₹@payment.Amount.ToString("N2")</strong></td>
+                                                <td>
+                                                    <span class="badge @GetPaymentStatusBadgeClass(payment.Status)">
+                                                        @payment.Status.ToString()
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="/booking-confirmation/@payment.BookingId" class="btn btn-sm btn-outline-primary">
+                                                        View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No payment history</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Trips -->
+            <div class="col-lg-4">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-success text-white rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Recommended Trips</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (recommendedTrips.Any())
+                        {
+                            @foreach (var trip in recommendedTrips)
+                            {
+                                <div class="mb-3 p-3 bg-light rounded">
+                                    <h6 class="mb-1">@trip.FromStation → @trip.ToStation</h6>
+                                    <small class="text-muted d-block mb-2">Popular Route</small>
+                                    <a href="/search-trains?from=@trip.FromStationId&to=@trip.ToStationId" class="btn btn-sm btn-primary w-100">
+                                        <i class="fas fa-search me-1"></i>Search Trains
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <i class="fas fa-map-marked-alt fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">No recommendations available</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offers / Coupons Widget -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-warning text-dark rounded-top-4 py-3">
+                        <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Offers & Coupons</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <i class="fas fa-gift fa-2x text-primary mb-2"></i>
+                                    <h6>First Booking</h6>
+                                    <p class="text-muted small mb-2">Get 10% off on your first booking</p>
+                                    <span class="badge bg-primary">FIRST10</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <i class="fas fa-percent fa-2x text-success mb-2"></i>
+                                    <h6>Weekend Special</h6>
+                                    <p class="text-muted small mb-2">5% discount on weekend bookings</p>
+                                    <span class="badge bg-success">WEEKEND5</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                                    <h6>Loyalty Reward</h6>
+                                    <p class="text-muted small mb-2">Earn points on every booking</p>
+                                    <span class="badge bg-warning text-dark">LOYALTY</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool loading = true;
+    private string userId = null;
+    private string userName = "";
+    private User user = null;
+    private List<Railway_Ticket_Booking.Domain.Entities.Booking> allBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
+    private List<Railway_Ticket_Booking.Domain.Entities.Booking> upcomingBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
+    private List<Railway_Ticket_Booking.Domain.Entities.Booking> pastBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
+    private List<Railway_Ticket_Booking.Domain.Entities.Booking> recentBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
+    private List<Railway_Ticket_Booking.Domain.Entities.Payment> paymentHistory = new List<Railway_Ticket_Booking.Domain.Entities.Payment>();
+    private List<RefundInfo> refundsInProgress = new List<RefundInfo>();
+    private List<RecommendedTrip> recommendedTrips = new List<RecommendedTrip>();
+    private Railway_Ticket_Booking.Domain.Entities.Booking nextJourney = null;
+    private Dictionary<string, Station> stations = new Dictionary<string, Station>();
+    private int profileCompletion = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            userName = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userName") ?? "User";
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            // Load data in parallel
+            var userTask = LoadUser();
+            var bookingsTask = LoadBookings();
+            var paymentsTask = LoadPayments();
+            var stationsTask = LoadStations();
+
+            await Task.WhenAll(userTask, bookingsTask, paymentsTask, stationsTask);
+
+            // Process data
+            ProcessBookings();
+            LoadRefunds();
+            LoadRecommendedTrips();
+            CalculateProfileCompletion();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"UserDashboard Error: {ex}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task LoadUser()
+    {
+        var query = new GetUserByIdQuery(userId);
+        user = await Mediator.Send(query);
+    }
+
+    private async Task LoadBookings()
+    {
+        var query = new GetUserBookingsQuery(userId);
+        allBookings = await Mediator.Send(query);
+    }
+
+    private async Task LoadPayments()
+    {
+        paymentHistory = await Db.Payments
+            .Find(p => p.UserId == userId)
+            .SortByDescending(p => p.PaymentDate)
+            .Limit(10)
+            .ToListAsync();
+    }
+
+    private async Task LoadStations()
+    {
+        var allStations = await Db.Stations.Find(_ => true).ToListAsync();
+        stations = allStations.ToDictionary(s => s.Id, s => s);
+    }
+
+    private void ProcessBookings()
+    {
+        var now = DateTime.Now;
+        upcomingBookings = allBookings
+            .Where(b => b.JourneyDate >= now && b.Status != BookingStatus.Cancelled)
+            .OrderBy(b => b.JourneyDate)
+            .ToList();
+
+        pastBookings = allBookings
+            .Where(b => b.JourneyDate < now || b.Status == BookingStatus.Cancelled)
+            .OrderByDescending(b => b.JourneyDate)
+            .Take(10)
+            .ToList();
+
+        recentBookings = allBookings
+            .OrderByDescending(b => b.BookingDate)
+            .Take(5)
+            .ToList();
+
+        nextJourney = upcomingBookings.FirstOrDefault();
+    }
+
+    private void LoadRefunds()
+    {
+        var cancelledBookings = allBookings
+            .Where(b => b.Status == BookingStatus.Cancelled && b.RefundAmount > 0)
+            .ToList();
+
+        refundsInProgress = cancelledBookings.Select(b => new RefundInfo
+        {
+            PNR = b.PNR,
+            RefundAmount = b.RefundAmount,
+            ProcessingDays = 5 // Default processing time
+        }).ToList();
+    }
+
+    private void LoadRecommendedTrips()
+    {
+        // Get popular routes based on user's booking history
+        var userRoutes = allBookings
+            .Where(b => b.Status == BookingStatus.Confirmed)
+            .Select(b => new { b.SourceStationId, b.DestinationStationId })
+            .Distinct()
+            .ToList();
+
+        // For now, show some default popular routes
+        recommendedTrips = new List<RecommendedTrip>
+        {
+            new RecommendedTrip { FromStation = "Mumbai", FromStationId = "", ToStation = "Delhi", ToStationId = "" },
+            new RecommendedTrip { FromStation = "Bangalore", FromStationId = "", ToStation = "Chennai", ToStationId = "" },
+            new RecommendedTrip { FromStation = "Kolkata", FromStationId = "", ToStation = "Mumbai", ToStationId = "" }
+        };
+    }
+
+    private void CalculateProfileCompletion()
+    {
+        if (user == null) return;
+
+        int completed = 0;
+        int total = 8;
+
+        if (!string.IsNullOrEmpty(user.FirstName)) completed++;
+        if (!string.IsNullOrEmpty(user.LastName)) completed++;
+        if (!string.IsNullOrEmpty(user.Email)) completed++;
+        if (!string.IsNullOrEmpty(user.PhoneNumber)) completed++;
+        if (user.DateOfBirth != default) completed++;
+        if (!string.IsNullOrEmpty(user.Gender)) completed++;
+        if (!string.IsNullOrEmpty(user.Address)) completed++;
+        if (user.IsEmailVerified && user.IsPhoneVerified) completed++;
+
+        profileCompletion = (int)((double)completed / total * 100);
+    }
+
+    private string GetStationName(string stationId)
+    {
+        if (string.IsNullOrEmpty(stationId)) return "N/A";
+        if (stations.TryGetValue(stationId, out var station))
+            return $"{station.StationName} ({station.StationCode})";
+        return stationId;
+    }
+
+    private string GetStatusBadgeClass(BookingStatus status)
+    {
+        return status switch
+        {
+            BookingStatus.Confirmed => "bg-success",
+            BookingStatus.Pending => "bg-warning text-dark",
+            BookingStatus.Cancelled => "bg-danger",
+            BookingStatus.WaitListed => "bg-info",
+            BookingStatus.Failed => "bg-dark",
+            BookingStatus.Refunded => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPaymentStatusBadgeClass(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Completed => "bg-success",
+            PaymentStatus.Pending => "bg-warning text-dark",
+            PaymentStatus.Failed => "bg-danger",
+            PaymentStatus.Refunded => "bg-info",
+            PaymentStatus.PartiallyRefunded => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    private bool IsBookingCancellable(Railway_Ticket_Booking.Domain.Entities.Booking booking)
+    {
+        if (booking == null || booking.Status != BookingStatus.Confirmed)
+            return false;
+
+        var departureTime = booking.JourneyDate;
+        var timeBeforeDeparture = departureTime - DateTime.Now;
+        return timeBeforeDeparture.TotalHours >= 4;
+    }
+
+    private async Task DownloadTicket(string bookingId)
+    {
+        // Navigate to booking confirmation page for PDF download
+        // In production, this would trigger a PDF generation API
+        await JSRuntime.InvokeVoidAsync("window.open", $"/booking-confirmation/{bookingId}?download=true", "_blank");
+    }
+}
+

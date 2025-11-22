@@ -35,18 +35,39 @@ else if (error != null)
 else if (booking != null)
 {
     <div class="container my-5">
-        <!-- Success Header -->
-        <div class="alert alert-success border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-            <div class="d-flex align-items-center">
-                <div class="me-3">
-                    <i class="fas fa-check-circle fa-3x text-white"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <h3 class="text-white mb-1 fw-bold">🎉 Booking Confirmed!</h3>
-                    <p class="text-white mb-0">Your ticket has been booked successfully. PNR: <strong>@booking.PNR</strong></p>
+        <!-- Success/Cancelled Header -->
+        @if (booking.Status == BookingStatus.Cancelled)
+        {
+            <div class="alert alert-danger border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-times-circle fa-3x text-white"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h3 class="text-white mb-1 fw-bold">Booking Cancelled</h3>
+                        <p class="text-white mb-0">This booking has been cancelled. PNR: <strong>@booking.PNR</strong></p>
+                        @if (booking.CancellationDate.HasValue)
+                        {
+                            <p class="text-white mb-0 small">Cancelled on: @booking.CancellationDate.Value.ToString("dd MMM, yyyy HH:mm")</p>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="alert alert-success border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-check-circle fa-3x text-white"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h3 class="text-white mb-1 fw-bold">🎉 Booking Confirmed!</h3>
+                        <p class="text-white mb-0">Your ticket has been booked successfully. PNR: <strong>@booking.PNR</strong></p>
+                    </div>
+                </div>
+            </div>
+        }
 
         <div class="row g-4">
             <!-- Left Column: Booking & Train Details -->
@@ -288,6 +309,38 @@ else if (booking != null)
                                     <strong>@payment.CompletedAt.Value.ToString("dd MMM, yyyy HH:mm")</strong>
                                 </div>
                             }
+                            @if (payment.Refund != null)
+                            {
+                                <hr />
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Refund Transaction ID</small>
+                                    <strong class="text-break">@payment.Refund.RefundTransactionId</strong>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Refund Amount</small>
+                                    <strong class="text-success">₹@payment.Refund.RefundAmount.ToString("N2")</strong>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Refund Status</small>
+                                    <span class="badge @GetPaymentStatusBadgeClass(payment.Refund.RefundStatus) fs-6">
+                                        @payment.Refund.RefundStatus.ToString()
+                                    </span>
+                                </div>
+                                @if (payment.Refund.RefundInitiatedAt != null)
+                                {
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">Refund Initiated</small>
+                                        <strong>@payment.Refund.RefundInitiatedAt.ToString("dd MMM, yyyy HH:mm")</strong>
+                                    </div>
+                                }
+                                @if (payment.Refund.RefundCompletedAt.HasValue)
+                                {
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block">Refund Completed</small>
+                                        <strong>@payment.Refund.RefundCompletedAt.Value.ToString("dd MMM, yyyy HH:mm")</strong>
+                                    </div>
+                                }
+                            }
                             <hr />
                         }
                         <div class="mb-2 d-flex justify-content-between">
@@ -332,14 +385,26 @@ else if (booking != null)
                     <button class="btn btn-primary btn-lg" @onclick="GoToHome">
                         <i class="fas fa-home me-2"></i>Go to Home
                     </button>
-                    <button class="btn btn-outline-primary" @onclick="PrintTicket">
-                        <i class="fas fa-print me-2"></i>Print Ticket
-                    </button>
-                    @if (booking.IsCancellable)
+                    @if (booking.Status != BookingStatus.Cancelled)
+                    {
+                        <button class="btn btn-outline-primary" @onclick="PrintTicket">
+                            <i class="fas fa-print me-2"></i>Print Ticket
+                        </button>
+                    }
+                    @if (booking.Status == BookingStatus.Confirmed && IsBookingCancellable())
                     {
                         <button class="btn btn-outline-danger" @onclick="CancelBooking">
                             <i class="fas fa-times-circle me-2"></i>Cancel Booking
                         </button>
+                    }
+                    @if (booking.Status == BookingStatus.Cancelled && booking.RefundAmount > 0)
+                    {
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Refund Status:</strong> ₹@booking.RefundAmount.ToString("N2") will be refunded within 5-7 business days.
+                            </small>
+                        </div>
                     }
                 </div>
             </div>
@@ -505,7 +570,19 @@ else if (booking != null)
 
     private void CancelBooking()
     {
-        // Navigate to cancellation page or show modal
+        // Navigate to cancellation page
         Nav.NavigateTo($"/cancel-booking/{BookingId}");
+    }
+
+    private bool IsBookingCancellable()
+    {
+        if (booking == null || booking.Status != BookingStatus.Confirmed)
+            return false;
+
+        // Must be at least 4 hours before departure (IRCTC rule)
+        var departureTime = booking.JourneyDate;
+        var timeBeforeDeparture = departureTime - DateTime.Now;
+        
+        return timeBeforeDeparture.TotalHours >= 4;
     }
 }

@@ -120,7 +120,17 @@
                 }
                 else
                 {
-                    NavigationManager.NavigateTo("/dashboard");
+                    // Redirect based on user role
+                    var userRole = result.Role;
+                    if (userRole == "Admin" || userRole == "SuperAdmin")
+                    {
+                        NavigationManager.NavigateTo("/dashboard");
+                    }
+                    else
+                    {
+                        // Customer or other roles go to user dashboard
+                        NavigationManager.NavigateTo("/user-dashboard");
+                    }
                 }
             }
             else

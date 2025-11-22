@@ -8,5 +8,4 @@
         public string FailureUrl { get; set; }
         public bool TestMode { get; set; } = true;
     }
-
 }
