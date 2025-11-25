@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using MongoDB.Driver;
 using Railway_Ticket_Booking.Domain.Entities;
+using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.Infrastructure;
 
 namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
@@ -44,6 +45,17 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
 
                 // Get the day of week for the travel date
                 var travelDayOfWeek = request.TravelDate.DayOfWeek;
+
+                // 4️⃣ Load all bookings for the travel date once (for performance)
+                var journeyDateStart = request.TravelDate.Date;
+                var journeyDateEnd = journeyDateStart.AddDays(1).AddTicks(-1);
+                
+                var allBookingsForDate = await _context.Bookings
+                    .Find(b => b.JourneyDate >= journeyDateStart &&
+                               b.JourneyDate <= journeyDateEnd &&
+                               b.Status == BookingStatus.Confirmed &&
+                               b.IsActive)
+                    .ToListAsync(cancellationToken);
 
                 foreach (var schedule in schedules)
                 {
@@ -107,12 +119,40 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                         arriveTime = arriveTime.AddDays(1);
                     }
 
-                    var classesInfo = train.Classes?.Select(tc => new TrainClassInfo
+                    // Filter bookings for this specific train
+                    var bookingsForThisTrain = allBookingsForDate
+                        .Where(b => b.TrainId == train.Id)
+                        .ToList();
+
+                    var classesInfo = train.Classes?.Select(tc => 
                     {
-                        ClassName = tc.ClassName,
-                        Fare = tc.BasePrice,
-                        AvailableSeats = tc.SeatCount,
-                        Status = tc.SeatCount > 0 ? "Available" : "WL"
+                        // Map class name to SeatClass enum
+                        var seatClass = MapClassNameToSeatClass(tc.ClassName);
+                        
+                        // Count booked seats for this class
+                        var bookedSeatsCount = bookingsForThisTrain
+                            .SelectMany(b => b.Seats ?? new List<BookedSeat>())
+                            .Count(s => s.Class == seatClass);
+                        
+                        // Calculate available seats
+                        var availableSeats = Math.Max(0, tc.SeatCount - bookedSeatsCount);
+                        
+                        // Determine status based on available seats
+                        string status;
+                        if (availableSeats > 0)
+                            status = "Available";
+                        else if (tc.SeatCount > 0)
+                            status = "WL"; // Waiting List
+                        else
+                            status = "WL";
+                        
+                        return new TrainClassInfo
+                        {
+                            ClassName = tc.ClassName,
+                            Fare = tc.BasePrice,
+                            AvailableSeats = availableSeats,
+                            Status = status
+                        };
                     }).ToList() ?? new List<TrainClassInfo>();
 
                     // Filter class
@@ -182,6 +222,44 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                 .OrderBy(d => d)
                 .Select(d => dayAbbreviations.ContainsKey(d) ? dayAbbreviations[d] : d.ToString())
                 .ToList();
+        }
+
+        /// <summary>
+        /// Maps TrainClass.ClassName to SeatClass enum
+        /// </summary>
+        private SeatClass MapClassNameToSeatClass(string className)
+        {
+            if (string.IsNullOrEmpty(className))
+                return SeatClass.SleeperClass;
+
+            var classLower = className.ToLower().Trim();
+            
+            // Try exact enum match first
+            if (Enum.TryParse<SeatClass>(className, true, out var parsedClass))
+                return parsedClass;
+            
+            // Handle common class name formats
+            if (classLower.Contains("sleeper") || classLower.Contains("sl"))
+                return SeatClass.SleeperClass;
+            if (classLower.Contains("ac 3") || classLower.Contains("3a") || classLower.Contains("3 tier") || 
+                classLower.Contains("ac3") || classLower.Contains("ac iii"))
+                return SeatClass.ACThreeTier;
+            if (classLower.Contains("ac 2") || classLower.Contains("2a") || classLower.Contains("2 tier") ||
+                classLower.Contains("ac2") || classLower.Contains("ac ii"))
+                return SeatClass.ACTwoTier;
+            if (classLower.Contains("ac 1") || classLower.Contains("1a") || classLower.Contains("first") ||
+                classLower.Contains("ac1") || classLower.Contains("ac i") || classLower.Contains("ac first"))
+                return SeatClass.ACFirstClass;
+            if (classLower.Contains("chair") || classLower.Contains("cc"))
+                return SeatClass.ACChairCar;
+            if (classLower.Contains("second") || classLower.Contains("2s") ||
+                classLower.Contains("second sitting"))
+                return SeatClass.SecondSitting;
+            if (classLower.Contains("executive") || classLower.Contains("ec"))
+                return SeatClass.ExecutiveClass;
+
+            // Default to Sleeper
+            return SeatClass.SleeperClass;
         }
     }
 }

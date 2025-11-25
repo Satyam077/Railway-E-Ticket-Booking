@@ -173,15 +173,21 @@ namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
                         ? payment.GatewayTransactionId 
                         : payment.TransactionId;
 
+                    Console.WriteLine($"Processing refund for transaction: {txnId}, Amount: {refundAmount}");
+
                     // Call PayU refund API
                     var refundResponse = await _payuService.ProcessRefundAsync(
                         txnId, 
                         refundAmount, 
                         booking.CancellationReason ?? "Booking cancellation");
 
+                    Console.WriteLine($"PayU refund response - Success: {refundResponse.Success}, Message: {refundResponse.Message}, RefundTxnId: {refundResponse.RefundTransactionId}");
+
                     if (refundResponse.Success)
                     {
-                        refundTransactionId = refundResponse.RefundTransactionId;
+                        refundTransactionId = !string.IsNullOrEmpty(refundResponse.RefundTransactionId) 
+                            ? refundResponse.RefundTransactionId 
+                            : $"REFUND-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}";
                         refundStatus = PaymentStatus.Refunded;
                         
                         Console.WriteLine($"PayU refund successful: {refundTransactionId} for transaction: {txnId}");
@@ -200,6 +206,7 @@ namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
                     // No gateway transaction ID, create internal refund reference
                     refundTransactionId = $"REFUND-{Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper()}";
                     refundStatus = PaymentStatus.Pending;
+                    Console.WriteLine($"No gateway transaction ID found, creating internal refund reference: {refundTransactionId}");
                 }
 
                 // Create refund details
@@ -236,9 +243,13 @@ namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
                 
                 payment.UpdatedAt = DateTime.UtcNow;
 
+                Console.WriteLine($"Updating payment with refund details - PaymentId: {payment.Id}, RefundAmount: {refundAmount}, RefundStatus: {refundStatus}");
+
                 await _context.Payments.ReplaceOneAsync(
                     p => p.Id == payment.Id,
                     payment);
+
+                Console.WriteLine($"Payment updated successfully with refund information");
 
                 // If refund was successful, send refund email
                 if (refundStatus == PaymentStatus.Refunded)
