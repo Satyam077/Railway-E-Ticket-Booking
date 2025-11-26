@@ -7,122 +7,277 @@
 @inject IMediator Mediator
 @inject IJSRuntime JSRuntime
 
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="text-center flex-grow-1">Create Your UniquexTech Ticketing account</h3>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            @if (!string.IsNullOrEmpty(message))
-            {
-                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
-                    @message
+
+
+<div class="user-management-container">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h1 class="page-title">
+                    <i class="bi bi-people-fill me-2"></i>
+                    User Management
+                </h1>
+                <button class="add-user-btn" @onclick="OpenAddUserModal">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Add New User
+                </button>
+            </div>
+        </div>
+
+        <!-- Alert Messages -->
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert-custom @(isSuccess ? "alert-success-custom" : "alert-danger-custom")">
+                <i class="bi @(isSuccess ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill") me-2"></i>
+                @message
+            </div>
+        }
+
+        <!-- Statistics -->
+        @if (users != null && users.Any())
+        {
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-value">@users.Count</span>
+                    <span class="stat-label">Total Users</span>
                 </div>
-            }
-            <h4>@(isEditing ? "Update User" : "Create New User")</h4>
+                <div class="stat-item">
+                    <span class="stat-value">@users.Count(u => u.IsActive)</span>
+                    <span class="stat-label">Active</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">@users.Count(u => u.Role == UserRole.Admin || u.Role == UserRole.SuperAdmin)</span>
+                    <span class="stat-label">Admins</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">@users.Count(u => u.Role == UserRole.Customer)</span>
+                    <span class="stat-label">Customers</span>
+                </div>
+            </div>
+        }
+
+        <!-- Users Grid -->
+        @if (users == null)
+        {
+            <div class="loading-container">
+                <div class="spinner-custom"></div>
+                <p class="mt-3">Loading users...</p>
+            </div>
+        }
+        else if (!users.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-person-x"></i>
+                </div>
+                <h3>No Users Found</h3>
+                <p>Get started by creating your first user account.</p>
+                <button class="add-user-btn mt-3" @onclick="OpenAddUserModal">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Create First User
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="users-grid">
+                @foreach (var user in users)
+                {
+                    <div class="user-card">
+                        <div class="user-avatar">
+                            @user.FirstName.Substring(0, 1)@user.LastName.Substring(0, 1)
+                        </div>
+                        <div class="user-name">@user.FullName</div>
+                        <div class="user-email">
+                            <i class="bi bi-envelope-fill"></i>
+                            @user.Email
+                            @if (user.IsEmailVerified)
+                            {
+                                <i class="bi bi-patch-check-fill" style="color: #38ef7d;" title="Email Verified"></i>
+                            }
+                        </div>
+                        <div class="user-phone">
+                            <i class="bi bi-telephone-fill me-1"></i>
+                            @user.PhoneNumber
+                            @if (user.IsPhoneVerified)
+                            {
+                                <i class="bi bi-patch-check-fill" style="color: #38ef7d;" title="Phone Verified"></i>
+                            }
+                        </div>
+                        
+                        <div class="user-meta">
+                            <span class="meta-badge @GetRoleBadgeClass(user.Role)">
+                                @user.Role
+                            </span>
+                            <span class="meta-badge @(user.IsActive ? "status-active" : "status-inactive")">
+                                @(user.IsActive ? "Active" : "Inactive")
+                            </span>
+                            <span class="meta-badge">
+                                Age: @user.Age
+                            </span>
+                            <span class="meta-badge">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                @user.CreatedAt.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+
+                        <div class="user-actions">
+                            <button class="action-btn action-btn-edit" 
+                                    @onclick="() => EditUser(user)"
+                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                <i class="bi bi-pencil-fill me-1"></i> Edit
+                            </button>
+                            <button class="action-btn" 
+                                    @onclick="() => ToggleUserStatus(user)"
+                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                <i class="bi bi-toggle-@(user.IsActive ? "on" : "off") me-1"></i>
+                                @(user.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                            <button class="action-btn action-btn-delete" 
+                                    @onclick="() => DeleteUser(user)"
+                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                @if (isDeleting && selectedUserId == user.Id)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-trash-fill me-1"></i>
+                                }
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal for Add/Edit User -->
+@if (showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="modal-content-custom" @onclick:stopPropagation="true">
+            <div class="modal-header-custom">
+                <h2 class="modal-title-custom">
+                    @(isEditing ? "Update User" : "Create New User")
+                </h2>
+                <button class="close-btn" @onclick="CloseModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
             <EditForm Model="@(isEditing ? updateUserCommand : (object)newUserCommand)" OnValidSubmit="@(isEditing ? UpdateUser : CreateUser)">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
-                <div class="mb-3">
-                    <label class="form-label">First Name</label>
-                    @if (isEditing)
-                    {
-                        <InputText class="form-control" @bind-Value="updateUserCommand.FirstName" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newUserCommand.FirstName" />
-                    }
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">First Name</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.FirstName" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.FirstName" />
+                        }
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Last Name</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.LastName" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.LastName" />
+                        }
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Email</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.Email" type="email" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.Email" type="email" />
+                        }
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Phone Number</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.PhoneNumber" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.PhoneNumber" />
+                        }
+                    </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Last Name</label>
+                    <label class="form-label-custom">Password @(isEditing ? "(Leave empty to keep current)" : "")</label>
                     @if (isEditing)
                     {
-                        <InputText class="form-control" @bind-Value="updateUserCommand.LastName" />
+                        <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.Password" type="password" placeholder="Leave empty to keep current password" />
                     }
                     else
                     {
-                        <InputText class="form-control" @bind-Value="newUserCommand.LastName" />
+                        <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.Password" type="password" />
                     }
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    @if (isEditing)
-                    {
-                        <InputText class="form-control" @bind-Value="updateUserCommand.Email" type="email" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newUserCommand.Email" type="email" />
-                    }
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Role</label>
+                        @if (isEditing)
+                        {
+                            <InputSelect class="form-control form-control-custom" @bind-Value="updateUserCommand.Role">
+                                <option value="@UserRole.SuperAdmin">Super Admin</option>
+                                <option value="@UserRole.Admin">Admin</option>
+                                <option value="@UserRole.ZonalManager">Zonal Manager</option>
+                                <option value="@UserRole.Customer">Customer</option>
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect class="form-control form-control-custom" @bind-Value="newUserCommand.Role">
+                                <option value="@UserRole.SuperAdmin">Super Admin</option>
+                                <option value="@UserRole.Admin">Admin</option>
+                                <option value="@UserRole.ZonalManager">Zonal Manager</option>
+                                <option value="@UserRole.Customer">Customer</option>
+                            </InputSelect>
+                        }
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Date of Birth</label>
+                        @if (isEditing)
+                        {
+                            <InputDate class="form-control form-control-custom" @bind-Value="updateUserCommand.DateOfBirth" />
+                        }
+                        else
+                        {
+                            <InputDate class="form-control form-control-custom" @bind-Value="newUserCommand.DateOfBirth" />
+                        }
+                    </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Phone Number</label>
+                    <label class="form-label-custom">Gender</label>
                     @if (isEditing)
                     {
-                        <InputText class="form-control" @bind-Value="updateUserCommand.PhoneNumber" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newUserCommand.PhoneNumber" />
-                    }
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Password @(isEditing ? "(Leave empty to keep current password)" : "")</label>
-                    @if (isEditing)
-                    {
-                        <InputText class="form-control" @bind-Value="updateUserCommand.Password" type="password" placeholder="Leave empty to keep current password" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newUserCommand.Password" type="password" />
-                    }
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Role</label>
-                    @if (isEditing)
-                    {
-                        <InputSelect class="form-control" @bind-Value="updateUserCommand.Role">
-                            <option value="@UserRole.SuperAdmin">Super Admin</option>
-                            <option value="@UserRole.Admin">Admin</option>
-                            <option value="@UserRole.ZonalManager">Zonal Manager</option>
-                            <option value="@UserRole.Customer">Customer</option>
-                        </InputSelect>
-                    }
-                    else
-                    {
-                        <InputSelect class="form-control" @bind-Value="newUserCommand.Role">
-                            <option value="@UserRole.SuperAdmin">Super Admin</option>
-                            <option value="@UserRole.Admin">Admin</option>
-                            <option value="@UserRole.ZonalManager">Zonal Manager</option>
-                            <option value="@UserRole.Customer">Customer</option>
-                        </InputSelect>
-                    }
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Date of Birth</label>
-                    @if (isEditing)
-                    {
-                        <InputDate class="form-control" @bind-Value="updateUserCommand.DateOfBirth" />
-                    }
-                    else
-                    {
-                        <InputDate class="form-control" @bind-Value="newUserCommand.DateOfBirth" />
-                    }
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Gender</label>
-                    @if (isEditing)
-                    {
-                        <InputSelect class="form-control" @bind-Value="updateUserCommand.Gender">
+                        <InputSelect class="form-control form-control-custom" @bind-Value="updateUserCommand.Gender">
                             <option value="">Select Gender</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
@@ -131,7 +286,7 @@
                     }
                     else
                     {
-                        <InputSelect class="form-control" @bind-Value="newUserCommand.Gender">
+                        <InputSelect class="form-control form-control-custom" @bind-Value="newUserCommand.Gender">
                             <option value="">Select Gender</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
@@ -141,79 +296,73 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Address</label>
+                    <label class="form-label-custom">Address</label>
                     @if (isEditing)
                     {
-                        <InputTextArea class="form-control" @bind-Value="updateUserCommand.Address" rows="2" />
+                        <InputTextArea class="form-control form-control-custom" @bind-Value="updateUserCommand.Address" rows="2" />
                     }
                     else
                     {
-                        <InputTextArea class="form-control" @bind-Value="newUserCommand.Address" rows="2" />
+                        <InputTextArea class="form-control form-control-custom" @bind-Value="newUserCommand.Address" rows="2" />
                     }
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">City</label>
-                            @if (isEditing)
-                            {
-                                <InputText class="form-control" @bind-Value="updateUserCommand.City" />
-                            }
-                            else
-                            {
-                                <InputText class="form-control" @bind-Value="newUserCommand.City" />
-                            }
-                        </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">City</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.City" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.City" />
+                        }
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">State</label>
-                            @if (isEditing)
-                            {
-                                <InputText class="form-control" @bind-Value="updateUserCommand.State" />
-                            }
-                            else
-                            {
-                                <InputText class="form-control" @bind-Value="newUserCommand.State" />
-                            }
-                        </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">State</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.State" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.State" />
+                        }
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">Pin Code</label>
-                            @if (isEditing)
-                            {
-                                <InputText class="form-control" @bind-Value="updateUserCommand.PinCode" />
-                            }
-                            else
-                            {
-                                <InputText class="form-control" @bind-Value="newUserCommand.PinCode" />
-                            }
-                        </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Pin Code</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.PinCode" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.PinCode" />
+                        }
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">Country</label>
-                            @if (isEditing)
-                            {
-                                <InputText class="form-control" @bind-Value="updateUserCommand.Country" />
-                            }
-                            else
-                            {
-                                <InputText class="form-control" @bind-Value="newUserCommand.Country" />
-                            }
-                        </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label-custom">Country</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateUserCommand.Country" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newUserCommand.Country" />
+                        }
                     </div>
                 </div>
 
                 @if (isEditing)
                 {
                     <div class="mb-3">
-                        <h6>Account Status</h6>
+                        <label class="form-label-custom">Account Status</label>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-check form-switch">
@@ -237,17 +386,22 @@
                     </div>
                 }
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" disabled="@(isCreating || isUpdating)">
+                <div class="d-flex gap-2 justify-content-end mt-4">
+                    <button type="button" class="cancel-btn" @onclick="CloseModal">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="submit-btn" disabled="@(isCreating || isUpdating)">
                         @if (isEditing)
                         {
                             @if (isUpdating)
                             {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                 <text>Updating...</text>
                             }
                             else
                             {
+                                <i class="bi bi-check-circle me-1"></i>
                                 <text>Update User</text>
                             }
                         }
@@ -255,150 +409,21 @@
                         {
                             @if (isCreating)
                             {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                 <text>Creating...</text>
                             }
                             else
                             {
+                                <i class="bi bi-plus-circle me-1"></i>
                                 <text>Create User</text>
                             }
                         }
                     </button>
-
-                    @if (isEditing)
-                    {
-                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
-                            Cancel
-                        </button>
-                    }
                 </div>
             </EditForm>
         </div>
-
-        <div class="col-md-6">
-            <h4>All Users</h4>
-
-            @if (users == null)
-            {
-                <div class="d-flex justify-content-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-                <p class="text-center mt-2">Loading users...</p>
-            }
-            else if (!users.Any())
-            {
-                <div class="alert alert-info">
-                    <h5>No users found</h5>
-                    <p>Create your first user using the form on the left.</p>
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var user in users)
-                            {
-                                <tr class="@(isEditing && selectedUserId == user.Id ? "table-warning" : "")">
-                                    <td>
-                                        <div>
-                                            <strong>@user.FullName</strong>
-                                            <br>
-                                            <small class="text-muted">@user.PhoneNumber</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            @user.Email
-                                            @if (user.IsEmailVerified)
-                                            {
-                                                <i class="bi bi-check-circle-fill text-success" title="Email Verified"></i>
-                                            }
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge @GetRoleBadgeClass(user.Role)">
-                                            @user.Role
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-column gap-1">
-                                            <span class="badge @(user.IsActive ? "bg-success" : "bg-secondary")">
-                                                @(user.IsActive ? "Active" : "Inactive")
-                                            </span>
-                                            @if (user.IsPhoneVerified)
-                                            {
-                                                <small class="badge bg-info">Phone ✓</small>
-                                            }
-                                            @if (user.IsEmailVerified)
-                                            {
-                                                <small class="badge bg-info">Email ✓</small>
-                                            }
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <small>@user.CreatedAt.ToString("MMM dd, yyyy")</small>
-                                        <br>
-                                        <small class="text-muted">Age: @user.Age</small>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group-vertical btn-group-sm">
-                                            <button class="btn btn-outline-primary btn-sm"
-                                                    @onclick="() => EditUser(user)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                            <button class="btn btn-outline-secondary btn-sm"
-                                                    @onclick="() => ToggleUserStatus(user)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)">
-                                                @(user.IsActive ? "Deactivate" : "Activate")
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm"
-                                                    @onclick="() => DeleteUser(user)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)"
-                                                    @onclick:preventDefault="true">
-                                                @if (isDeleting && selectedUserId == user.Id)
-                                                {
-                                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                                }
-                                                else
-                                                {
-                                                    <i class="bi bi-trash"></i>
-                                                }
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-3">
-                    <small class="text-muted">
-                        Total Users: <strong>@users.Count</strong> |
-                        Active: <strong>@users.Count(u => u.IsActive)</strong> |
-                        Admins: <strong>@users.Count(u => u.Role == UserRole.Admin || u.Role == UserRole.SuperAdmin)</strong> |
-                        Customers: <strong>@users.Count(u => u.Role == UserRole.Customer)</strong>
-                    </small>
-                </div>
-            }
-        </div>
     </div>
-</div>
+}
 
 @code {
     private CreateUserCommand newUserCommand = new CreateUserCommand();
@@ -411,10 +436,28 @@
     private bool isDeleting = false;
     private bool isEditing = false;
     private string selectedUserId = string.Empty;
+    private bool showModal = false;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadUsers();
+    }
+
+    private void OpenAddUserModal()
+    {
+        showModal = true;
+        isEditing = false;
+        newUserCommand = new CreateUserCommand();
+        message = string.Empty;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        isEditing = false;
+        newUserCommand = new CreateUserCommand();
+        updateUserCommand = new UpdateUserCommand();
+        message = string.Empty;
     }
 
     private async Task LoadUsers()
@@ -443,8 +486,9 @@
             {
                 message = result.Message;
                 isSuccess = true;
-                newUserCommand = new CreateUserCommand(); // Reset form
-                await LoadUsers(); // Refresh the list
+                newUserCommand = new CreateUserCommand();
+                await LoadUsers();
+                CloseModal();
             }
             else
             {
@@ -476,8 +520,9 @@
             {
                 message = "User updated successfully!";
                 isSuccess = true;
-                CancelEdit(); // Exit edit mode
-                await LoadUsers(); // Refresh the list
+                CancelEdit();
+                await LoadUsers();
+                CloseModal();
             }
             else
             {
@@ -501,28 +546,28 @@
         isEditing = true;
         selectedUserId = user.Id;
         message = string.Empty;
+        showModal = true;
 
-        // Copy user data to update command
         updateUserCommand = new UpdateUserCommand
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Password = "", // Don't populate password
-                Role = user.Role,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender,
-                Address = user.Address,
-                City = user.City,
-                State = user.State,
-                PinCode = user.PinCode,
-                Country = user.Country,
-                IsActive = user.IsActive,
-                IsEmailVerified = user.IsEmailVerified,
-                IsPhoneVerified = user.IsPhoneVerified
-            };
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            Password = "",
+            Role = user.Role,
+            DateOfBirth = user.DateOfBirth,
+            Gender = user.Gender,
+            Address = user.Address,
+            City = user.City,
+            State = user.State,
+            PinCode = user.PinCode,
+            Country = user.Country,
+            IsActive = user.IsActive,
+            IsEmailVerified = user.IsEmailVerified,
+            IsPhoneVerified = user.IsPhoneVerified
+        };
     }
 
     private void CancelEdit()
@@ -538,25 +583,25 @@
         try
         {
             var updateCommand = new UpdateUserCommand
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Email = user.Email,
-                    PhoneNumber = user.PhoneNumber,
-                    Password = "", // Don't update password
-                    Role = user.Role,
-                    DateOfBirth = user.DateOfBirth,
-                    Gender = user.Gender,
-                    Address = user.Address,
-                    City = user.City,
-                    State = user.State,
-                    PinCode = user.PinCode,
-                    Country = user.Country,
-                    IsActive = !user.IsActive, // Toggle status
-                    IsEmailVerified = user.IsEmailVerified,
-                    IsPhoneVerified = user.IsPhoneVerified
-                };
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Password = "",
+                Role = user.Role,
+                DateOfBirth = user.DateOfBirth,
+                Gender = user.Gender,
+                Address = user.Address,
+                City = user.City,
+                State = user.State,
+                PinCode = user.PinCode,
+                Country = user.Country,
+                IsActive = !user.IsActive,
+                IsEmailVerified = user.IsEmailVerified,
+                IsPhoneVerified = user.IsPhoneVerified
+            };
 
             var result = await Mediator.Send(updateCommand);
 
@@ -564,7 +609,7 @@
             {
                 message = $"User {(user.IsActive ? "deactivated" : "activated")} successfully!";
                 isSuccess = true;
-                await LoadUsers(); // Refresh the list
+                await LoadUsers();
             }
             else
             {
@@ -596,7 +641,7 @@
             {
                 message = $"User '{user.FullName}' deleted successfully!";
                 isSuccess = true;
-                await LoadUsers(); // Refresh the list
+                await LoadUsers();
             }
             else
             {
@@ -618,7 +663,6 @@
 
     private async Task<bool> ConfirmDelete(User user)
     {
-        // Simple JavaScript confirm - in a real app, you'd use a modal
         var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
             $"Are you sure you want to delete user '{user.FullName}'?\n\nThis action cannot be undone.");
         return confirmed;
@@ -628,11 +672,11 @@
     {
         return role switch
         {
-            UserRole.SuperAdmin => "bg-danger",
-            UserRole.Admin => "bg-warning text-dark",
-            UserRole.ZonalManager => "bg-info",
-            UserRole.Customer => "bg-primary",
-            _ => "bg-secondary"
+            UserRole.SuperAdmin => "role-badge-super",
+            UserRole.Admin => "role-badge-admin",
+            UserRole.ZonalManager => "role-badge-manager",
+            UserRole.Customer => "role-badge-customer",
+            _ => "meta-badge"
         };
     }
 }
