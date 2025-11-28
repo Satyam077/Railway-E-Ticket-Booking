@@ -1,6 +1,7 @@
 // Print Ticket Functionality for Railway Ticket Booking
 // Provides a clean, printable ticket format with all booking details
 
+// Define function directly on window object for Blazor interop
 window.printTicket = function (bookingDataJson) {
     // Parse JSON if it's a string
     let bookingData;
@@ -563,3 +564,6 @@ window.printCurrentTicket = function() {
         document.head.removeChild(style);
     }, 1000);
 };
+
+// Log that functions are loaded
+console.log('Print ticket functions loaded successfully');

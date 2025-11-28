@@ -590,7 +590,7 @@ else if (booking != null)
                     gender = p.Gender,
                     seatNumber = booking.Seats?.FirstOrDefault(s => s.PassengerId == p.PassengerId.ToString())?.FullSeatNumber ?? "N/A",
                     berthPreference = p.BerthPreference ?? "N/A"
-                }).ToList(),// ?? new List<object>(),
+                }).ToList(),
                 baseFare = booking.TotalAmount.ToString("N2"),
                 superfastCharge = 0m.ToString("N2"), // Will be calculated if needed
                 discountAmount = 0m.ToString("N2"), // Will be calculated if needed
@@ -606,11 +606,24 @@ else if (booking != null)
             var jsonData = System.Text.Json.JsonSerializer.Serialize(bookingData);
             await JSRuntime.InvokeVoidAsync("printTicket", jsonData);
         }
+        catch (JSException jsEx)
+        {
+            Console.WriteLine($"JavaScript error: {jsEx.Message}");
+            // Fallback to browser print
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("printCurrentTicket");
+            }
+            catch
+            {
+                // Final fallback - use browser's native print
+                await JSRuntime.InvokeVoidAsync("eval", "window.print()");
+            }
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error printing ticket: {ex.Message}");
-            // Fallback to browser print
-            await JSRuntime.InvokeVoidAsync("printCurrentTicket");
+            await JSRuntime.InvokeVoidAsync("showError", $"Error printing ticket: {ex.Message}");
         }
     }
 
