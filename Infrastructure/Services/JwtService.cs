@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Railway_Ticket_Booking.Application.Services
+namespace Railway_Ticket_Booking.Infrastructure.Services
 {
     public class JwtService : IJwtService
     {

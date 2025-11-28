@@ -4,7 +4,7 @@ using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.EmailTemplates;
 using Railway_Ticket_Booking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Services
+namespace Railway_Ticket_Booking.Infrastructure.Services
 {
     public class BookingEmailService
     {

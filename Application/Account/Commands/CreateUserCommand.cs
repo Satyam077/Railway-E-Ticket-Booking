@@ -1,38 +1,38 @@
 using MediatR;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
 using Railway_Ticket_Booking.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
+using Railway_Ticket_Booking.Domain.DTOs;
 
-namespace Railway_Ticket_Booking.Application.Commands
+namespace Railway_Ticket_Booking.Application.Account.Commands
 {
-    public class UpdateUserCommand : IRequest<bool>
+    public class CreateUserCommand : IRequest<RegistrationResponseDTO>
     {
-        [Required]
-        public string Id { get; set; }
-
         [Required]
         [StringLength(50)]
         public string FirstName { get; set; }
 
-        [Required]
+        //[Required]
         [StringLength(50)]
         public string LastName { get; set; }
 
-        [Required]
+        //[Required]
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required]
+        // [Required]
         [Phone]
         public string PhoneNumber { get; set; }
 
-        // Optional password update - if empty, don't update password
+        // [Required]
         [StringLength(100, MinimumLength = 6)]
         public string Password { get; set; }
 
         public UserRole Role { get; set; } = UserRole.Customer;
 
         [Range(typeof(DateTime), "01/01/1950", "01/01/2100", ErrorMessage = "Date of Birth must be after 01/01/1950")]
-        public DateTime DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; } = DateTime.Now;
 
         [StringLength(10)]
         public string Gender { get; set; }
@@ -51,11 +51,5 @@ namespace Railway_Ticket_Booking.Application.Commands
 
         [StringLength(50)]
         public string Country { get; set; } = "India";
-
-        public bool IsActive { get; set; } = true;
-
-        public bool IsEmailVerified { get; set; } = false;
-
-        public bool IsPhoneVerified { get; set; } = false;
     }
 }

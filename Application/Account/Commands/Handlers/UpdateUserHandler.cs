@@ -1,12 +1,13 @@
-using MediatR;
+﻿using MediatR;
 using MongoDB.Driver;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.Infrastructure;
 using BCrypt.Net;
+using Railway_Ticket_Booking.Application.Account.Commands;
 
-namespace Railway_Ticket_Booking.Application.Commands.Handlers
+namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
 {
     public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, bool>
     {
@@ -128,7 +129,7 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             if (oldUser.IsPhoneVerified != request.IsPhoneVerified) changes.Add($"Phone Verified: {(oldUser.IsPhoneVerified ? "Yes" : "No")} → {(request.IsPhoneVerified ? "Yes" : "No")}");
             if (passwordChanged) changes.Add("Password: Changed");
 
-            var changesHtml = changes.Any() 
+            var changesHtml = changes.Any()
                 ? string.Join("", changes.Select(c => $"<tr><td style='padding: 5px; border-bottom: 1px solid #eee;'>{c}</td></tr>"))
                 : "<tr><td style='padding: 5px;'>No changes detected</td></tr>";
 

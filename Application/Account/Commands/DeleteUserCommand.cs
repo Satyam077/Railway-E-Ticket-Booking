@@ -1,7 +1,7 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Application.Commands
+namespace Railway_Ticket_Booking.Application.Account.Commands
 {
     public class DeleteUserCommand : IRequest<bool>
     {

@@ -1,12 +1,12 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Application.Commands;
-using Railway_Ticket_Booking.Application.DTOs;
-using Railway_Ticket_Booking.Application.Services;
 using Railway_Ticket_Booking.Infrastructure;
 using BCrypt.Net;
+using Railway_Ticket_Booking.Infrastructure.Services;
+using Railway_Ticket_Booking.Domain.DTOs;
+using Railway_Ticket_Booking.Application.Account.Commands;
 
-namespace Railway_Ticket_Booking.Application.Commands.Handlers
+namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
 {
     public class LoginHandler : IRequestHandler<LoginCommand, LoginResponseDTO>
     {
@@ -25,7 +25,7 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
         {
             // Normalize email to lowercase for comparison
             var normalizedEmail = request.Email.ToLowerInvariant();
-            
+
             // Find user by email
             var user = await _context.Users
                 .Find(u => u.Email == normalizedEmail)
@@ -61,9 +61,9 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             }
 
             // Update last login time
-            var update = Builders<Railway_Ticket_Booking.Domain.Entities.User>.Update
+            var update = Builders<Domain.Entities.User>.Update
                 .Set(u => u.LastLoginAt, DateTime.UtcNow);
-            
+
             await _context.Users.UpdateOneAsync(
                 u => u.Id == user.Id,
                 update,

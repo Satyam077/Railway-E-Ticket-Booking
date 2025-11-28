@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Application.Services;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.Infrastructure;

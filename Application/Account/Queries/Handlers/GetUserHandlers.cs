@@ -3,7 +3,7 @@ using MongoDB.Driver;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Queries.Handlers
+namespace Railway_Ticket_Booking.Application.Account.Queries.Handlers
 {
     public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, List<User>>
     {

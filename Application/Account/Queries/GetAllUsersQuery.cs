@@ -1,7 +1,7 @@
 using MediatR;
 using Railway_Ticket_Booking.Domain.Entities;
 
-namespace Railway_Ticket_Booking.Application.Queries
+namespace Railway_Ticket_Booking.Application.Account.Queries
 {
     public class GetAllUsersQuery : IRequest<List<User>> { }
 

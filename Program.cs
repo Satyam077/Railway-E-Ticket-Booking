@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.AspNetCore.Components.Authorization;
-using Railway_Ticket_Booking.Application.Services;
 using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.Infrastructure;
 using Railway_Ticket_Booking.Infrastructure.Services;

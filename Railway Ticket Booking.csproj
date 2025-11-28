@@ -16,12 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Interfaces\" />
     <Folder Include="Application\TrainSearch\" />
     <Folder Include="Application\TrainSchedules\" />
     <Folder Include="Application\Stations\" />
     <Folder Include="Application\Routes\Commands\" />
-    <Folder Include="Application\Routes\Interfaces\" />
     <Folder Include="Application\Routes\Queries\" />
     <Folder Include="Infrastructure\Repositories\" />
   </ItemGroup>

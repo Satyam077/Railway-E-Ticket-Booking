@@ -1,5 +1,4 @@
 using MediatR;
-using Railway_Ticket_Booking.Application.DTOs;
 using Railway_Ticket_Booking.Domain.Entities;
 using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.EmailServices;
@@ -7,8 +6,10 @@ using Railway_Ticket_Booking.Infrastructure;
 using BCrypt.Net;
 using MongoDB.Driver;
 using Railway_Ticket_Booking.EmailTemplates;
+using Railway_Ticket_Booking.Domain.DTOs;
+using Railway_Ticket_Booking.Application.Account.Commands;
 
-namespace Railway_Ticket_Booking.Application.Commands.Handlers
+namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
 {
     public class CreateUserHandler : IRequestHandler<CreateUserCommand, RegistrationResponseDTO>
     {
@@ -25,7 +26,7 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
         {
             // Normalize email to lowercase for comparison
             var normalizedEmail = request.Email.ToLowerInvariant();
-            
+
             // Check if user with email already exists (case-insensitive)
             var existingUser = await _context.Users
                 .Find(u => u.Email == normalizedEmail)

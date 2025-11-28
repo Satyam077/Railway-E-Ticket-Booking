@@ -1,18 +1,149 @@
 ﻿@page "/home"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home - Railway Ticket Booking</PageTitle>
 
-<h1>Welcome to Railway Ticket Booking!</h1>
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Hero Section -->
+        <div class="page-header text-center mb-5">
+            <h1 class="page-title display-3 mb-3">
+                <i class="fas fa-train me-3"></i>
+                Welcome to Railway Ticket Booking!
+            </h1>
+            <p class="text-white fs-5 opacity-75">Your journey begins here - Fast, Secure, and Reliable</p>
+        </div>
 
-<p>This is a simple home page to test the application.</p>
+        <!-- Feature Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="user-card text-center h-100">
+                    <div class="user-avatar mx-auto mb-4">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h4 class="user-name">Search Trains</h4>
+                    <p class="text-white opacity-75 mb-4">Find the perfect train for your journey with our advanced search</p>
+                    <a href="/" class="add-user-btn text-decoration-none d-inline-flex align-items-center">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Search Now
+                    </a>
+                </div>
+            </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <h3>Quick Links</h3>
-        <ul>
-            <li><a href="/trains">View Trains</a></li>
-            <li><a href="/users">Manage Users</a></li>
-            <li><a href="/counter">Counter Demo</a></li>
-        </ul>
+            <div class="col-md-4">
+                <div class="user-card text-center h-100">
+                    <div class="user-avatar mx-auto mb-4" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-ticket-alt fa-2x"></i>
+                    </div>
+                    <h4 class="user-name">Book Tickets</h4>
+                    <p class="text-white opacity-75 mb-4">Quick and easy booking process with instant confirmation</p>
+                    <a href="/" class="add-user-btn text-decoration-none d-inline-flex align-items-center" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Book Now
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="user-card text-center h-100">
+                    <div class="user-avatar mx-auto mb-4" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        <i class="fas fa-user-circle fa-2x"></i>
+                    </div>
+                    <h4 class="user-name">Manage Bookings</h4>
+                    <p class="text-white opacity-75 mb-4">View and manage all your bookings in one place</p>
+                    <a href="/my-bookings" class="add-user-btn text-decoration-none d-inline-flex align-items-center" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        View Bookings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links Section -->
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg rounded-4" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);">
+                    <div class="card-body p-4">
+                        <h3 class="text-white fw-bold mb-4">
+                            <i class="fas fa-link me-2" style="color: #f093fb;"></i>
+                            Quick Links
+                        </h3>
+                        <div class="list-group list-group-flush bg-transparent">
+                            <a href="/trains" class="list-group-item list-group-item-action border-0 rounded-3 mb-2 fw-semibold" style="background: rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(10px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(0)'">
+                                <i class="fas fa-train me-3 text-warning"></i>View All Trains
+                            </a>
+                            <a href="/users" class="list-group-item list-group-item-action border-0 rounded-3 mb-2 fw-semibold" style="background: rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(10px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(0)'">
+                                <i class="fas fa-users me-3 text-info"></i>Manage Users
+                            </a>
+                            <a href="/my-bookings" class="list-group-item list-group-item-action border-0 rounded-3 mb-2 fw-semibold" style="background: rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(10px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(0)'">
+                                <i class="fas fa-ticket-alt me-3 text-success"></i>My Bookings
+                            </a>
+                            <a href="/user-dashboard" class="list-group-item list-group-item-action border-0 rounded-3 fw-semibold" style="background: rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(10px)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(0)'">
+                                <i class="fas fa-tachometer-alt me-3 text-danger"></i>Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg rounded-4" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);">
+                    <div class="card-body p-4">
+                        <h3 class="text-white fw-bold mb-4">
+                            <i class="fas fa-info-circle me-2" style="color: #4facfe;"></i>
+                            Why Choose Us?
+                        </h3>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start">
+                                <div class="rounded-circle p-3 me-3" style="background: linear-gradient(135deg, #f093fb, #f5576c); min-width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-bolt text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-white fw-bold mb-1">Fast Booking</h6>
+                                    <p class="text-white-50 small mb-0">Book your tickets in seconds with our streamlined process</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start">
+                                <div class="rounded-circle p-3 me-3" style="background: linear-gradient(135deg, #4facfe, #00f2fe); min-width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-shield-alt text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-white fw-bold mb-1">Secure Payments</h6>
+                                    <p class="text-white-50 small mb-0">Your transactions are protected with advanced encryption</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start">
+                                <div class="rounded-circle p-3 me-3" style="background: linear-gradient(135deg, #43e97b, #38f9d7); min-width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-headset text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="text-white fw-bold mb-1">24/7 Support</h6>
+                                    <p class="text-white-50 small mb-0">Our team is always ready to assist you</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-container mt-5">
+            <div class="stat-item">
+                <span class="stat-value"><i class="fas fa-train"></i> 500+</span>
+                <span class="stat-label">Trains Available</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value"><i class="fas fa-users"></i> 10K+</span>
+                <span class="stat-label">Happy Customers</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value"><i class="fas fa-ticket-alt"></i> 50K+</span>
+                <span class="stat-label">Tickets Booked</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value"><i class="fas fa-map-marked-alt"></i> 200+</span>
+                <span class="stat-label">Destinations</span>
+            </div>
+        </div>
     </div>
 </div>

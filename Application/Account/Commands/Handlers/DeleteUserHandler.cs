@@ -5,7 +5,7 @@ using Railway_Ticket_Booking.Domain.Enums;
 using Railway_Ticket_Booking.EmailServices;
 using Railway_Ticket_Booking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Commands.Handlers
+namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
 {
     public class DeleteUserHandler : IRequestHandler<DeleteUserCommand, bool>
     {
