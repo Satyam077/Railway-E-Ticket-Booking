@@ -3,6 +3,7 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@implements IDisposable
 
     <nav class="navbar navbar-expand-lg navbar-dark shadow-lg sticky-top" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); backdrop-filter: blur(10px); border-bottom: 3px solid rgba(255, 255, 255, 0.2);">
         <div class="container-fluid">
@@ -103,7 +104,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link fw-bold px-4 py-2 rounded-pill mx-1" href="/registration" style="transition: all 0.3s ease; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(245, 87, 108, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 87, 108, 0.4)'">
+                            <a class="nav-link fw-bold px-4 py-2 rounded-pill mx-1" href="/users-registration" style="transition: all 0.3s ease; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(245, 87, 108, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 87, 108, 0.4)'">
                                 <i class="fas fa-user-plus me-2"></i>Register
                             </a>
                         </li>
@@ -118,9 +119,17 @@
     private string userName = "";
     private string userEmail = "";
     private string userRole = "";
+    private AuthenticationState? authState;
 
     protected override async Task OnInitializedAsync()
     {
+        // Subscribe to authentication state changes
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        
+        // Subscribe to location changes
+        Nav.LocationChanged += OnLocationChanged;
+        
+        // Load initial state
         await LoadUserInfo();
     }
 
@@ -130,6 +139,36 @@
         {
             await LoadUserInfo();
             StateHasChanged();
+        }
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        // Refresh user info when location changes (e.g., after login/logout redirect)
+        _ = Task.Run(async () =>
+        {
+            await LoadUserInfo();
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        });
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> authStateTask)
+    {
+        try
+        {
+            authState = await authStateTask;
+            await LoadUserInfo();
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error handling authentication state change: {ex.Message}");
         }
     }
 
@@ -146,30 +185,53 @@
                 userEmail = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userEmail") ?? "";
                 userRole = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userRole") ?? "Customer";
             }
+            else
+            {
+                // Clear user info when not authenticated
+                userName = "";
+                userEmail = "";
+                userRole = "";
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading user info: {ex.Message}");
         }
     }
+
     private async Task LogOut()
     {
-
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "authToken");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userId");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userEmail");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userName");
         await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "userRole");
 
+        // Clear local state immediately
+        isAuthenticated = false;
+        userName = "";
+        userEmail = "";
+        userRole = "";
+
         // Notify authentication state changed
         if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
         {
             customProvider.NotifyUserLogout();
         }
+
         StateHasChanged();
 
-        // Redirect to login page
-        Nav.NavigateTo("/login");
+        // Redirect to home page
+        Nav.NavigateTo("/", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe from authentication state changes
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        
+        // Unsubscribe from location changes
+        Nav.LocationChanged -= OnLocationChanged;
     }
 }
 

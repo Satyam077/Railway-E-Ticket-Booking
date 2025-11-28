@@ -13,7 +13,7 @@
                     Admin Dashboard
                 </h1>
                 <div class="d-flex gap-2">
-                    <button class="add-user-btn" onclick="window.location.href='/users'">
+                    <button class="add-user-btn" onclick="window.location.href='/registration'">
                         <i class="fas fa-users me-2"></i>
                         Manage Users
                     </button>
@@ -134,6 +134,69 @@
                     <a href="/" class="add-user-btn text-decoration-none d-inline-flex align-items-center" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
                         <i class="fas fa-arrow-right me-2"></i>
                         Search
+                    </a>
+                </div>
+            </div>
+
+            <!-- Booking List -->
+            <div class="col-md-6 col-lg-3">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-ticket-alt fa-2x"></i>
+                    </div>
+                    <h5 class="user-name">All Bookings</h5>
+                    <p class="text-white opacity-75 mb-4">View all booking records and analytics.</p>
+                    <a href="/admin/all-bookings" class="add-user-btn text-decoration-none d-inline-flex align-items-center" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Bookings
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div class="col-md-6 col-lg-3">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        <i class="fas fa-chart-bar fa-2x"></i>
+                    </div>
+                    <h5 class="user-name">Reports & Analytics</h5>
+                    <p class="text-white opacity-75 mb-4">View system reports and statistics.</p>
+                    <a href="/reports" class="add-user-btn text-decoration-none d-inline-flex align-items-center" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Management -->
+        <div class="row g-4 mb-4">
+            <!-- Users List -->
+            <div class="col-md-6 col-lg-3">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <i class="fas fa-calendar-alt fa-2x"></i>
+                    </div>
+                    <h5 class="user-name">Users List</h5>
+                    <p class="text-white opacity-75 mb-4">View Users List.</p>
+                    <a href="/users-list" class="add-user-btn text-decoration-none d-inline-flex align-items-center">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Users List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Search Trains -->
+            <div class="col-md-6 col-lg-3">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <i class="fas fa-search fa-2x"></i>
+                    </div>
+                    <h5 class="user-name">Home</h5>
+                    <p class="text-white opacity-75 mb-4">Search and view Home.</p>
+                    <a href="/home" class="add-user-btn text-decoration-none d-inline-flex align-items-center" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Home
                     </a>
                 </div>
             </div>

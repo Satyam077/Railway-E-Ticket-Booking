@@ -1,0 +1,524 @@
+﻿@page "/users-list"
+@using MediatR
+@using Railway_Ticket_Booking.Application.Account.Queries
+@using Railway_Ticket_Booking.Domain.Entities
+@using Railway_Ticket_Booking.Domain.Enums
+@inject IMediator Mediator
+@inject IJSRuntime JSRuntime
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-avatar" style="width: 80px; height: 80px;">
+                    <i class="fas fa-users fa-2x"></i>
+                </div>
+                <div>
+                    <h1 class="page-title mb-0">Users Management</h1>
+                    <p class="text-white opacity-75 mb-0 small">Manage all users in the system</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    @if (allUsers != null && allUsers.Any())
+    {
+        <div class="stats-container mb-4">
+            <div class="stat-item">
+                <span class="stat-value">@allUsers.Count</span>
+                <span class="stat-label"><i class="fas fa-users me-2"></i>Total Users</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@allUsers.Count(u => u.IsActive)</span>
+                <span class="stat-label"><i class="fas fa-check-circle me-2"></i>Active Users</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@allUsers.Count(u => u.Role == UserRole.Customer)</span>
+                <span class="stat-label"><i class="fas fa-user me-2"></i>Customers</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@allUsers.Count(u => u.Role == UserRole.Admin || u.Role == UserRole.SuperAdmin)</span>
+                <span class="stat-label"><i class="fas fa-user-shield me-2"></i>Admins</span>
+            </div>
+        </div>
+    }
+
+    <!-- Search and Filter Section -->
+    <div class="container py-4">
+        <div class="user-card mb-4">
+            <div class="row g-3">
+                <!-- Search Input -->
+                <div class="col-md-4">
+                    <label class="form-label-custom">
+                        <i class="fas fa-search me-2"></i>Search
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: rgba(102, 126, 234, 0.1); border-color: rgba(102, 126, 234, 0.2);">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <InputText class="form-control form-control-custom" @bind-Value="searchTerm" @bind-Value:event="oninput" placeholder="Search by name, email, phone..." />
+                    </div>
+                </div>
+
+                <!-- Role Filter -->
+                <div class="col-md-2">
+                    <label class="form-label-custom">
+                        <i class="fas fa-user-tag me-2"></i>Role
+                    </label>
+                    <select class="form-control form-control-custom" value="@selectedRoleString" @onchange="OnRoleFilterChanged">
+                        <option value="">All Roles</option>
+                        <option value="@UserRole.SuperAdmin">Super Admin</option>
+                        <option value="@UserRole.Admin">Admin</option>
+                        <option value="@UserRole.ZonalManager">Zonal Manager</option>
+                        <option value="@UserRole.Customer">Customer</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-md-2">
+                    <label class="form-label-custom">
+                        <i class="fas fa-toggle-on me-2"></i>Status
+                    </label>
+                    <select class="form-control form-control-custom" value="@selectedStatusString" @onchange="OnStatusFilterChanged">
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+
+                <!-- Verification Filter -->
+                <div class="col-md-2">
+                    <label class="form-label-custom">
+                        <i class="fas fa-check-circle me-2"></i>Verified
+                    </label>
+                    <select class="form-control form-control-custom" value="@selectedVerification" @onchange="OnVerificationFilterChanged">
+                        <option value="">All</option>
+                        <option value="email">Email Verified</option>
+                        <option value="phone">Phone Verified</option>
+                        <option value="both">Both Verified</option>
+                    </select>
+                </div>
+
+                <!-- Clear Filters -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="cancel-btn w-100" @onclick="ClearFilters">
+                        <i class="fas fa-times me-2"></i>Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        @if (allUsers == null)
+        {
+            <div class="loading-container">
+                <div class="spinner-custom mb-3"></div>
+                <h5 class="text-white">Loading users...</h5>
+            </div>
+        }
+        else if (!filteredUsers.Any())
+        {
+            <div class="user-card text-center py-5">
+                <i class="fas fa-users fa-5x mb-4" style="color: rgba(255,255,255,0.3);"></i>
+                <h4 class="user-name mb-3">No Users Found</h4>
+                <p class="text-white opacity-75 mb-0">
+                    @if (!string.IsNullOrEmpty(searchTerm) || selectedRole.HasValue || selectedStatus.HasValue || !string.IsNullOrEmpty(selectedVerification))
+                    {
+                        <text>No users match your search criteria. Try adjusting your filters.</text>
+                    }
+                    else
+                    {
+                        <text>No users found in the system.</text>
+                    }
+                </p>
+            </div>
+        }
+        else
+        {
+            <!-- Results Info -->
+            <div class="user-card mb-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <span class="text-white opacity-75">
+                            Showing <strong>@((currentPage - 1) * pageSize + 1)</strong> to <strong>@Math.Min(currentPage * pageSize, filteredUsers.Count)</strong> of <strong>@filteredUsers.Count</strong> users
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="text-white opacity-75 mb-0">Items per page:</label>
+                        <select class="form-control form-control-custom" style="width: auto; min-width: 80px;" value="@pageSizeString" @onchange="OnPageSizeChanged">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Grid -->
+            <div class="users-grid">
+                @foreach (var user in paginatedUsers)
+                {
+                    <div class="user-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="user-avatar" style="width: 60px; height: 60px;">
+                                    @if (!string.IsNullOrEmpty(user.FirstName))
+                                    {
+                                        <span style="font-size: 1.5rem;">@user.FirstName[0]</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user"></i>
+                                    }
+                                </div>
+                                <div>
+                                    <h5 class="user-name mb-1">@user.FullName</h5>
+                                    <span class="meta-badge mb-2 d-inline-block">@user.Email</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="meta-badge @(user.IsActive ? "status-active" : "status-inactive")">
+                                    @(user.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="user-meta mb-3">
+                            <span class="meta-badge @GetRoleBadgeClass(user.Role)">
+                                <i class="fas @GetRoleIcon(user.Role) me-1"></i>@user.Role.ToString()
+                            </span>
+                            <span class="meta-badge">
+                                <i class="fas fa-phone me-1"></i>@user.PhoneNumber
+                            </span>
+                            @if (user.IsEmailVerified)
+                            {
+                                <span class="meta-badge" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                                    <i class="fas fa-envelope-check me-1"></i>Email Verified
+                                </span>
+                            }
+                            @if (user.IsPhoneVerified)
+                            {
+                                <span class="meta-badge" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                                    <i class="fas fa-phone-check me-1"></i>Phone Verified
+                                </span>
+                            }
+                            <span class="meta-badge">
+                                <i class="far fa-calendar me-1"></i>@user.CreatedAt.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(user.City) || !string.IsNullOrEmpty(user.State))
+                        {
+                            <div class="mb-3">
+                                <small class="text-white opacity-75 d-block mb-1">Location:</small>
+                                <small class="text-white opacity-75">
+                                    @if (!string.IsNullOrEmpty(user.City))
+                                    {
+                                        <text>@user.City</text>
+                                    }
+                                    @if (!string.IsNullOrEmpty(user.State))
+                                    {
+                                        <text>, @user.State</text>
+                                    }
+                                    @if (!string.IsNullOrEmpty(user.Country))
+                                    {
+                                        <text>, @user.Country</text>
+                                    }
+                                </small>
+                            </div>
+                        }
+
+                        @if (user.BookingIds?.Any() == true)
+                        {
+                            <div class="mb-3">
+                                <small class="text-white opacity-75 d-block mb-1">Bookings:</small>
+                                <span class="meta-badge">
+                                    <i class="fas fa-ticket-alt me-1"></i>@user.BookingIds.Count bookings
+                                </span>
+                            </div>
+                        }
+
+                        @if (user.LastLoginAt.HasValue)
+                        {
+                            <div class="mb-3">
+                                <small class="text-white opacity-75 d-block mb-1">Last Login:</small>
+                                <small class="text-white opacity-75">
+                                    <i class="far fa-clock me-1"></i>@user.LastLoginAt.Value.ToString("MMM dd, yyyy HH:mm")
+                                </small>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="user-card mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(1)" disabled="@(currentPage == 1)">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </button>
+                            </li>
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(currentPage - 1)" disabled="@(currentPage == 1)">
+                                    <i class="fas fa-angle-left"></i>
+                                </button>
+                            </li>
+
+                            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                            {
+                                var pageNum = i;
+                                <li class="page-item @(currentPage == pageNum ? "active" : "")">
+                                    <button class="page-link" @onclick="() => GoToPage(pageNum)">
+                                        @pageNum
+                                    </button>
+                                </li>
+                            }
+
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(currentPage + 1)" disabled="@(currentPage == totalPages)">
+                                    <i class="fas fa-angle-right"></i>
+                                </button>
+                            </li>
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <button class="page-link" @onclick="() => GoToPage(totalPages)" disabled="@(currentPage == totalPages)">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<User> allUsers = new List<User>();
+    private List<User> filteredUsers = new List<User>();
+    private List<User> paginatedUsers = new List<User>();
+    
+    private string searchTerm = string.Empty;
+    private UserRole? selectedRole = null;
+    private bool? selectedStatus = null;
+    private string selectedVerification = string.Empty;
+    
+    private string selectedRoleString = string.Empty;
+    private string selectedStatusString = string.Empty;
+    private string pageSizeString = "20";
+    
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages => (int)Math.Ceiling((double)filteredUsers.Count / pageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            allUsers = await Mediator.Send(new GetAllUsersQuery());
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("showError", $"Error loading users: {ex.Message}");
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredUsers = allUsers.ToList();
+
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var search = searchTerm.ToLower();
+            filteredUsers = filteredUsers.Where(u =>
+                u.FullName.ToLower().Contains(search) ||
+                u.Email.ToLower().Contains(search) ||
+                u.PhoneNumber.Contains(search) ||
+                (!string.IsNullOrEmpty(u.City) && u.City.ToLower().Contains(search)) ||
+                (!string.IsNullOrEmpty(u.State) && u.State.ToLower().Contains(search))
+            ).ToList();
+        }
+
+        // Role filter
+        if (selectedRole.HasValue)
+        {
+            filteredUsers = filteredUsers.Where(u => u.Role == selectedRole.Value).ToList();
+        }
+
+        // Status filter
+        if (selectedStatus.HasValue)
+        {
+            filteredUsers = filteredUsers.Where(u => u.IsActive == selectedStatus.Value).ToList();
+        }
+
+        // Verification filter
+        if (!string.IsNullOrEmpty(selectedVerification))
+        {
+            switch (selectedVerification)
+            {
+                case "email":
+                    filteredUsers = filteredUsers.Where(u => u.IsEmailVerified).ToList();
+                    break;
+                case "phone":
+                    filteredUsers = filteredUsers.Where(u => u.IsPhoneVerified).ToList();
+                    break;
+                case "both":
+                    filteredUsers = filteredUsers.Where(u => u.IsEmailVerified && u.IsPhoneVerified).ToList();
+                    break;
+            }
+        }
+
+        filteredUsers = filteredUsers.ToList();
+        currentPage = 1; // Reset to first page when filters change
+        ApplyPagination();
+    }
+
+    private void ApplyPagination()
+    {
+        var skip = (currentPage - 1) * pageSize;
+        paginatedUsers = filteredUsers.Skip(skip).Take(pageSize).ToList();
+    }
+
+    private void OnRoleFilterChanged(ChangeEventArgs e)
+    {
+        selectedRoleString = e.Value?.ToString() ?? string.Empty;
+        var value = selectedRoleString;
+        if (string.IsNullOrEmpty(value))
+        {
+            selectedRole = null;
+        }
+        else if (Enum.TryParse<UserRole>(value, out var role))
+        {
+            selectedRole = role;
+        }
+        ApplyFilters();
+    }
+
+    private void OnStatusFilterChanged(ChangeEventArgs e)
+    {
+        selectedStatusString = e.Value?.ToString() ?? string.Empty;
+        var value = selectedStatusString;
+        if (string.IsNullOrEmpty(value))
+        {
+            selectedStatus = null;
+        }
+        else if (bool.TryParse(value, out var status))
+        {
+            selectedStatus = status;
+        }
+        ApplyFilters();
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        ApplyFilters();
+    }
+
+    private void OnVerificationFilterChanged(ChangeEventArgs e)
+    {
+        selectedVerification = e.Value?.ToString() ?? string.Empty;
+        ApplyFilters();
+    }
+
+    private void OnPageSizeChanged(ChangeEventArgs e)
+    {
+        pageSizeString = e.Value?.ToString() ?? "20";
+        if (int.TryParse(pageSizeString, out var size) && size > 0)
+        {
+            pageSize = size;
+            currentPage = 1; // Reset to first page
+            ApplyPagination();
+        }
+    }
+
+    private void ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedRole = null;
+        selectedStatus = null;
+        selectedVerification = string.Empty;
+        selectedRoleString = string.Empty;
+        selectedStatusString = string.Empty;
+        ApplyFilters();
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+            ApplyPagination();
+        }
+    }
+
+    private string GetRoleBadgeClass(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.SuperAdmin => "role-badge-super",
+            UserRole.Admin => "role-badge-admin",
+            UserRole.ZonalManager => "role-badge-manager",
+            UserRole.Customer => "role-badge-customer",
+            _ => "meta-badge"
+        };
+    }
+
+    private string GetRoleIcon(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.SuperAdmin => "fa-crown",
+            UserRole.Admin => "fa-user-shield",
+            UserRole.ZonalManager => "fa-user-tie",
+            UserRole.Customer => "fa-user",
+            _ => "fa-user"
+        };
+    }
+}
+
+<style>
+    .page-link {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(102, 126, 234, 0.5);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .page-item.active .page-link {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .input-group-text {
+        color: white;
+    }
+</style>

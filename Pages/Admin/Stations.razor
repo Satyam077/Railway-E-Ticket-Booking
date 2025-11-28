@@ -6,325 +6,343 @@
 @inject IMediator Mediator
 @inject IJSRuntime JSRuntime
 
-<div class="container">
-    <h3 class="text-center">Station Management</h3>
-    <div class="row">
-        <div class="col-md-6">
-            <h4>@(isEditing ? "Update Station" : "Create New Station")</h4>
-            <EditForm Model="@(isEditing ? updateStationCommand : (object)newStationCommand)" OnValidSubmit="@(isEditing ? UpdateStation : CreateStation)">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-
-                <div class="mb-3">
-                    <label class="form-label">Station Code</label>
-                    @if (isEditing)
-                    {
-                        <InputText class="form-control" @bind-Value="updateStationCommand.StationCode" placeholder="e.g., NDLS, PNBE" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newStationCommand.StationCode" placeholder="e.g., NDLS, PNBE" />
-                    }
-                    <div class="form-text">Unique station code (will be converted to uppercase)</div>
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-avatar" style="width: 80px; height: 80px;">
+                    <i class="fas fa-map-marker-alt fa-2x"></i>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Station Name</label>
-                    @if (isEditing)
-                    {
-                        <InputText class="form-control" @bind-Value="updateStationCommand.StationName" placeholder="e.g., New Delhi, Patna Junction" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newStationCommand.StationName" placeholder="e.g., New Delhi, Patna Junction" />
-                    }
+                <div>
+                    <h1 class="page-title mb-0">Station Management</h1>
+                    <p class="text-white opacity-75 mb-0 small">Manage all stations in the system</p>
                 </div>
+            </div>
+            <button class="add-user-btn" @onclick="OpenAddStationModal">
+                <i class="fas fa-plus-circle"></i>
+                Add Station
+            </button>
+        </div>
+    </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">City</label>
-                            @if (isEditing)
-                            {
-                                <InputText class="form-control" @bind-Value="updateStationCommand.City" />
-                            }
-                            else
-                            {
-                                <InputText class="form-control" @bind-Value="newStationCommand.City" />
-                            }
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">State</label>
-                            @if (isEditing)
-                            {
-                                <InputSelect class="form-control" @bind-Value="updateStationCommand.State">
-                                    <option value="">Select State</option>
-                                    @foreach (var state in indianStates)
-                                    {
-                                        <option value="@state">@state</option>
-                                    }
-                                </InputSelect>
-                            }
-                            else
-                            {
-                                <InputSelect class="form-control" @bind-Value="newStationCommand.State">
-                                    <option value="">Select State</option>
-                                    @foreach (var state in indianStates)
-                                    {
-                                        <option value="@state">@state</option>
-                                    }
-                                </InputSelect>
-                            }
-                        </div>
-                    </div>
-                </div>
+    <!-- Statistics -->
+    @if (stations != null && stations.Any())
+    {
+        <div class="stats-container mb-4">
+            <div class="stat-item">
+                <span class="stat-value">@stations.Count</span>
+                <span class="stat-label"><i class="fas fa-map-marker-alt me-2"></i>Total Stations</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@stations.Count(s => s.IsActive)</span>
+                <span class="stat-label"><i class="fas fa-check-circle me-2"></i>Active Stations</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@stations.Count(s => s.Latitude != 0 || s.Longitude != 0)</span>
+                <span class="stat-label"><i class="fas fa-map-pin me-2"></i>With Coordinates</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">@stations.Count(s => !s.IsActive)</span>
+                <span class="stat-label"><i class="fas fa-pause-circle me-2"></i>Inactive Stations</span>
+            </div>
+        </div>
+    }
 
-                <div class="mb-3">
-                    <label class="form-label">Country</label>
-                    @if (isEditing)
-                    {
-                        <InputText class="form-control" @bind-Value="updateStationCommand.Country" />
-                    }
-                    else
-                    {
-                        <InputText class="form-control" @bind-Value="newStationCommand.Country" />
-                    }
-                </div>
-
-                <div class="mb-3">
-                    <h6>Location Coordinates</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Latitude</label>
-                            @if (isEditing)
-                            {
-                                <InputNumber class="form-control" @bind-Value="updateStationCommand.Latitude" step="0.000001" />
-                            }
-                            else
-                            {
-                                <InputNumber class="form-control" @bind-Value="newStationCommand.Latitude" step="0.000001" />
-                            }
-                            <div class="form-text">Range: -90 to 90</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Longitude</label>
-                            @if (isEditing)
-                            {
-                                <InputNumber class="form-control" @bind-Value="updateStationCommand.Longitude" step="0.000001" />
-                            }
-                            else
-                            {
-                                <InputNumber class="form-control" @bind-Value="newStationCommand.Longitude" step="0.000001" />
-                            }
-                            <div class="form-text">Range: -180 to 180</div>
-                        </div>
-                    </div>
-                </div>
-
-                @if (isEditing)
+    <!-- Stations List -->
+    <div class="container py-4">
+        @if (stations == null)
+        {
+            <div class="loading-container">
+                <div class="spinner-custom mb-3"></div>
+                <h5 class="text-white">Loading stations...</h5>
+            </div>
+        }
+        else if (!stations.Any())
+        {
+            <div class="user-card text-center py-5">
+                <i class="fas fa-map-marker-alt fa-5x mb-4" style="color: rgba(255,255,255,0.3);"></i>
+                <h4 class="user-name mb-3">No Stations Found</h4>
+                <p class="text-white opacity-75 mb-4">Create your first station to get started.</p>
+                <button class="add-user-btn" @onclick="OpenAddStationModal">
+                    <i class="fas fa-plus-circle"></i>
+                    Add First Station
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="users-grid">
+                @foreach (var station in stations)
                 {
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <div class="form-check form-switch">
-                            <InputCheckbox class="form-check-input" @bind-Value="updateStationCommand.IsActive" />
-                            <label class="form-check-label">
-                                @(updateStationCommand.IsActive ? "Active" : "Inactive")
-                            </label>
+                    <div class="user-card @(isEditing && selectedStationId == station.Id ? "border-warning" : "")" style="@(isEditing && selectedStationId == station.Id ? "border: 3px solid #ffc107 !important;" : "")">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <h5 class="user-name mb-1">@station.StationName</h5>
+                                <span class="meta-badge mb-2 d-inline-block">@station.StationCode</span>
+                                @if (!string.IsNullOrEmpty(station.City))
+                                {
+                                    <div class="mb-2">
+                                        <small class="text-white opacity-75">
+                                            <i class="fas fa-city me-1"></i>@station.City
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                            <div>
+                                <span class="meta-badge @(station.IsActive ? "status-active" : "status-inactive")">
+                                    @station.StatusText
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="user-meta mb-3">
+                            @if (!string.IsNullOrEmpty(station.State))
+                            {
+                                <span class="meta-badge">
+                                    <i class="fas fa-map me-1"></i>@station.State
+                                </span>
+                            }
+                            @if (!string.IsNullOrEmpty(station.Country))
+                            {
+                                <span class="meta-badge">
+                                    <i class="fas fa-globe me-1"></i>@station.Country
+                                </span>
+                            }
+                            @if (station.Latitude != 0 || station.Longitude != 0)
+                            {
+                                <span class="meta-badge">
+                                    <i class="fas fa-map-pin me-1"></i>Coordinates
+                                </span>
+                            }
+                            <span class="meta-badge">
+                                <i class="far fa-calendar me-1"></i>@station.CreatedAt.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+
+                        @if (station.Latitude != 0 || station.Longitude != 0)
+                        {
+                            <div class="mb-3">
+                                <small class="text-white opacity-75 d-block mb-1">Coordinates:</small>
+                                <small class="text-white opacity-75">
+                                    Lat: @station.Latitude.ToString("F6"), Lng: @station.Longitude.ToString("F6")
+                                </small>
+                            </div>
+                        }
+
+                        <div class="user-actions">
+                            <button class="action-btn action-btn-edit" @onclick="() => EditStation(station)" disabled="@(isCreating || isUpdating || isDeleting)">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </button>
+                            <button class="action-btn @(station.IsActive ? "action-btn-delete" : "action-btn-edit")" 
+                                    @onclick="() => ToggleStationStatus(station)" 
+                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                <i class="fas @(station.IsActive ? "fa-pause" : "fa-play") me-1"></i>
+                                @(station.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                            <button class="action-btn action-btn-delete" 
+                                    @onclick="() => DeleteStation(station)" 
+                                    disabled="@(isCreating || isUpdating || isDeleting)">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </button>
                         </div>
                     </div>
                 }
+            </div>
+        }
+    </div>
+</div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" disabled="@(isCreating || isUpdating)">
+<!-- Add/Edit Station Modal -->
+@if (showModal)
+{
+    <div class="modal-overlay" @onclick="CloseModal">
+        <div class="modal-content-custom" @onclick:stopPropagation="true">
+            <div class="modal-header-custom">
+                <h3 class="modal-title-custom">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    @(isEditing ? "Update Station" : "Create New Station")
+                </h3>
+                <button class="close-btn" @onclick="CloseModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <EditForm Model="@(isEditing ? updateStationCommand : (object)newStationCommand)" OnValidSubmit="@(isEditing ? UpdateStation : CreateStation)">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger-custom" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Station Code</label>
                         @if (isEditing)
                         {
-                            @if (isUpdating)
-                            {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <text>Updating...</text>
-                            }
-                            else
-                            {
-                                <text>Update Station</text>
-                            }
+                            <InputText class="form-control form-control-custom" @bind-Value="updateStationCommand.StationCode" placeholder="e.g., NDLS, PNBE" />
                         }
                         else
                         {
-                            @if (isCreating)
-                            {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <text>Creating...</text>
-                            }
-                            else
-                            {
-                                <text>Create Station</text>
-                            }
+                            <InputText class="form-control form-control-custom" @bind-Value="newStationCommand.StationCode" placeholder="e.g., NDLS, PNBE" />
                         }
-                    </button>
+                        <small class="text-white opacity-75" style="font-size: 0.85rem;">Unique station code (will be converted to uppercase)</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Station Name</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateStationCommand.StationName" placeholder="e.g., New Delhi, Patna Junction" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newStationCommand.StationName" placeholder="e.g., New Delhi, Patna Junction" />
+                        }
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-custom">City</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateStationCommand.City" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newStationCommand.City" />
+                        }
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-custom">State</label>
+                        @if (isEditing)
+                        {
+                            <InputSelect class="form-control form-control-custom" @bind-Value="updateStationCommand.State">
+                                <option value="">Select State</option>
+                                @foreach (var state in indianStates)
+                                {
+                                    <option value="@state">@state</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <InputSelect class="form-control form-control-custom" @bind-Value="newStationCommand.State">
+                                <option value="">Select State</option>
+                                @foreach (var state in indianStates)
+                                {
+                                    <option value="@state">@state</option>
+                                }
+                            </InputSelect>
+                        }
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Country</label>
+                        @if (isEditing)
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="updateStationCommand.Country" />
+                        }
+                        else
+                        {
+                            <InputText class="form-control form-control-custom" @bind-Value="newStationCommand.Country" />
+                        }
+                    </div>
 
                     @if (isEditing)
                     {
-                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Status</label>
+                            <div class="form-check form-switch p-3 rounded-3" style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <InputCheckbox class="form-check-input" @bind-Value="updateStationCommand.IsActive" />
+                                <label class="form-check-label form-label-custom">
+                                    @(updateStationCommand.IsActive ? "Active" : "Inactive")
+                                </label>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="col-12">
+                        <label class="form-label-custom">
+                            <i class="fas fa-map-pin me-2"></i>Location Coordinates
+                        </label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label-custom" style="font-size: 0.85rem;">Latitude</label>
+                                @if (isEditing)
+                                {
+                                    <InputNumber class="form-control form-control-custom" @bind-Value="updateStationCommand.Latitude" step="0.000001" />
+                                }
+                                else
+                                {
+                                    <InputNumber class="form-control form-control-custom" @bind-Value="newStationCommand.Latitude" step="0.000001" />
+                                }
+                                <small class="text-white opacity-75" style="font-size: 0.8rem;">Range: -90 to 90</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label-custom" style="font-size: 0.85rem;">Longitude</label>
+                                @if (isEditing)
+                                {
+                                    <InputNumber class="form-control form-control-custom" @bind-Value="updateStationCommand.Longitude" step="0.000001" />
+                                }
+                                else
+                                {
+                                    <InputNumber class="form-control form-control-custom" @bind-Value="newStationCommand.Longitude" step="0.000001" />
+                                }
+                                <small class="text-white opacity-75" style="font-size: 0.8rem;">Range: -180 to 180</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 justify-content-end mt-4">
+                        <button type="button" class="cancel-btn" @onclick="CloseModal">
                             Cancel
                         </button>
-                    }
-                </div>
-            </EditForm>
-
-            @if (!string.IsNullOrEmpty(message))
-            {
-                <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3">
-                    @message
-                </div>
-            }
-        </div>
-
-        <div class="col-md-6">
-            <h4>All Stations</h4>
-
-            @if (stations == null)
-            {
-                <div class="d-flex justify-content-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                        <button type="submit" class="submit-btn" disabled="@(isCreating || isUpdating)">
+                            @if (isEditing)
+                            {
+                                @if (isUpdating)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    <text>Updating...</text>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-save me-2"></i>
+                                    <text>Update Station</text>
+                                }
+                            }
+                            else
+                            {
+                                @if (isCreating)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    <text>Creating...</text>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-plus-circle me-2"></i>
+                                    <text>Create Station</text>
+                                }
+                            }
+                        </button>
                     </div>
                 </div>
-                <p class="text-center mt-2">Loading stations...</p>
-            }
-            else if (!stations.Any())
-            {
-                <div class="alert alert-info">
-                    <h5>No stations found</h5>
-                    <p>Create your first station using the form on the left.</p>
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Station Name</th>
-                                <th>Location</th>
-                                <th>Coordinates</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var station in stations)
-                            {
-                                <tr class="@(isEditing && selectedStationId == station.Id ? "table-warning" : "")">
-                                    <td>
-                                        <strong class="badge bg-primary">@station.StationCode</strong>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <strong>@station.StationName</strong>
-                                            @if (!string.IsNullOrEmpty(station.City))
-                                            {
-                                                <br>
-                                                <small class="text-muted">@station.City</small>
-                                            }
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            @if (!string.IsNullOrEmpty(station.State))
-                                            {
-                                                <span class="badge bg-info">@station.State</span>
-                                                <br>
-                                            }
-                                            @if (!string.IsNullOrEmpty(station.Country))
-                                            {
-                                                <small class="text-muted">@station.Country</small>
-                                            }
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if (station.Latitude != 0 || station.Longitude != 0)
-                                        {
-                                            <small>
-                                                Lat: @station.Latitude.ToString("F6")<br>
-                                                Lng: @station.Longitude.ToString("F6")
-                                            </small>
-                                        }
-                                        else
-                                        {
-                                            <small class="text-muted">Not set</small>
-                                        }
-                                    </td>
-                                    <td>
-                                        <span class="badge @(station.IsActive ? "bg-success" : "bg-secondary")">
-                                            @station.StatusText
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small>@station.CreatedAt.ToString("MMM dd, yyyy")</small>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group-vertical btn-group-sm">
-                                            <button class="btn btn-outline-primary btn-sm"
-                                                    @onclick="() => EditStation(station)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                            <button class="btn btn-outline-secondary btn-sm"
-                                                    @onclick="() => ToggleStationStatus(station)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)">
-                                                @(station.IsActive ? "Deactivate" : "Activate")
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm"
-                                                    @onclick="() => DeleteStation(station)"
-                                                    disabled="@(isCreating || isUpdating || isDeleting)"
-                                                    @onclick:preventDefault="true">
-                                                @if (isDeleting && selectedStationId == station.Id)
-                                                {
-                                                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                                                }
-                                                else
-                                                {
-                                                    <i class="bi bi-trash"></i>
-                                                }
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="mt-3">
-                    <small class="text-muted">
-                        Total Stations: <strong>@stations.Count</strong> |
-                        Active: <strong>@stations.Count(s => s.IsActive)</strong> |
-                        With Coordinates: <strong>@stations.Count(s => s.Latitude != 0 || s.Longitude != 0)</strong>
-                    </small>
-                </div>
-            }
+            </EditForm>
         </div>
     </div>
-</div>
+}
 
 @code {
     private CreateStationCommand newStationCommand = new CreateStationCommand();
     private UpdateStationCommand updateStationCommand = new UpdateStationCommand();
     private List<Station> stations = new List<Station>();
-    private string message = string.Empty;
-    private bool isSuccess = false;
     private bool isCreating = false;
     private bool isUpdating = false;
     private bool isDeleting = false;
     private bool isEditing = false;
+    private bool showModal = false;
     private string selectedStationId = string.Empty;
 
-    // Indian states for dropdown
     private readonly List<string> indianStates = new List<string>
     {
         "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -349,28 +367,44 @@
         }
         catch (Exception ex)
         {
-            message = $"Error loading stations: {ex.Message}";
-            isSuccess = false;
+            await JSRuntime.InvokeVoidAsync("showError", $"Error loading stations: {ex.Message}");
+        }
+    }
+
+    private void OpenAddStationModal()
+    {
+        isEditing = false;
+        showModal = true;
+        newStationCommand = new CreateStationCommand { Country = "India" };
+        updateStationCommand = new UpdateStationCommand();
+        selectedStationId = string.Empty;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        if (!isEditing)
+        {
+            CancelEdit();
         }
     }
 
     private async Task CreateStation()
     {
         isCreating = true;
-        message = string.Empty;
 
         try
         {
             var stationId = await Mediator.Send(newStationCommand);
-            message = "Station created successfully!";
-            isSuccess = true;
-            newStationCommand = new CreateStationCommand { Country = "India" }; // Reset form
-            await LoadStations(); // Refresh the list
+            await JSRuntime.InvokeVoidAsync("showSuccess", "Station created successfully!");
+
+            newStationCommand = new CreateStationCommand { Country = "India" };
+            showModal = false;
+            await LoadStations();
         }
         catch (Exception ex)
         {
-            message = $"Error creating station: {ex.Message}";
-            isSuccess = false;
+            await JSRuntime.InvokeVoidAsync("showError", $"Error creating station: {ex.Message}");
         }
         finally
         {
@@ -381,7 +415,6 @@
     private async Task UpdateStation()
     {
         isUpdating = true;
-        message = string.Empty;
 
         try
         {
@@ -389,21 +422,19 @@
 
             if (result)
             {
-                message = "Station updated successfully!";
-                isSuccess = true;
-                CancelEdit(); // Exit edit mode
-                await LoadStations(); // Refresh the list
+                await JSRuntime.InvokeVoidAsync("showSuccess", "Station updated successfully!");
+                CancelEdit();
+                showModal = false;
+                await LoadStations();
             }
             else
             {
-                message = "Failed to update station. Please try again.";
-                isSuccess = false;
+                await JSRuntime.InvokeVoidAsync("showError", "Failed to update station. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            message = $"Error updating station: {ex.Message}";
-            isSuccess = false;
+            await JSRuntime.InvokeVoidAsync("showError", $"Error updating station: {ex.Message}");
         }
         finally
         {
@@ -415,9 +446,8 @@
     {
         isEditing = true;
         selectedStationId = station.Id;
-        message = string.Empty;
+        showModal = true;
 
-        // Copy station data to update command
         updateStationCommand = new UpdateStationCommand
         {
             Id = station.Id,
@@ -438,7 +468,6 @@
         isEditing = false;
         selectedStationId = string.Empty;
         updateStationCommand = new UpdateStationCommand();
-        message = string.Empty;
     }
 
     private async Task ToggleStationStatus(Station station)
@@ -455,7 +484,7 @@
                 Country = station.Country,
                 Latitude = station.Latitude,
                 Longitude = station.Longitude,
-                IsActive = !station.IsActive, // Toggle status
+                IsActive = !station.IsActive,
                 RouteIds = station.RouteIds ?? new List<string>()
             };
 
@@ -463,31 +492,30 @@
 
             if (result)
             {
-                message = $"Station {(station.IsActive ? "deactivated" : "activated")} successfully!";
-                isSuccess = true;
-                await LoadStations(); // Refresh the list
+                await JSRuntime.InvokeVoidAsync("showSuccess", $"Station {(station.IsActive ? "deactivated" : "activated")} successfully!");
+                await LoadStations();
             }
             else
             {
-                message = "Failed to update station status.";
-                isSuccess = false;
+                await JSRuntime.InvokeVoidAsync("showError", "Failed to update station status.");
             }
         }
         catch (Exception ex)
         {
-            message = $"Error updating station status: {ex.Message}";
-            isSuccess = false;
+            await JSRuntime.InvokeVoidAsync("showError", $"Error updating station status: {ex.Message}");
         }
     }
 
     private async Task DeleteStation(Station station)
     {
-        if (!await ConfirmDelete(station))
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Are you sure you want to delete station '{station.DisplayName}'?\n\nThis action cannot be undone.");
+        
+        if (!confirmed)
             return;
 
         isDeleting = true;
         selectedStationId = station.Id;
-        message = string.Empty;
 
         try
         {
@@ -495,32 +523,22 @@
 
             if (result)
             {
-                message = $"Station '{station.DisplayName}' deleted successfully!";
-                isSuccess = true;
-                await LoadStations(); // Refresh the list
+                await JSRuntime.InvokeVoidAsync("showSuccess", $"Station '{station.DisplayName}' deleted successfully!");
+                await LoadStations();
             }
             else
             {
-                message = "Failed to delete station. Please try again.";
-                isSuccess = false;
+                await JSRuntime.InvokeVoidAsync("showError", "Failed to delete station. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            message = $"Error deleting station: {ex.Message}";
-            isSuccess = false;
+            await JSRuntime.InvokeVoidAsync("showError", $"Error deleting station: {ex.Message}");
         }
         finally
         {
             isDeleting = false;
             selectedStationId = string.Empty;
         }
-    }
-
-    private async Task<bool> ConfirmDelete(Station station)
-    {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
-            $"Are you sure you want to delete station '{station.DisplayName}'?\n\nThis action cannot be undone.");
-        return confirmed;
     }
 }

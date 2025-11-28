@@ -664,6 +664,349 @@ button.btn-warning:hover {
     }
 }
 
+/* PNR Status Page Enhancements */
+.pnr-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.pnr-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pnr-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: inline-block;
+    margin: 0.25rem;
+}
+
+.pnr-input-group {
+    position: relative;
+}
+
+.pnr-input-group .form-control-custom {
+    padding-right: 3rem;
+}
+
+.pnr-search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(102, 126, 234, 0.6);
+    pointer-events: none;
+}
+
+.passenger-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.passenger-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(5px);
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.status-badge-confirmed {
+    background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+    border: none !important;
+}
+
+.status-badge-pending {
+    background: linear-gradient(135deg, #ffd89b, #19547b) !important;
+    border: none !important;
+}
+
+.status-badge-cancelled {
+    background: linear-gradient(135deg, #f5576c, #f093fb) !important;
+    border: none !important;
+}
+
+.status-badge-waitlisted {
+    background: linear-gradient(135deg, #ffd89b, #19547b) !important;
+    border: none !important;
+}
+
+.train-route-line {
+    position: relative;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.6), rgba(255,255,255,0.3));
+    margin: 1rem 0;
+    border-radius: 2px;
+}
+
+.train-route-line::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.6);
+}
+
+.train-route-line::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #f5576c, #f093fb);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(245, 87, 108, 0.6);
+}
+
+/* Custom Alert System Styles */
+.custom-alert-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 350px;
+    max-width: 500px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.custom-alert-container.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.custom-alert {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-left: 5px solid;
+    overflow: hidden;
+    position: relative;
+}
+
+.alert-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.25rem;
+    gap: 1rem;
+}
+
+.alert-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.alert-message {
+    flex: 1;
+}
+
+.alert-message strong {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.alert-message p {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #555;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.alert-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+    transform: rotate(90deg);
+}
+
+.alert-progress {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.alert-progress::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    animation: progressBar linear forwards;
+}
+
+/* Alert Types */
+.alert-success {
+    border-left-color: #38ef7d;
+}
+
+.alert-success .alert-icon {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    color: white;
+}
+
+.alert-success .alert-message strong {
+    color: #11998e;
+}
+
+.alert-success .alert-progress::after {
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+}
+
+.alert-error {
+    border-left-color: #f5576c;
+}
+
+.alert-error .alert-icon {
+    background: linear-gradient(135deg, #f5576c, #f093fb);
+    color: white;
+}
+
+.alert-error .alert-message strong {
+    color: #f5576c;
+}
+
+.alert-error .alert-progress::after {
+    background: linear-gradient(90deg, #f5576c, #f093fb);
+}
+
+.alert-warning {
+    border-left-color: #ffd89b;
+}
+
+.alert-warning .alert-icon {
+    background: linear-gradient(135deg, #ffd89b, #19547b);
+    color: white;
+}
+
+.alert-warning .alert-message strong {
+    color: #19547b;
+}
+
+.alert-warning .alert-progress::after {
+    background: linear-gradient(90deg, #ffd89b, #19547b);
+}
+
+.alert-info {
+    border-left-color: #4facfe;
+}
+
+.alert-info .alert-icon {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
+
+.alert-info .alert-message strong {
+    color: #4facfe;
+}
+
+.alert-info .alert-progress::after {
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+}
+
+/* Progress Bar Animation */
+@keyframes progressBar {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0%;
+    }
+}
+
+/* Pulse Animation for Icons */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .custom-alert-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        transform: translateY(-100px);
+    }
+
+    .custom-alert-container.show {
+        transform: translateY(0);
+    }
+
+    .alert-content {
+        padding: 1rem;
+    }
+
+    .alert-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.3rem;
+    }
+
+    .alert-message strong {
+        font-size: 1rem;
+    }
+
+    .alert-message p {
+        font-size: 0.9rem;
+    }
+}
+
 @media (max-width: 768px) {
     .users-grid {
         grid-template-columns: 1fr;
@@ -677,4 +1020,55 @@ button.btn-warning:hover {
         width: 95%;
         padding: 1.5rem;
     }
+
+    .pnr-card {
+        padding: 1rem;
+    }
+}
+
+/* Train Management Page Enhancements */
+.train-card {
+    transition: all 0.3s ease;
+}
+
+.train-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.train-card.border-warning {
+    border: 3px solid #ffc107 !important;
+    box-shadow: 0 0 20px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* Modal form enhancements */
+.modal-content-custom .form-control-custom {
+    background: white;
+    color: #333;
+}
+
+.modal-content-custom .form-label-custom {
+    color: #333;
+    font-weight: 600;
+}
+
+.modal-content-custom .user-card {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.modal-content-custom .user-card:hover {
+    background: rgba(102, 126, 234, 0.15);
+    transform: none;
+}
+
+/* Button size variants */
+.add-user-btn.btn-sm {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+}
+
+.submit-btn i,
+.cancel-btn i {
+    font-size: 1rem;
 }

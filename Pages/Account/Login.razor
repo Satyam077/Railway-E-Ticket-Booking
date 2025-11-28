@@ -127,10 +127,14 @@
                 message = result.Message;
                 isSuccess = true;
 
+                // Wait for authentication state to propagate
+                await Task.Delay(500);
+                StateHasChanged();
+
                 // Check if there's a pending booking
                 var pendingBooking = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "pendingBooking");
                 
-                await Task.Delay(1000);
+                await Task.Delay(500);
                 
                 // Get returnUrl from query string
                 var uri = new Uri(NavigationManager.Uri);
