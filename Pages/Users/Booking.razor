@@ -1,7 +1,9 @@
 @page "/booking"
 @using MediatR
 @using Railway_Ticket_Booking.Application.Bookings.Commands
+@using Railway_Ticket_Booking.Application.Bookings.Services
 @using Railway_Ticket_Booking.Application.Routes.Queries
+@using Railway_Ticket_Booking.Application.Queries
 @using Railway_Ticket_Booking.Domain.Entities
 @using System.Text.Json
 @inject IMediator Mediator
@@ -65,18 +67,62 @@
                             <span class="text-muted">Passengers:</span>
                             <strong>@passengers.Count</strong>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Base Fare:</span>
-                            <strong>₹@(bookingData.ClassFare * passengers.Count)</strong>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Tax (18%):</span>
-                            <strong>₹@(Math.Round(bookingData.ClassFare * passengers.Count * 0.18m, 2))</strong>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Service Charge:</span>
-                            <strong>₹20</strong>
-                        </div>
+                        @if (fareBreakdown != null)
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Distance:</span>
+                                <strong>@fareBreakdown.Distance.ToString("F1") KM</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Base Fare (@passengers.Count × ₹@fareBreakdown.BaseFarePerPassenger.ToString("N2")):</span>
+                                <strong>₹@(fareBreakdown.BaseFarePerPassenger * passengers.Count).ToString("N2")</strong>
+                            </div>
+                            @if (fareBreakdown.SuperfastChargePerPassenger > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Superfast Charge (@passengers.Count × ₹@fareBreakdown.SuperfastChargePerPassenger.ToString("N2")):</span>
+                                    <strong>₹@(fareBreakdown.SuperfastChargePerPassenger * passengers.Count).ToString("N2")</strong>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal:</span>
+                                <strong>₹@fareBreakdown.TotalBaseAmount.ToString("N2")</strong>
+                            </div>
+                            @if (fareBreakdown.DiscountAmount > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <span class="text-muted">Discount:</span>
+                                    <strong>-₹@fareBreakdown.DiscountAmount.ToString("N2")</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">After Discount:</span>
+                                    <strong>₹@fareBreakdown.AmountAfterDiscount.ToString("N2")</strong>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Tax (18% GST):</span>
+                                <strong>₹@fareBreakdown.TaxAmount.ToString("N2")</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Service Charge:</span>
+                                <strong>₹@fareBreakdown.ServiceCharge.ToString("N2")</strong>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Base Fare:</span>
+                                <strong>₹@(bookingData.ClassFare * passengers.Count)</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Tax (18%):</span>
+                                <strong>₹@(Math.Round(bookingData.ClassFare * passengers.Count * 0.18m, 2))</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Service Charge:</span>
+                                <strong>₹20</strong>
+                            </div>
+                        }
                         <hr />
                         <div class="d-flex justify-content-between">
                             <h6 class="mb-0">Total Amount:</h6>
@@ -110,6 +156,39 @@
                                         <InputText class="form-control" @bind-Value="bookingCommand.ContactPhone" type="tel" />
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Coupon/Discount -->
+                            <div class="mb-4">
+                                <h6 class="border-bottom pb-2 mb-3">Coupon / Discount</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Coupon Code</label>
+                                        <div class="input-group">
+                                            <InputText class="form-control" @bind-Value="couponCode" placeholder="Enter coupon code" />
+                                            <button type="button" class="btn btn-outline-primary" @onclick="ApplyCoupon">
+                                                <i class="fas fa-check me-1"></i>Apply
+                                            </button>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(couponMessage))
+                                        {
+                                            <small class="@(couponApplied ? "text-success" : "text-danger")">@couponMessage</small>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Discount Amount (₹)</label>
+                                        <InputNumber class="form-control" @bind-Value="discountAmount" @bind-Value:after="OnDiscountAmountChanged" placeholder="0.00" min="0" step="0.01" />
+                                        <small class="text-muted">Enter discount amount manually (optional)</small>
+                                    </div>
+                                </div>
+                                @if (couponApplied || discountAmount > 0)
+                                {
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="RemoveCoupon">
+                                            <i class="fas fa-times me-1"></i>Remove Coupon
+                                        </button>
+                                    </div>
+                                }
                             </div>
 
                             <!-- Passengers -->
@@ -226,6 +305,19 @@
     private bool isBooking = false;
     private decimal totalAmount = 0;
     private bool loaded = false;
+    
+    // Fare calculation
+    private FareBreakdown fareBreakdown;
+    private Route route;
+    private Train train;
+    private double journeyDistance = 0;
+    private bool isSuperfast = false;
+    
+    // Coupon/Discount
+    private string couponCode = string.Empty;
+    private decimal discountAmount = 0;
+    private string couponMessage = string.Empty;
+    private bool couponApplied = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -261,15 +353,158 @@
         }
     }
 
+    private async Task LoadRouteAndTrainData()
+    {
+        try
+        {
+            // Load routes and trains
+            var routes = await Mediator.Send(new GetAllRoutesQuery());
+            var trains = await Mediator.Send(new GetAllTrainsQuery());
+
+            // Get train information first
+            train = trains.FirstOrDefault(t => t.Id == bookingData.TrainId);
+
+            // Find route that matches source and destination
+            route = routes.FirstOrDefault(r => 
+                r.SourceStationId == bookingData.SourceStationId && 
+                r.DestinationStationId == bookingData.DestinationStationId);
+
+            // If direct route not found, find route that contains both stations and is used by this train
+            if (route == null && train != null)
+            {
+                route = routes.FirstOrDefault(r => 
+                    (train.RouteIds?.Contains(r.Id) == true || r.TrainIds?.Contains(bookingData.TrainId) == true) &&
+                    r.Stations.Any(s => s.StationId == bookingData.SourceStationId) &&
+                    r.Stations.Any(s => s.StationId == bookingData.DestinationStationId));
+            }
+
+            // If still not found, try any route with both stations
+            if (route == null)
+            {
+                route = routes.FirstOrDefault(r => 
+                    r.Stations.Any(s => s.StationId == bookingData.SourceStationId) &&
+                    r.Stations.Any(s => s.StationId == bookingData.DestinationStationId));
+            }
+
+            // Calculate distance
+            if (route != null)
+            {
+                journeyDistance = FareCalculationService.CalculateDistanceBetweenStations(
+                    route,
+                    bookingData.SourceStationId,
+                    bookingData.DestinationStationId);
+            }
+
+            // Check if train is Superfast
+            if (train != null)
+            {
+                isSuperfast = train.TrainType?.ToLower().Contains("superfast") == true;
+            }
+
+            // Recalculate fare
+            CalculateTotal();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading route and train data: {ex.Message}");
+            // Fallback to original calculation
+            CalculateTotal();
+        }
+    }
+
     private void CalculateTotal()
     {
         if (bookingData != null && passengers.Count > 0)
         {
-            var baseAmount = bookingData.ClassFare * passengers.Count;
-            var taxAmount = Math.Round(baseAmount * 0.18m, 2);
-            var serviceCharge = 20m;
-            totalAmount = baseAmount + taxAmount + serviceCharge;
+            // Use new fare calculation if we have distance and route data
+            if (journeyDistance > 0)
+            {
+                fareBreakdown = FareCalculationService.CalculateTotalFare(
+                    bookingData.SelectedClass,
+                    journeyDistance,
+                    isSuperfast,
+                    passengers.Count,
+                    discountAmount > 0 ? discountAmount : null,
+                    null);
+
+                totalAmount = fareBreakdown.TotalAmount;
+                bookingCommand.ClassFare = fareBreakdown.BaseFarePerPassenger; // Update command with calculated fare
+            }
+            else
+            {
+                // Fallback to original calculation
+                var baseAmount = bookingData.ClassFare * passengers.Count;
+                var taxAmount = Math.Round(baseAmount * 0.18m, 2);
+                var serviceCharge = 20m;
+                totalAmount = baseAmount + taxAmount + serviceCharge;
+                fareBreakdown = null;
+            }
         }
+    }
+
+    private void ApplyCoupon()
+    {
+        couponMessage = string.Empty;
+        couponApplied = false;
+        discountAmount = 0;
+
+        if (string.IsNullOrWhiteSpace(couponCode))
+        {
+            couponMessage = "Please enter a coupon code.";
+            return;
+        }
+
+        // Simple coupon validation (you can extend this with database lookup)
+        var coupon = couponCode.ToUpper().Trim();
+        
+        // Example coupon codes (you should implement proper coupon system)
+        switch (coupon)
+        {
+            case "WELCOME10":
+                discountAmount = Math.Round(totalAmount * 0.10m, 2);
+                couponMessage = "10% discount applied!";
+                couponApplied = true;
+                break;
+            case "SAVE50":
+                discountAmount = 50m;
+                couponMessage = "₹50 discount applied!";
+                couponApplied = true;
+                break;
+            case "FIRST100":
+                discountAmount = 100m;
+                couponMessage = "₹100 discount applied!";
+                couponApplied = true;
+                break;
+            default:
+                couponMessage = "Invalid coupon code. Please try again.";
+                couponApplied = false;
+                break;
+        }
+
+        if (couponApplied)
+        {
+            CalculateTotal();
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveCoupon()
+    {
+        couponCode = string.Empty;
+        discountAmount = 0;
+        couponMessage = string.Empty;
+        couponApplied = false;
+        CalculateTotal();
+        StateHasChanged();
+    }
+
+    private void OnDiscountAmountChanged()
+    {
+        couponCode = string.Empty; // Clear coupon code when manual discount is entered
+        couponMessage = string.Empty;
+        couponApplied = false;
+        CalculateTotal();
+        StateHasChanged();
     }
 
     protected override void OnParametersSet()
@@ -297,6 +532,7 @@
             {
                 bookingData = JsonSerializer.Deserialize<BookingData>(pendingBookingJson);
                 InitializeBookingCommand();
+                await LoadRouteAndTrainData();
             }
 
             if (passengers.Count == 0)
@@ -332,12 +568,12 @@
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", "Booking failed. Please try again.");
+                await JSRuntime.InvokeVoidAsync("showError", "Booking failed. Please try again.");
             }
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("showError", $"Error: {ex.Message}");
         }
         finally
         {

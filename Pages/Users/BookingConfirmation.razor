@@ -4,8 +4,10 @@
 @using MongoDB.Driver
 @using Railway_Ticket_Booking.Domain.Entities
 @using Railway_Ticket_Booking.Domain.Enums
+@using System.Text.Json
 @inject MongoDbContext Db
 @inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Booking Confirmed - @(booking?.PNR ?? "Loading...")</PageTitle>
 
@@ -557,10 +559,59 @@ else if (booking != null)
         Nav.NavigateTo("/");
     }
 
-    private void PrintTicket()
+    private async Task PrintTicket()
     {
-        // Print functionality - can be enhanced with JavaScript
-        Nav.NavigateTo($"/booking-confirmation/{BookingId}", forceLoad: true);
+        try
+        {
+            // Prepare booking data for printing
+            var sourceStation = schedule?.Stations?.FirstOrDefault(s => s.StationId == booking.SourceStationId);
+            var destStation = schedule?.Stations?.FirstOrDefault(s => s.StationId == booking.DestinationStationId);
+            
+            var bookingData = new
+            {
+                pnr = booking.PNR,
+                status = booking.Status.ToString(),
+                bookingDate = booking.BookingDate.ToString("dd MMM, yyyy HH:mm"),
+                journeyDate = booking.JourneyDate.ToString("dd MMM, yyyy"),
+                trainName = train?.Name ?? "N/A",
+                trainNumber = train?.TrainNumber ?? "N/A",
+                trainType = train?.TrainType ?? "N/A",
+                selectedClass = booking.Seats?.FirstOrDefault()?.Class.ToString() ?? "N/A",
+                sourceStation = GetStationName(booking.SourceStationId),
+                destinationStation = GetStationName(booking.DestinationStationId),
+                departureTime = sourceStation != null ? FormatTime(sourceStation.DepartureTime) : "N/A",
+                arrivalTime = destStation != null ? FormatTime(destStation.ArrivalTime) : "N/A",
+                passengers = booking.Passengers?.Select((p, idx) => new
+                {
+                    fullName = p.FullName,
+                    firstName = p.FirstName,
+                    lastName = p.LastName,
+                    age = p.Age,
+                    gender = p.Gender,
+                    seatNumber = booking.Seats?.FirstOrDefault(s => s.PassengerId == p.PassengerId.ToString())?.FullSeatNumber ?? "N/A",
+                    berthPreference = p.BerthPreference ?? "N/A"
+                }).ToList(),// ?? new List<object>(),
+                baseFare = booking.TotalAmount.ToString("N2"),
+                superfastCharge = 0m.ToString("N2"), // Will be calculated if needed
+                discountAmount = 0m.ToString("N2"), // Will be calculated if needed
+                taxAmount = booking.TaxAmount.ToString("N2"),
+                serviceCharge = booking.ServiceCharge.ToString("N2"),
+                totalAmount = booking.FinalAmount.ToString("N2"),
+                contactEmail = booking.ContactEmail ?? "N/A",
+                contactPhone = booking.ContactPhone ?? "N/A",
+                paymentStatus = payment?.Status.ToString() ?? "N/A"
+            };
+
+            // Serialize and pass to JavaScript
+            var jsonData = System.Text.Json.JsonSerializer.Serialize(bookingData);
+            await JSRuntime.InvokeVoidAsync("printTicket", jsonData);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error printing ticket: {ex.Message}");
+            // Fallback to browser print
+            await JSRuntime.InvokeVoidAsync("printCurrentTicket");
+        }
     }
 
     private string FormatTime(TimeSpan time)

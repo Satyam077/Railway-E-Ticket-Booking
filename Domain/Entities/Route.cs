@@ -69,6 +69,5 @@ namespace Railway_Ticket_Booking.Domain.Entities
             get => (int)HaltDuration.TotalMinutes;
             set => HaltDuration = TimeSpan.FromMinutes(value);
         }
-
     }
 }
