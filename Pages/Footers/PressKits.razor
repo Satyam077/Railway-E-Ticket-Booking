@@ -1,0 +1,282 @@
+﻿@page "/press"
+@page "/press-kit"
+@page "/press-kits"
+
+<PageTitle>Press Kit - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-newspaper fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">PRESS KIT</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Media Resources & Information</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-file-download fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Overview -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4" style="color: #4facfe;">
+                <i class="fas fa-info-circle me-2"></i>Company Overview
+            </h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="text-white opacity-75" style="line-height: 1.8; font-size: 1.1rem;">
+                        RailBlazer is India's leading online railway ticket booking platform, serving millions of travelers 
+                        across the nation. We are committed to making rail travel simple, convenient, and enjoyable through 
+                        innovative technology and exceptional customer service.
+                    </p>
+                    <p class="text-white opacity-75" style="line-height: 1.8; font-size: 1.1rem;">
+                        Founded with a vision to transform the railway booking experience, RailBlazer has grown to become 
+                        a trusted name in the travel industry, processing millions of bookings annually.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <h5 class="text-white mb-3">Key Facts</h5>
+                        <ul class="list-unstyled text-white opacity-75" style="line-height: 2.5;">
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>10M+ Active Users</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>50M+ Tickets Booked</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>500+ Train Routes</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>24/7 Customer Support</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>99.9% Uptime</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Downloadable Resources -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-download me-2"></i>Downloadable Resources
+            </h3>
+            <div class="row g-4">
+                @foreach (var resource in pressResources)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-4 text-center" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: @resource.Color;">
+                                    <i class="@resource.Icon fa-2x"></i>
+                                </div>
+                                <h5 class="text-white mb-2">@resource.Title</h5>
+                                <p class="text-white opacity-75 small mb-3">@resource.Description</p>
+                            </div>
+                            <button class="add-user-btn btn-sm" @onclick="() => DownloadResource(resource.Id)">
+                                <i class="fas fa-download me-2"></i>Download
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Media Contact -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-envelope me-2"></i>Media Contact
+            </h3>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-user-tie me-2" style="color: #4facfe;"></i>Press Inquiries
+                        </h5>
+                        <p class="text-white opacity-75 mb-3">
+                            For media inquiries, interview requests, or press releases, please contact our media relations team.
+                        </p>
+                        <div class="d-flex flex-column gap-2">
+                            <div>
+                                <i class="fas fa-envelope me-2" style="color: #4facfe;"></i>
+                                <span class="text-white">press@railblazer.com</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-phone me-2" style="color: #4facfe;"></i>
+                                <span class="text-white">+91 (180) 000-4567</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-clock me-2" style="color: #4facfe;"></i>Response Time
+                        </h5>
+                        <p class="text-white opacity-75 mb-3">
+                            We aim to respond to all media inquiries within 24 hours during business days.
+                        </p>
+                        <div class="text-white opacity-75">
+                            <p class="mb-2"><strong>Business Hours:</strong></p>
+                            <p class="mb-0">Monday - Friday: 9:00 AM - 6:00 PM IST</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Press Releases -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-newspaper me-2"></i>Recent Press Releases
+            </h3>
+            <div class="row g-4">
+                @foreach (var release in pressReleases)
+                {
+                    <div class="col-md-6">
+                        <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; border-left: 4px solid #4facfe;">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-secondary">@release.Date.ToString("MMMM dd, yyyy")</span>
+                                <button class="btn btn-sm add-user-btn" @onclick="() => ReadPressRelease(release.Id)">
+                                    <i class="fas fa-external-link-alt me-1"></i>Read More
+                                </button>
+                            </div>
+                            <h5 class="text-white mb-2">@release.Title</h5>
+                            <p class="text-white opacity-75 mb-0">@release.Summary</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Brand Guidelines -->
+        <div class="user-card text-center">
+            <h3 class="user-name mb-3" style="color: #4facfe;">
+                <i class="fas fa-palette me-2"></i>Brand Guidelines
+            </h3>
+            <p class="text-white opacity-75 mb-4" style="font-size: 1.1rem;">
+                Please follow our brand guidelines when using RailBlazer logos, colors, and other brand assets in your publications.
+            </p>
+            <a href="/contact" class="add-user-btn text-decoration-none btn-lg px-5">
+                <i class="fas fa-file-download me-2"></i>Request Brand Guidelines
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<PressResource> pressResources = new()
+    {
+        new PressResource
+        {
+            Id = "logo",
+            Title = "Company Logo",
+            Description = "High-resolution logos in various formats",
+            Icon = "fas fa-image",
+            Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+        },
+        new PressResource
+        {
+            Id = "factsheet",
+            Title = "Company Fact Sheet",
+            Description = "Key facts and statistics about RailBlazer",
+            Icon = "fas fa-file-alt",
+            Color = "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+        },
+        new PressResource
+        {
+            Id = "images",
+            Title = "Press Images",
+            Description = "High-quality images for media use",
+            Icon = "fas fa-images",
+            Color = "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+        },
+        new PressResource
+        {
+            Id = "executive",
+            Title = "Executive Bios",
+            Description = "Biographies of our leadership team",
+            Icon = "fas fa-user-tie",
+            Color = "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+        },
+        new PressResource
+        {
+            Id = "timeline",
+            Title = "Company Timeline",
+            Description = "Key milestones and achievements",
+            Icon = "fas fa-history",
+            Color = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        },
+        new PressResource
+        {
+            Id = "brand",
+            Title = "Brand Guidelines",
+            Description = "Logo usage and brand standards",
+            Icon = "fas fa-palette",
+            Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+        }
+    };
+
+    private List<PressRelease> pressReleases = new()
+    {
+        new PressRelease
+        {
+            Id = "1",
+            Title = "RailBlazer Reaches 10 Million Users Milestone",
+            Summary = "RailBlazer celebrates a major milestone as it reaches 10 million active users, marking significant growth in the online railway booking sector.",
+            Date = DateTime.Now.AddMonths(-2)
+        },
+        new PressRelease
+        {
+            Id = "2",
+            Title = "New Mobile App Launch with Enhanced Features",
+            Summary = "RailBlazer launches its redesigned mobile application with new features including real-time train tracking and improved booking experience.",
+            Date = DateTime.Now.AddMonths(-4)
+        },
+        new PressRelease
+        {
+            Id = "3",
+            Title = "Partnership with Indian Railways for Better Service",
+            Summary = "RailBlazer announces strategic partnership with Indian Railways to enhance booking services and customer experience.",
+            Date = DateTime.Now.AddMonths(-6)
+        },
+        new PressRelease
+        {
+            Id = "4",
+            Title = "24/7 Customer Support Initiative",
+            Summary = "RailBlazer introduces round-the-clock customer support to assist travelers at any time of day or night.",
+            Date = DateTime.Now.AddMonths(-8)
+        }
+    };
+
+    private void DownloadResource(string resourceId)
+    {
+        // In a real application, this would trigger a file download
+        // For now, we'll just show a message
+    }
+
+    private void ReadPressRelease(string releaseId)
+    {
+        // In a real application, navigate to the full press release page
+    }
+
+    private class PressResource
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+    }
+
+    private class PressRelease
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Summary { get; set; }
+        public DateTime Date { get; set; }
+    }
+}

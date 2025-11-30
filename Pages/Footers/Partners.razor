@@ -1,0 +1,213 @@
+﻿@page "/partners"
+
+<PageTitle>Partners - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">OUR PARTNERS</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Building Strong Partnerships</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-network-wired fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partnership Benefits -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-star me-2"></i>Why Partner With Us?
+            </h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Large Customer Base</h5>
+                        <p class="text-white opacity-75">Access to millions of active users looking for travel solutions.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Growth Opportunities</h5>
+                        <p class="text-white opacity-75">Mutually beneficial partnerships that drive growth for both parties.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-tools fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Technical Support</h5>
+                        <p class="text-white opacity-75">Comprehensive API documentation and dedicated technical support.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Partner Categories -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-sitemap me-2"></i>Partner Categories
+            </h3>
+            <div class="row g-4">
+                @foreach (var category in partnerCategories)
+                {
+                    <div class="col-md-6">
+                        <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; border-left: 4px solid #4facfe;">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="user-avatar me-3" style="width: 60px; height: 60px; background: @category.Color;">
+                                    <i class="@category.Icon fa-2x"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="text-white mb-2">@category.Title</h5>
+                                    <p class="text-white opacity-75 mb-0">@category.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Current Partners -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-building me-2"></i>Our Trusted Partners
+            </h3>
+            <div class="row g-4">
+                @foreach (var partner in currentPartners)
+                {
+                    <div class="col-md-4 col-6">
+                        <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; min-height: 150px; display: flex; flex-direction: column; justify-content: center;">
+                            <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: rgba(255, 255, 255, 0.2);">
+                                <i class="@partner.Icon fa-2x"></i>
+                            </div>
+                            <h6 class="text-white mb-2">@partner.Name</h6>
+                            <p class="text-white opacity-75 small mb-0">@partner.Type</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Become a Partner -->
+        <div class="user-card text-center">
+            <h3 class="user-name mb-3" style="color: #4facfe;">
+                <i class="fas fa-user-plus me-2"></i>Become a Partner
+            </h3>
+            <p class="text-white opacity-75 mb-4" style="font-size: 1.1rem;">
+                Interested in partnering with us? We're always looking for innovative companies to collaborate with. 
+                Let's create something amazing together!
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <h5 class="text-white mb-3">Partnership Benefits Include:</h5>
+                        <ul class="list-unstyled text-white opacity-75 text-start" style="line-height: 2;">
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>Access to our extensive customer base</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>Co-marketing opportunities</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>Technical integration support</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>Revenue sharing models</li>
+                            <li><i class="fas fa-check-circle me-2" style="color: #4facfe;"></i>Dedicated partner support team</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="/contact" class="add-user-btn text-decoration-none btn-lg px-5">
+                    <i class="fas fa-envelope me-2"></i>Contact Partnership Team
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<PartnerCategory> partnerCategories = new()
+    {
+        new PartnerCategory
+        {
+            Title = "Payment Gateways",
+            Description = "Integrate secure payment solutions for seamless transactions.",
+            Icon = "fas fa-credit-card",
+            Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+        },
+        new PartnerCategory
+        {
+            Title = "Travel Agencies",
+            Description = "Connect with travel agencies to offer comprehensive travel packages.",
+            Icon = "fas fa-suitcase",
+            Color = "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+        },
+        new PartnerCategory
+        {
+            Title = "Technology Partners",
+            Description = "Collaborate with tech companies for innovative solutions.",
+            Icon = "fas fa-laptop-code",
+            Color = "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+        },
+        new PartnerCategory
+        {
+            Title = "Marketing Partners",
+            Description = "Join forces for co-marketing and promotional campaigns.",
+            Icon = "fas fa-bullhorn",
+            Color = "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+        },
+        new PartnerCategory
+        {
+            Title = "Service Providers",
+            Description = "Partner with service providers to enhance customer experience.",
+            Icon = "fas fa-concierge-bell",
+            Color = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        },
+        new PartnerCategory
+        {
+            Title = "Content Partners",
+            Description = "Collaborate on content creation and distribution.",
+            Icon = "fas fa-newspaper",
+            Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+        }
+    };
+
+    private List<Partner> currentPartners = new()
+    {
+        new Partner { Name = "PayU", Type = "Payment Gateway", Icon = "fas fa-credit-card" },
+        new Partner { Name = "Indian Railways", Type = "Railway Authority", Icon = "fas fa-train" },
+        new Partner { Name = "Travel Agency Co", Type = "Travel Partner", Icon = "fas fa-suitcase" },
+        new Partner { Name = "Cloud Services", Type = "Technology Partner", Icon = "fas fa-cloud" },
+        new Partner { Name = "Marketing Pro", Type = "Marketing Partner", Icon = "fas fa-bullhorn" },
+        new Partner { Name = "Content Hub", Type = "Content Partner", Icon = "fas fa-newspaper" }
+    };
+
+    private class PartnerCategory
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+    }
+
+    private class Partner
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Icon { get; set; }
+    }
+}

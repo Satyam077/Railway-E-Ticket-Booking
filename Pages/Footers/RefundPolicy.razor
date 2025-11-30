@@ -1,0 +1,329 @@
+﻿@page "/refund-policy"
+
+<PageTitle>Refund Policy - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-undo-alt fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">REFUND POLICY</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Understanding Your Refund Rights</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-money-bill-wave fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Refund Info -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-info-circle me-2"></i>Quick Refund Information
+            </h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Processing Time</h5>
+                        <p class="text-white opacity-75 mb-0">5-7 business days</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-credit-card fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Refund Method</h5>
+                        <p class="text-white opacity-75 mb-0">Original payment method</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-percentage fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Cancellation Charges</h5>
+                        <p class="text-white opacity-75 mb-0">As per railway rules</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Refund Policy Content -->
+        <div class="user-card mb-4">
+            @foreach (var section in refundSections)
+            {
+                <div class="mb-5">
+                    <h3 class="user-name mb-3" style="color: #4facfe;">
+                        <i class="@(section.Icon) me-2"></i>@(section.Title)
+                    </h3>
+                    <div class="text-white opacity-75" style="line-height: 1.8; font-size: 1.05rem;">
+                        @if (section.Content != null)
+                        {
+                            @foreach (var paragraph in section.Content)
+                            {
+                                <p class="mb-3">@paragraph</p>
+                            }
+                        }
+                        @if (section.TableData != null)
+                        {
+                            <div class="table-responsive mt-3 mb-3">
+                                <table class="table table-bordered" style="background: rgba(255, 255, 255, 0.1); color: white;">
+                                    <thead style="background: rgba(79, 172, 254, 0.3);">
+                                        <tr>
+                                            @foreach (var header in section.TableData.Headers)
+                                            {
+                                                <th class="text-white">@header</th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var row in section.TableData.Rows)
+                                        {
+                                            <tr>
+                                                @foreach (var cell in row)
+                                                {
+                                                    <td>@cell</td>
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        @if (section.ListItems != null && section.ListItems.Any())
+                        {
+                            <ul class="mb-3" style="padding-left: 1.5rem;">
+                                @foreach (var item in section.ListItems)
+                                {
+                                    <li class="mb-2">@item</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- How to Request Refund -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-list-ol me-2"></i>How to Request a Refund
+            </h3>
+            <div class="row g-4">
+                @foreach (var step in refundSteps)
+                {
+                    <div class="col-md-6">
+                        <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; border-left: 4px solid #4facfe;">
+                            <div class="d-flex align-items-start">
+                                <div class="user-avatar me-3" style="width: 50px; height: 50px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); flex-shrink: 0;">
+                                    <span style="font-size: 1.5rem; font-weight: 700;">@step.Number</span>
+                                </div>
+                                <div>
+                                    <h5 class="text-white mb-2">@step.Title</h5>
+                                    <p class="text-white opacity-75 mb-0">@step.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Contact for Refunds -->
+        <div class="user-card text-center">
+            <h3 class="user-name mb-3" style="color: #4facfe;">
+                <i class="fas fa-headset me-2"></i>Need Help with Refunds?
+            </h3>
+            <p class="text-white opacity-75 mb-4" style="font-size: 1.1rem;">
+                If you have questions about refunds or need assistance with a refund request, our support team is here to help.
+            </p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/contact" class="add-user-btn text-decoration-none">
+                    <i class="fas fa-envelope me-2"></i>Contact Support
+                </a>
+                <a href="/faq" class="add-user-btn text-decoration-none" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-question-circle me-2"></i>View FAQs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<RefundSection> refundSections = new()
+    {
+        new RefundSection
+        {
+            Title = "1. General Refund Policy",
+            Icon = "fas fa-info-circle",
+            Content = new List<string>
+            {
+                "RailBlazer processes refunds in accordance with Indian Railways cancellation and refund rules. All refunds are subject to applicable cancellation charges and processing fees.",
+                "Refunds are processed to the original payment method used for the booking. The processing time may vary depending on your payment method and bank processing times."
+            }
+        },
+        new RefundSection
+        {
+            Title = "2. Cancellation Charges",
+            Icon = "fas fa-percentage",
+            Content = new List<string>
+            {
+                "Cancellation charges are applied based on when you cancel your ticket relative to the scheduled departure time. The charges are as follows:"
+            },
+            TableData = new RefundTable
+            {
+                Headers = new List<string> { "Time Before Departure", "Cancellation Charges", "Refund Amount" },
+                Rows = new List<List<string>>
+                {
+                    new List<string> { "More than 48 hours", "Rs. 240 (AC) / Rs. 60 (Sleeper)", "Full fare minus charges" },
+                    new List<string> { "24-48 hours", "25% of fare", "75% of fare" },
+                    new List<string> { "12-24 hours", "50% of fare", "50% of fare" },
+                    new List<string> { "Less than 12 hours", "No refund", "No refund" }
+                }
+            }
+        },
+        new RefundSection
+        {
+            Title = "3. Refund Processing Time",
+            Icon = "fas fa-clock",
+            Content = new List<string>
+            {
+                "Refund processing times vary based on your payment method:"
+            },
+            ListItems = new List<string>
+            {
+                "Credit/Debit Cards: 5-7 business days",
+                "Net Banking: 3-5 business days",
+                "UPI: 2-3 business days",
+                "Digital Wallets: 1-2 business days",
+                "Cash Cards: 7-10 business days"
+            }
+        },
+        new RefundSection
+        {
+            Title = "4. Special Cases",
+            Icon = "fas fa-exclamation-circle",
+            Content = new List<string>
+            {
+                "In certain circumstances, special refund rules apply:"
+            },
+            ListItems = new List<string>
+            {
+                "Train Cancellation: Full refund without cancellation charges",
+                "Train Running More Than 3 Hours Late: Full refund available",
+                "Non-Allotment of Berth: Full refund if confirmed berth not provided",
+                "Accident or Breakdown: Full refund as per railway rules",
+                "Change in Train Composition: Refund as per railway policy"
+            }
+        },
+        new RefundSection
+        {
+            Title = "5. TDR (Ticket Deposit Receipt)",
+            Icon = "fas fa-file-invoice",
+            Content = new List<string>
+            {
+                "If you are eligible for a refund due to train cancellation, late running, or other service issues, you can file a TDR online through your account. TDR processing typically takes 15-30 days."
+            }
+        },
+        new RefundSection
+        {
+            Title = "6. Non-Refundable Items",
+            Icon = "fas fa-ban",
+            Content = new List<string>
+            {
+                "The following charges are non-refundable:"
+            },
+            ListItems = new List<string>
+            {
+                "Service charges and convenience fees",
+                "Payment gateway charges",
+                "Insurance premiums (if applicable)",
+                "Tatkal charges (in case of cancellation)"
+            }
+        },
+        new RefundSection
+        {
+            Title = "7. Refund Disputes",
+            Icon = "fas fa-balance-scale",
+            Content = new List<string>
+            {
+                "If you believe you are entitled to a refund that has not been processed, or if you have concerns about a refund amount, please contact our customer support team. We will investigate your case and respond within 5-7 business days."
+            }
+        }
+    };
+
+    private List<RefundStep> refundSteps = new()
+    {
+        new RefundStep
+        {
+            Number = "1",
+            Title = "Log into Your Account",
+            Description = "Access your RailBlazer account and navigate to 'My Bookings' section."
+        },
+        new RefundStep
+        {
+            Number = "2",
+            Title = "Select Booking",
+            Description = "Find the booking you want to cancel and click on 'Cancel Booking'."
+        },
+        new RefundStep
+        {
+            Number = "3",
+            Title = "Confirm Cancellation",
+            Description = "Review the cancellation charges and confirm your cancellation request."
+        },
+        new RefundStep
+        {
+            Number = "4",
+            Title = "Receive Confirmation",
+            Description = "You'll receive a confirmation email with refund details and timeline."
+        },
+        new RefundStep
+        {
+            Number = "5",
+            Title = "Refund Processing",
+            Description = "Your refund will be processed automatically to your original payment method."
+        },
+        new RefundStep
+        {
+            Number = "6",
+            Title = "Track Refund Status",
+            Description = "Monitor your refund status in the 'My Bookings' section of your account."
+        }
+    };
+
+    private class RefundSection
+    {
+        public string Title { get; set; }
+        public string Icon { get; set; }
+        public List<string> Content { get; set; }
+        public List<string> ListItems { get; set; }
+        public RefundTable TableData { get; set; }
+    }
+
+    private class RefundTable
+    {
+        public List<string> Headers { get; set; }
+        public List<List<string>> Rows { get; set; }
+    }
+
+    private class RefundStep
+    {
+        public string Number { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+    }
+}

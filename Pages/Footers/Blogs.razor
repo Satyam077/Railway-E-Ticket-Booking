@@ -1,0 +1,309 @@
+﻿@page "/blog"
+@page "/blogs"
+
+<PageTitle>Blog - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-blog fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">BLOG</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Travel Tips, News & Updates</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-newspaper fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Featured Blog Post -->
+        @if (featuredPost != null)
+        {
+            <div class="user-card mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <span class="badge mb-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 0.5rem 1rem;">
+                            <i class="fas fa-star me-2"></i>Featured
+                        </span>
+                        <h2 class="user-name mb-3">@featuredPost.Title</h2>
+                        <p class="text-white opacity-75 mb-3" style="line-height: 1.8;">@featuredPost.Excerpt</p>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar me-2" style="color: #4facfe;"></i>
+                                <span class="text-white opacity-75">@featuredPost.PublishDate.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2" style="color: #4facfe;"></i>
+                                <span class="text-white opacity-75">@featuredPost.Author</span>
+                            </div>
+                        </div>
+                        <button class="add-user-btn" @onclick="() => ReadMore(featuredPost.Id)">
+                            <i class="fas fa-arrow-right me-2"></i>Read More
+                        </button>
+                    </div>
+                    <div class="col-md-6 text-center">
+                        <div class="user-avatar mx-auto" style="width: 300px; height: 200px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-image fa-4x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Blog Categories -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4" style="color: #4facfe;">
+                <i class="fas fa-tags me-2"></i>Browse by Category
+            </h3>
+            <div class="d-flex gap-2 flex-wrap">
+                @foreach (var category in blogCategories)
+                {
+                    <button class="btn add-user-btn btn-sm" @onclick="() => FilterByCategory(category)">
+                        <i class="@GetCategoryIcon(category) me-2"></i>@category
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Blog Posts Grid -->
+        <div class="row g-4">
+            @foreach (var post in GetFilteredPosts())
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="user-card h-100" style="cursor: pointer;" @onclick="() => ReadMore(post.Id)">
+                        <div class="mb-3">
+                            <div class="user-avatar mx-auto" style="width: 100%; height: 200px; background: linear-gradient(135deg, @GetRandomGradient());">
+                                <i class="fas fa-image fa-3x"></i>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-secondary">@post.Category</span>
+                            <span class="text-white opacity-75 small">
+                                <i class="fas fa-calendar me-1"></i>@post.PublishDate.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+                        <h5 class="user-name mb-2">@post.Title</h5>
+                        <p class="text-white opacity-75 mb-3" style="line-height: 1.6; font-size: 0.95rem;">@post.Excerpt</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user me-2" style="color: #4facfe;"></i>
+                                <span class="text-white opacity-75 small">@post.Author</span>
+                            </div>
+                            <button class="btn btn-sm add-user-btn">
+                                <i class="fas fa-arrow-right me-1"></i>Read
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Newsletter Subscription -->
+        <div class="user-card mt-4 text-center">
+            <h3 class="user-name mb-3" style="color: #4facfe;">
+                <i class="fas fa-envelope me-2"></i>Subscribe to Our Newsletter
+            </h3>
+            <p class="text-white opacity-75 mb-4">Get the latest travel tips, railway news, and exclusive offers delivered to your inbox!</p>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="input-group input-group-lg">
+                        <input type="email" class="form-control" placeholder="Enter your email address" @bind="newsletterEmail" />
+                        <button class="add-user-btn" @onclick="SubscribeNewsletter">
+                            <i class="fas fa-paper-plane me-2"></i>Subscribe
+                        </button>
+                    </div>
+                    @if (!string.IsNullOrEmpty(newsletterMessage))
+                    {
+                        <div class="alert @(newsletterSuccess ? "alert-success" : "alert-danger") mt-3" role="alert">
+                            @newsletterMessage
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string selectedCategory = "All";
+    private string newsletterEmail = string.Empty;
+    private string newsletterMessage = string.Empty;
+    private bool newsletterSuccess = false;
+
+    private BlogPost featuredPost = new BlogPost
+    {
+        Id = "1",
+        Title = "10 Essential Tips for First-Time Train Travelers in India",
+        Excerpt = "Planning your first train journey in India? Here are 10 essential tips to make your experience smooth and enjoyable, from booking tickets to what to pack.",
+        Author = "Travel Team",
+        Category = "Travel Tips",
+        PublishDate = DateTime.Now.AddDays(-5),
+        Content = "Full article content here..."
+    };
+
+    private List<string> blogCategories = new() { "All", "Travel Tips", "Railway News", "Booking Guide", "Destinations", "Technology" };
+
+    private List<BlogPost> blogPosts = new()
+    {
+        new BlogPost
+        {
+            Id = "2",
+            Title = "How to Book Tatkal Tickets Successfully",
+            Excerpt = "Learn the secrets to booking Tatkal tickets successfully. Tips and tricks from experienced travelers.",
+            Author = "Booking Expert",
+            Category = "Booking Guide",
+            PublishDate = DateTime.Now.AddDays(-10)
+        },
+        new BlogPost
+        {
+            Id = "3",
+            Title = "Top 10 Scenic Train Routes in India",
+            Excerpt = "Discover the most beautiful train journeys across India, from the mountains to the coast.",
+            Author = "Travel Team",
+            Category = "Destinations",
+            PublishDate = DateTime.Now.AddDays(-15)
+        },
+        new BlogPost
+        {
+            Id = "4",
+            Title = "Understanding Railway Fare Structure",
+            Excerpt = "A comprehensive guide to understanding how railway fares are calculated, including base fare, taxes, and charges.",
+            Author = "Finance Team",
+            Category = "Booking Guide",
+            PublishDate = DateTime.Now.AddDays(-20)
+        },
+        new BlogPost
+        {
+            Id = "5",
+            Title = "New Features: Enhanced Booking Experience",
+            Excerpt = "We've launched new features to make your booking experience even better. Check out what's new!",
+            Author = "Product Team",
+            Category = "Technology",
+            PublishDate = DateTime.Now.AddDays(-25)
+        },
+        new BlogPost
+        {
+            Id = "6",
+            Title = "Railway Safety: What You Need to Know",
+            Excerpt = "Important safety tips and guidelines for safe train travel in India.",
+            Author = "Safety Team",
+            Category = "Travel Tips",
+            PublishDate = DateTime.Now.AddDays(-30)
+        },
+        new BlogPost
+        {
+            Id = "7",
+            Title = "Best Time to Book Train Tickets",
+            Excerpt = "Discover the best times to book your train tickets for better availability and prices.",
+            Author = "Booking Expert",
+            Category = "Booking Guide",
+            PublishDate = DateTime.Now.AddDays(-35)
+        },
+        new BlogPost
+        {
+            Id = "8",
+            Title = "Indian Railways: A Brief History",
+            Excerpt = "Explore the rich history of Indian Railways, from its inception to modern times.",
+            Author = "History Team",
+            Category = "Railway News",
+            PublishDate = DateTime.Now.AddDays(-40)
+        },
+        new BlogPost
+        {
+            Id = "9",
+            Title = "Mobile App vs Website: Which is Better?",
+            Excerpt = "Compare our mobile app and website features to choose the best option for your needs.",
+            Author = "Product Team",
+            Category = "Technology",
+            PublishDate = DateTime.Now.AddDays(-45)
+        }
+    };
+
+    private List<BlogPost> GetFilteredPosts()
+    {
+        if (selectedCategory == "All")
+        {
+            return blogPosts;
+        }
+        return blogPosts.Where(p => p.Category == selectedCategory).ToList();
+    }
+
+    private void FilterByCategory(string category)
+    {
+        selectedCategory = category;
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        return category switch
+        {
+            "Travel Tips" => "fas fa-lightbulb",
+            "Railway News" => "fas fa-newspaper",
+            "Booking Guide" => "fas fa-book",
+            "Destinations" => "fas fa-map-marker-alt",
+            "Technology" => "fas fa-laptop-code",
+            _ => "fas fa-tag"
+        };
+    }
+
+    private string GetRandomGradient()
+    {
+        var gradients = new[]
+        {
+            "#f093fb 0%, #f5576c 100%",
+            "#4facfe 0%, #00f2fe 100%",
+            "#43e97b 0%, #38f9d7 100%",
+            "#fa709a 0%, #fee140 100%",
+            "#667eea 0%, #764ba2 100%"
+        };
+        return gradients[new Random().Next(gradients.Length)];
+    }
+
+    private void ReadMore(string postId)
+    {
+        // In a real application, navigate to the full blog post page
+        // NavigationManager.NavigateTo($"/blog/{postId}");
+    }
+
+    private async Task SubscribeNewsletter()
+    {
+        if (string.IsNullOrWhiteSpace(newsletterEmail))
+        {
+            newsletterMessage = "Please enter a valid email address.";
+            newsletterSuccess = false;
+            return;
+        }
+
+        // Simulate API call
+        await Task.Delay(1000);
+
+        newsletterMessage = "Thank you for subscribing! Check your email to confirm your subscription.";
+        newsletterSuccess = true;
+        newsletterEmail = string.Empty;
+
+        // Clear message after 5 seconds
+        await Task.Delay(5000);
+        newsletterMessage = string.Empty;
+    }
+
+    private class BlogPost
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Excerpt { get; set; }
+        public string Author { get; set; }
+        public string Category { get; set; }
+        public DateTime PublishDate { get; set; }
+        public string Content { get; set; } = string.Empty;
+    }
+}

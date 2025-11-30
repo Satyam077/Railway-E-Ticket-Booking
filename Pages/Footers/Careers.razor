@@ -1,0 +1,334 @@
+﻿@page "/careers"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Careers - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-briefcase fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">CAREERS</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Join Our Growing Team</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Why Join Us Section -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-star me-2"></i>Why Join RailBlazer?
+            </h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Growth Opportunities</h5>
+                        <p class="text-white opacity-75">Fast-growing company with ample opportunities for career advancement and skill development.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-balance-scale fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Work-Life Balance</h5>
+                        <p class="text-white opacity-75">Flexible working hours, remote work options, and comprehensive leave policies.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-gift fa-2x"></i>
+                        </div>
+                        <h5 class="text-white mb-3">Great Benefits</h5>
+                        <p class="text-white opacity-75">Competitive salary, health insurance, learning allowances, and team outings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Positions -->
+        <div class="user-card mb-4">
+            <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                <i class="fas fa-briefcase me-2"></i>Open Positions
+            </h3>
+            <div class="row g-4">
+                @foreach (var position in openPositions)
+                {
+                    <div class="col-md-6">
+                        <div class="p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; border-left: 4px solid #4facfe;">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="text-white mb-2">@position.Title</h5>
+                                    <p class="text-white opacity-75 mb-0 small">
+                                        <i class="fas fa-map-marker-alt me-2" style="color: #4facfe;"></i>@position.Location
+                                    </p>
+                                </div>
+                                <span class="badge" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 0.5rem 1rem;">
+                                    @position.Type
+                                </span>
+                            </div>
+                            <p class="text-white opacity-75 mb-3">@position.Description</p>
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                @foreach (var skill in position.Skills)
+                                {
+                                    <span class="badge bg-secondary">@skill</span>
+                                }
+                            </div>
+                            <button class="add-user-btn btn-sm" @onclick="() => ApplyForPosition(position.Id)">
+                                <i class="fas fa-paper-plane me-2"></i>Apply Now
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Application Form -->
+        @if (showApplicationForm)
+        {
+            <div class="user-card mb-4">
+                <h3 class="user-name mb-4 text-center" style="color: #4facfe;">
+                    <i class="fas fa-file-alt me-2"></i>Application Form
+                </h3>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-white fw-bold">
+                            <i class="fas fa-user me-2" style="color: #4facfe;"></i>Full Name
+                        </label>
+                        <input type="text" class="form-control form-control-lg" @bind="applicationForm.Name" placeholder="Enter your full name" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white fw-bold">
+                            <i class="fas fa-envelope me-2" style="color: #4facfe;"></i>Email Address
+                        </label>
+                        <input type="email" class="form-control form-control-lg" @bind="applicationForm.Email" placeholder="your.email@example.com" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white fw-bold">
+                            <i class="fas fa-phone me-2" style="color: #4facfe;"></i>Phone Number
+                        </label>
+                        <input type="tel" class="form-control form-control-lg" @bind="applicationForm.Phone" placeholder="+91 1234567890" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white fw-bold">
+                            <i class="fas fa-briefcase me-2" style="color: #4facfe;"></i>Position Applied For
+                        </label>
+                        <input type="text" class="form-control form-control-lg" value="@selectedPosition" readonly />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white fw-bold">
+                            <i class="fas fa-file-upload me-2" style="color: #4facfe;"></i>Upload Resume (PDF, DOC, DOCX - Max 5MB)
+                        </label>
+                        <input type="file" class="form-control form-control-lg" accept=".pdf,.doc,.docx" @onchange="HandleFileUpload" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-white fw-bold">
+                            <i class="fas fa-comment-alt me-2" style="color: #4facfe;"></i>Cover Letter (Optional)
+                        </label>
+                        <textarea class="form-control form-control-lg" rows="4" @bind="applicationForm.CoverLetter" placeholder="Tell us why you're interested in this position..."></textarea>
+                    </div>
+                    <div class="col-12 text-center">
+                        <button class="add-user-btn btn-lg px-5 me-3" @onclick="SubmitApplication" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Submitting...</span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-paper-plane me-2"></i>
+                                <span>Submit Application</span>
+                            }
+                        </button>
+                        <button class="btn btn-outline-light btn-lg px-5" @onclick="CancelApplication">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(submitMessage))
+                {
+                    <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3" role="alert">
+                        <i class="fas @(isSuccess ? "fa-check-circle" : "fa-exclamation-circle") me-2"></i>@submitMessage
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Don't See Your Role Section -->
+        <div class="user-card text-center">
+            <h3 class="user-name mb-3" style="color: #4facfe;">
+                <i class="fas fa-envelope-open me-2"></i>Don't See Your Role?
+            </h3>
+            <p class="text-white opacity-75 mb-4" style="font-size: 1.1rem;">
+                We're always looking for talented individuals to join our team. Send us your resume and we'll keep you in mind for future opportunities!
+            </p>
+            <button class="add-user-btn" @onclick="ShowGeneralApplication">
+                <i class="fas fa-paper-plane me-2"></i>Send General Application
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool showApplicationForm = false;
+    private string selectedPosition = string.Empty;
+    private bool isSubmitting = false;
+    private string submitMessage = string.Empty;
+    private bool isSuccess = false;
+
+    private ApplicationFormModel applicationForm = new();
+
+    private void ApplyForPosition(string positionId)
+    {
+        var position = openPositions.FirstOrDefault(p => p.Id == positionId);
+        if (position != null)
+        {
+            selectedPosition = position.Title;
+            showApplicationForm = true;
+            applicationForm = new ApplicationFormModel();
+        }
+    }
+
+    private void ShowGeneralApplication()
+    {
+        selectedPosition = "General Application";
+        showApplicationForm = true;
+        applicationForm = new ApplicationFormModel();
+    }
+
+    private void CancelApplication()
+    {
+        showApplicationForm = false;
+        applicationForm = new ApplicationFormModel();
+        submitMessage = string.Empty;
+    }
+    private void HandleFileUpload(){
+
+    }
+
+    // private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    // {
+    //     Handle file upload logic here
+    //     In a real application, you would upload the file to a server
+    // }
+
+    private async Task SubmitApplication()
+    {
+        isSubmitting = true;
+        submitMessage = string.Empty;
+
+        try
+        {
+            // Simulate API call
+            await Task.Delay(1500);
+
+            submitMessage = "Thank you for your application! We have received your resume and will review it shortly. We'll contact you if your profile matches our requirements.";
+            isSuccess = true;
+
+            // Reset form after 3 seconds
+            await Task.Delay(3000);
+            CancelApplication();
+        }
+        catch (Exception ex)
+        {
+            submitMessage = $"An error occurred while submitting your application. Please try again later. Error: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private List<JobPosition> openPositions = new()
+    {
+        new JobPosition
+        {
+            Id = "dev-1",
+            Title = "Senior Full Stack Developer",
+            Location = "Delhi / Remote",
+            Type = "Full-time",
+            Description = "We're looking for an experienced full-stack developer to join our engineering team. You'll work on building scalable web applications using .NET and modern frontend technologies.",
+            Skills = new List<string> { ".NET", "C#", "Blazor", "JavaScript", "MongoDB", "REST APIs" }
+        },
+        new JobPosition
+        {
+            Id = "dev-2",
+            Title = "Frontend Developer",
+            Location = "Delhi / Remote",
+            Type = "Full-time",
+            Description = "Join our frontend team to create beautiful and intuitive user interfaces. Experience with modern JavaScript frameworks and responsive design is essential.",
+            Skills = new List<string> { "JavaScript", "HTML/CSS", "React", "Bootstrap", "UI/UX" }
+        },
+        new JobPosition
+        {
+            Id = "support-1",
+            Title = "Customer Support Specialist",
+            Location = "Delhi",
+            Type = "Full-time",
+            Description = "Help our customers with booking issues, cancellations, and general inquiries. Excellent communication skills and customer service experience required.",
+            Skills = new List<string> { "Customer Service", "Communication", "Problem Solving", "Multitasking" }
+        },
+        new JobPosition
+        {
+            Id = "qa-1",
+            Title = "QA Engineer",
+            Location = "Delhi / Remote",
+            Type = "Full-time",
+            Description = "Ensure the quality of our platform by designing and executing test cases. Experience with automated testing tools and bug tracking systems preferred.",
+            Skills = new List<string> { "Testing", "QA", "Automation", "Bug Tracking", "Test Cases" }
+        },
+        new JobPosition
+        {
+            Id = "design-1",
+            Title = "UI/UX Designer",
+            Location = "Delhi / Remote",
+            Type = "Full-time",
+            Description = "Create stunning user interfaces and improve user experience across our platform. Strong portfolio and experience with design tools required.",
+            Skills = new List<string> { "UI/UX", "Figma", "Adobe XD", "Prototyping", "User Research" }
+        },
+        new JobPosition
+        {
+            Id = "marketing-1",
+            Title = "Digital Marketing Specialist",
+            Location = "Delhi / Remote",
+            Type = "Full-time",
+            Description = "Drive our digital marketing efforts including SEO, social media, content marketing, and paid advertising campaigns.",
+            Skills = new List<string> { "SEO", "Social Media", "Content Marketing", "Google Ads", "Analytics" }
+        }
+    };
+
+    private class JobPosition
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Location { get; set; }
+        public string Type { get; set; }
+        public string Description { get; set; }
+        public List<string> Skills { get; set; }
+    }
+
+    private class ApplicationFormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string CoverLetter { get; set; } = string.Empty;
+    }
+}

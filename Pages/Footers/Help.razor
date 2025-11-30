@@ -1,0 +1,324 @@
+﻿@page "/help"
+@page "/help-center"
+
+<PageTitle>Help Center - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-life-ring fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">HELP CENTER</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Get the Support You Need</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-hands-helping fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Help Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="user-card text-center h-100" style="cursor: pointer;" @onclick="NavigateTo">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-question-circle fa-2x"></i>
+                    </div>
+                    <h4 class="user-name mb-3">Frequently Asked Questions</h4>
+                    <p class="text-white opacity-75 mb-4">Find answers to the most common questions about booking, cancellation, and more.</p>
+                    <button class="add-user-btn">
+                        <i class="fas fa-arrow-right me-2"></i>View FAQs
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="user-card text-center h-100" style="cursor: pointer;" @onclick="NavigateTos">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                    <h4 class="user-name mb-3">Contact Support</h4>
+                    <p class="text-white opacity-75 mb-4">Get in touch with our support team via email, phone, or live chat.</p>
+                    <button class="add-user-btn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-arrow-right me-2"></i>Contact Us
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="user-card text-center h-100">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                    <h4 class="user-name mb-3">User Guides</h4>
+                    <p class="text-white opacity-75 mb-4">Step-by-step guides and tutorials to help you use our platform effectively.</p>
+                    <button class="add-user-btn" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-arrow-right me-2"></i>View Guides
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Topics -->
+        <div class="row g-4">
+            @foreach (var topic in helpTopics)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="user-card h-100">
+                        <div class="d-flex align-items-start mb-3">
+                            <div class="user-avatar me-3" style="width: 50px; height: 50px; background: @topic.Color;">
+                                <i class="@topic.Icon"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="user-name mb-2">@topic.Title</h5>
+                                <p class="text-white opacity-75 small mb-3">@topic.Description</p>
+                                <ul class="list-unstyled">
+                                    @foreach (var item in topic.Items)
+                                    {
+                                        <li class="mb-2">
+                                            <a href="@item.Url" class="text-white text-decoration-none" style="font-size: 0.9rem;">
+                                                <i class="fas fa-chevron-right me-2" style="color: #4facfe; font-size: 0.7rem;"></i>@item.Text
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Video Tutorials Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="user-card">
+                    <h3 class="user-name mb-4 text-center">
+                        <i class="fas fa-video me-2" style="color: #4facfe;"></i>Video Tutorials
+                    </h3>
+                    <div class="row g-4">
+                        @foreach (var video in videoTutorials)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="text-center p-4" style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; cursor: pointer;" @onclick="() => OpenVideo(video.Url)">
+                                    <div class="mb-3" style="position: relative; display: inline-block;">
+                                        <i class="fas fa-play-circle fa-4x" style="color: #4facfe;"></i>
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                                            <i class="fas fa-play fa-2x text-white"></i>
+                                        </div>
+                                    </div>
+                                    <h5 class="text-white mb-2">@video.Title</h5>
+                                    <p class="text-white opacity-75 small mb-0">@video.Duration</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Still Need Help Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="user-card text-center">
+                    <h3 class="user-name mb-3">
+                        <i class="fas fa-headset me-2" style="color: #4facfe;"></i>Still Need Help?
+                    </h3>
+                    <p class="text-white opacity-75 mb-4">Our support team is available 24/7 to assist you with any questions or issues.</p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="/contact" class="add-user-btn text-decoration-none">
+                            <i class="fas fa-envelope me-2"></i>Contact Support
+                        </a>
+                        <a href="tel:+911800004567" class="add-user-btn text-decoration-none" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-phone me-2"></i>Call Us
+                        </a>
+                        <a href="https://wa.me/911800004567" target="_blank" class="add-user-btn text-decoration-none" style="background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);">
+                            <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] NavigationManager Nav { get; set; }
+    [Inject] IJSRuntime JSRuntime { get; set; }
+
+    private void NavigateTo(string url)
+    {
+        Nav.NavigateTo(url);
+    }
+
+    private async Task OpenVideo(string url)
+    {
+        await JSRuntime.InvokeVoidAsync("window.open", url, "_blank");
+    }
+
+    private List<HelpTopic> helpTopics = new()
+    {
+        new HelpTopic
+        {
+            Title = "Getting Started",
+            Description = "New to our platform? Start here.",
+            Icon = "fas fa-rocket",
+            Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            Items = new List<HelpItem>
+            {
+                new HelpItem { Text = "How to create an account", Url = "/faq" },
+                new HelpItem { Text = "First time booking guide", Url = "/faq" },
+                new HelpItem { Text = "Account verification", Url = "/faq" },
+                new HelpItem { Text = "Profile setup", Url = "/faq" }
+            }
+        },
+        new HelpTopic
+        {
+            Title = "Booking Tickets",
+            Description = "Learn how to book tickets easily.",
+            Icon = "fas fa-ticket-alt",
+            Color = "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+            Items = new List<HelpItem>
+            {
+                new HelpItem { Text = "Book E-ticket", Url = "/faq" },
+                new HelpItem { Text = "Book Tatkal ticket", Url = "/faq" },
+                new HelpItem { Text = "Concession tickets", Url = "/faq" },
+                new HelpItem { Text = "PwD tickets", Url = "/faq" }
+            }
+        },
+        new HelpTopic
+        {
+            Title = "Manage Bookings",
+            Description = "Modify or cancel your bookings.",
+            Icon = "fas fa-edit",
+            Color = "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+            Items = new List<HelpItem>
+            {
+                new HelpItem { Text = "Cancel E-ticket", Url = "/faq" },
+                new HelpItem { Text = "Change boarding point", Url = "/faq" },
+                new HelpItem { Text = "View booking history", Url = "/user-dashboard" },
+                new HelpItem { Text = "Download ticket", Url = "/faq" }
+            }
+        },
+        new HelpTopic
+        {
+            Title = "Payment & Refunds",
+            Description = "Payment methods and refund policies.",
+            Icon = "fas fa-credit-card",
+            Color = "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+            Items = new List<HelpItem>
+            {
+                new HelpItem { Text = "Payment methods", Url = "/faq" },
+                new HelpItem { Text = "Refund policy", Url = "/faq" },
+                new HelpItem { Text = "File TDR", Url = "/faq" },
+                new HelpItem { Text = "Refund status", Url = "/faq" }
+            }
+        },
+        new HelpTopic
+        {
+            Title = "Account Settings",
+            Description = "Manage your account and preferences.",
+            Icon = "fas fa-user-cog",
+            Color = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            Items = new List<HelpItem>
+            {
+                new HelpItem { Text = "Update profile", Url = "/profile" },
+                new HelpItem { Text = "Link Aadhaar", Url = "/faq" },
+                new HelpItem { Text = "Change password", Url = "/profile" },
+                new HelpItem { Text = "Privacy settings", Url = "/profile" }
+            }
+        },
+        new HelpTopic
+        {
+            Title = "Technical Support",
+            Description = "Resolve technical issues and errors.",
+            Icon = "fas fa-tools",
+            Color = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+            Items = new List<HelpItem>
+            {
+                new HelpItem { Text = "Browser compatibility", Url = "/faq" },
+                new HelpItem { Text = "Payment gateway issues", Url = "/faq" },
+                new HelpItem { Text = "App not loading", Url = "/faq" },
+                new HelpItem { Text = "Report a bug", Url = "/contact" }
+            }
+        }
+    };
+
+    private List<VideoTutorial> videoTutorials = new()
+    {
+        new VideoTutorial
+        {
+            Title = "How to Book a Ticket",
+            Duration = "5:30 min",
+            Url = "#"
+        },
+        new VideoTutorial
+        {
+            Title = "Cancel & Refund Process",
+            Duration = "4:15 min",
+            Url = "#"
+        },
+        new VideoTutorial
+        {
+            Title = "Account Registration",
+            Duration = "3:45 min",
+            Url = "#"
+        },
+        new VideoTutorial
+        {
+            Title = "Link Your Aadhaar",
+            Duration = "2:20 min",
+            Url = "#"
+        },
+        new VideoTutorial
+        {
+            Title = "File TDR Online",
+            Duration = "4:00 min",
+            Url = "#"
+        },
+        new VideoTutorial
+        {
+            Title = "Change Boarding Point",
+            Duration = "3:10 min",
+            Url = "#"
+        }
+    };
+    private void NavigateTo(){
+        Nav.NavigateTo("/faq");
+    }
+    private void NavigateTos()
+    {
+        Nav.NavigateTo("/faqs");
+    }
+
+    private class HelpTopic
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+        public List<HelpItem> Items { get; set; }
+    }
+
+    private class HelpItem
+    {
+        public string Text { get; set; }
+        public string Url { get; set; }
+    }
+
+    private class VideoTutorial
+    {
+        public string Title { get; set; }
+        public string Duration { get; set; }
+        public string Url { get; set; }
+    }
+}

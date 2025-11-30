@@ -1,0 +1,267 @@
+﻿@page "/contact"
+@page "/contact-us"
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Contact Us - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">CONTACT US</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">We're Here to Help You</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-headset fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Contact Information Cards -->
+            <div class="col-lg-4">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-phone fa-2x"></i>
+                    </div>
+                    <h4 class="user-name mb-3">Phone Support</h4>
+                    <p class="text-white opacity-75 mb-3">Call us for immediate assistance</p>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="tel:+911800004567" class="add-user-btn text-decoration-none">
+                            <i class="fas fa-phone me-2"></i>+91 (180) 000-4567
+                        </a>
+                        <p class="text-white opacity-75 small mb-0">24/7 Customer Support</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                    <h4 class="user-name mb-3">Email Support</h4>
+                    <p class="text-white opacity-75 mb-3">Send us an email and we'll respond within 24 hours</p>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="mailto:support@railblazer.com" class="add-user-btn text-decoration-none" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-envelope me-2"></i>support@railblazer.com
+                        </a>
+                        <p class="text-white opacity-75 small mb-0">Response within 24 hours</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="user-card h-100 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-map-marker-alt fa-2x"></i>
+                    </div>
+                    <h4 class="user-name mb-3">Office Address</h4>
+                    <p class="text-white opacity-75 mb-3">Visit us at our headquarters</p>
+                    <div class="text-white opacity-75">
+                        <p class="mb-2">
+                            <i class="fas fa-building me-2"></i>123 Railway Avenue<br />
+                            Station District<br />
+                            DELHI 10001, IN
+                        </p>
+                        <p class="small mb-0">
+                            <i class="fas fa-clock me-2"></i>Mon - Sat: 9:00 AM - 6:00 PM
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="row mt-4">
+            <div class="col-lg-8 mx-auto">
+                <div class="user-card">
+                    <h3 class="user-name mb-4 text-center">
+                        <i class="fas fa-paper-plane me-2" style="color: #4facfe;"></i>Send Us a Message
+                    </h3>
+                    <EditForm Model="@contactForm" OnValidSubmit="@HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" style="background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.5); color: white;" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-white fw-bold">
+                                    <i class="fas fa-user me-2" style="color: #4facfe;"></i>Full Name
+                                </label>
+                                <InputText class="form-control form-control-lg" @bind-Value="contactForm.Name" placeholder="Enter your full name" />
+                                <ValidationMessage For="@(() => contactForm.Name)" class="text-warning" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-white fw-bold">
+                                    <i class="fas fa-envelope me-2" style="color: #4facfe;"></i>Email Address
+                                </label>
+                                <InputText class="form-control form-control-lg" @bind-Value="contactForm.Email" placeholder="your.email@example.com" />
+                                <ValidationMessage For="@(() => contactForm.Email)" class="text-warning" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-white fw-bold">
+                                    <i class="fas fa-phone me-2" style="color: #4facfe;"></i>Phone Number
+                                </label>
+                                <InputText class="form-control form-control-lg" @bind-Value="contactForm.Phone" placeholder="+91 1234567890" />
+                                <ValidationMessage For="@(() => contactForm.Phone)" class="text-warning" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-white fw-bold">
+                                    <i class="fas fa-tag me-2" style="color: #4facfe;"></i>Subject
+                                </label>
+                                <InputSelect class="form-control form-control-lg" @bind-Value="contactForm.Subject">
+                                    <option value="">Select a subject</option>
+                                    <option value="booking">Booking Issue</option>
+                                    <option value="cancellation">Cancellation/Refund</option>
+                                    <option value="payment">Payment Problem</option>
+                                    <option value="account">Account Related</option>
+                                    <option value="technical">Technical Support</option>
+                                    <option value="feedback">Feedback/Suggestion</option>
+                                    <option value="other">Other</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => contactForm.Subject)" class="text-warning" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-white fw-bold">
+                                    <i class="fas fa-comment-alt me-2" style="color: #4facfe;"></i>Message
+                                </label>
+                                <InputTextArea class="form-control form-control-lg" rows="5" @bind-Value="contactForm.Message" placeholder="Please describe your issue or inquiry in detail..." />
+                                <ValidationMessage For="@(() => contactForm.Message)" class="text-warning" />
+                            </div>
+                            <div class="col-12 text-center">
+                                <button type="submit" class="add-user-btn btn-lg px-5" disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <span>Sending...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-paper-plane me-2"></i>
+                                        <span>Send Message</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </EditForm>
+                    @if (!string.IsNullOrEmpty(submitMessage))
+                    {
+                        <div class="alert @(isSuccess ? "alert-success" : "alert-danger") mt-3" role="alert">
+                            <i class="fas @(isSuccess ? "fa-check-circle" : "fa-exclamation-circle") me-2"></i>@submitMessage
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Support Options -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="user-card">
+                    <h3 class="user-name mb-4 text-center">
+                        <i class="fas fa-info-circle me-2" style="color: #4facfe;"></i>Other Ways to Reach Us
+                    </h3>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="text-center p-3" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                                <i class="fas fa-comments fa-2x mb-3" style="color: #4facfe;"></i>
+                                <h5 class="text-white mb-2">Live Chat</h5>
+                                <p class="text-white opacity-75 small mb-3">Chat with our support team in real-time</p>
+                                <button class="btn btn-sm add-user-btn">
+                                    <i class="fas fa-comment-dots me-2"></i>Start Chat
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                                <i class="fab fa-whatsapp fa-2x mb-3" style="color: #25d366;"></i>
+                                <h5 class="text-white mb-2">WhatsApp</h5>
+                                <p class="text-white opacity-75 small mb-3">Message us on WhatsApp</p>
+                                <a href="https://wa.me/911800004567" target="_blank" class="btn btn-sm add-user-btn text-decoration-none" style="background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);">
+                                    <i class="fab fa-whatsapp me-2"></i>Chat on WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                                <i class="fas fa-question-circle fa-2x mb-3" style="color: #4facfe;"></i>
+                                <h5 class="text-white mb-2">FAQs</h5>
+                                <p class="text-white opacity-75 small mb-3">Find quick answers to common questions</p>
+                                <a href="/faq" class="btn btn-sm add-user-btn text-decoration-none">
+                                    <i class="fas fa-search me-2"></i>Browse FAQs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ContactFormModel contactForm = new();
+    private bool isSubmitting = false;
+    private string submitMessage = string.Empty;
+    private bool isSuccess = false;
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        submitMessage = string.Empty;
+
+        try
+        {
+            // Simulate API call
+            await Task.Delay(1500);
+
+            // In a real application, you would send this to your backend API
+            submitMessage = "Thank you for contacting us! We have received your message and will get back to you within 24 hours.";
+            isSuccess = true;
+
+            // Reset form
+            contactForm = new ContactFormModel();
+        }
+        catch (Exception ex)
+        {
+            submitMessage = $"An error occurred while sending your message. Please try again later. Error: {ex.Message}";
+            isSuccess = false;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private class ContactFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Phone number is required")]
+        [System.ComponentModel.DataAnnotations.RegularExpression(@"^\+?[1-9]\d{1,14}$", ErrorMessage = "Invalid phone number")]
+        public string Phone { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please select a subject")]
+        public string Subject { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Message is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(1000, MinimumLength = 10, ErrorMessage = "Message must be between 10 and 1000 characters")]
+        public string Message { get; set; } = string.Empty;
+    }
+}

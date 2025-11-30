@@ -1,0 +1,434 @@
+﻿@page "/faq"
+@page "/faqs"
+
+<PageTitle>Frequently Asked Questions - Railway Ticket Booking</PageTitle>
+
+<!-- Main Container with vibrant gradient background -->
+<div class="user-management-container min-vh-100">
+    <div class="container py-5">
+        <!-- Page Header -->
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto;">
+                        <i class="fas fa-question-circle fa-2x"></i>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h1 class="page-title mb-2" style="font-size: 2.5rem;">FREQUENTLY ASKED QUESTIONS</h1>
+                    <p class="mb-0 text-white opacity-75 text-uppercase small" style="letter-spacing: 4px; font-weight: 500;">Find Answers to Common Queries</p>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                        <i class="fas fa-lightbulb fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search FAQ Section -->
+        <div class="user-card mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-10">
+                    <input type="text" class="form-control form-control-lg" placeholder="Search for questions..." @bind="searchQuery" @bind:event="oninput" />
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="add-user-btn w-100" @onclick="ClearSearch">
+                        <i class="fas fa-times me-2"></i>Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Categories -->
+        <div class="row g-4">
+            @foreach (var category in GetFilteredCategories())
+            {
+                <div class="col-12">
+                    <div class="user-card">
+                        <h3 class="user-name mb-4" style="color: #ff6b9d; font-size: 1.5rem;">
+                            <i class="fas @category.Icon me-2"></i>@category.Title
+                        </h3>
+                        <div class="accordion accordion-flush" id="accordion-@category.Id">
+                            @foreach (var faq in category.FAQs)
+                            {
+                                var faqId = $"faq-{category.Id}-{faq.Id}";
+                                <div class="accordion-item mb-3" style="background: rgba(255, 255, 255, 0.1); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@faqId" aria-expanded="false" aria-controls="@faqId" style="background: rgba(255, 255, 255, 0.1); color: white; font-weight: 600;">
+                                            <i class="fas fa-circle-question me-2" style="color: #4facfe;"></i>@faq.Question
+                                        </button>
+                                    </h2>
+                                    <div id="@faqId" class="accordion-collapse collapse" data-bs-parent="#accordion-@category.Id">
+                                        <div class="accordion-body" style="color: rgba(255, 255, 255, 0.9); line-height: 1.8;">
+                                            @if (!string.IsNullOrEmpty(faq.Answer))
+                                            {
+                                                <p>@faq.Answer</p>
+                                            }
+                                            @if (faq.Steps != null && faq.Steps.Any())
+                                            {
+                                                <ol class="mt-3">
+                                                    @foreach (var step in faq.Steps)
+                                                    {
+                                                        <li class="mb-2">@step</li>
+                                                    }
+                                                </ol>
+                                            }
+                                            @if (faq.Links != null && faq.Links.Any())
+                                            {
+                                                <div class="mt-3">
+                                                    @foreach (var link in faq.Links)
+                                                    {
+                                                        <a href="@link.Url" target="_blank" class="btn btn-sm add-user-btn me-2 mb-2">
+                                                            <i class="@link.Icon me-1"></i>@link.Text
+                                                        </a>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Still Need Help Section -->
+        <div class="user-card mt-4 text-center">
+            <h3 class="user-name mb-3">
+                <i class="fas fa-headset me-2" style="color: #4facfe;"></i>Still Need Help?
+            </h3>
+            <p class="text-white opacity-75 mb-4">Can't find what you're looking for? Our support team is here to help!</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/contact" class="add-user-btn text-decoration-none">
+                    <i class="fas fa-envelope me-2"></i>Contact Us
+                </a>
+                <a href="/help" class="add-user-btn text-decoration-none" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-life-ring me-2"></i>Get Help
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchQuery = string.Empty;
+
+    private List<FAQCategory> GetFilteredCategories()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            return faqCategories;
+        }
+
+        var query = searchQuery.ToLower();
+        return faqCategories.Select(category => new FAQCategory
+        {
+            Id = category.Id,
+            Title = category.Title,
+            Icon = category.Icon,
+            FAQs = category.FAQs.Where(faq =>
+                faq.Question.ToLower().Contains(query) ||
+                faq.Answer.ToLower().Contains(query) ||
+                (faq.Steps != null && faq.Steps.Any(s => s.ToLower().Contains(query)))
+            ).ToList()
+        }).Where(c => c.FAQs.Any()).ToList();
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = string.Empty;
+    }
+
+    private List<FAQCategory> faqCategories = new()
+    {
+        new FAQCategory
+        {
+            Id = "registration",
+            Title = "Registration & Account",
+            Icon = "fa-user-plus",
+            FAQs = new List<FAQItem>
+            {
+                new FAQItem
+                {
+                    Id = 1,
+                    Question = "How do I register for an account?",
+                    Answer = "To register for a new account, click on the 'Register' button in the top navigation bar. You'll need to provide your email address, full name, phone number, and create a secure password. After registration, you'll receive a verification email to activate your account.",
+                    Steps = new List<string>
+                    {
+                        "Click on 'Register' in the navigation menu",
+                        "Fill in your personal details (Name, Email, Phone)",
+                        "Create a strong password",
+                        "Verify your email address",
+                        "Complete your profile setup"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 2,
+                    Question = "International User Registration Guide",
+                    Answer = "International users can register using their passport details. The registration process is similar to domestic users, but you'll need to provide passport information instead of Aadhaar. International users can book tickets for travel within India.",
+                    Steps = new List<string>
+                    {
+                        "Select 'International User' during registration",
+                        "Provide passport number and details",
+                        "Upload passport copy for verification",
+                        "Complete KYC verification",
+                        "Start booking tickets"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 3,
+                    Question = "How do I link my Aadhaar to my account?",
+                    Answer = "Linking your Aadhaar helps in faster verification and smoother booking experience. You can link your Aadhaar from your profile settings.",
+                    Steps = new List<string>
+                    {
+                        "Go to 'My Profile' section",
+                        "Click on 'Link Aadhaar' option",
+                        "Enter your 12-digit Aadhaar number",
+                        "Verify using OTP sent to your registered mobile",
+                        "Your Aadhaar will be linked successfully"
+                    }
+                }
+            }
+        },
+        new FAQCategory
+        {
+            Id = "booking",
+            Title = "Ticket Booking",
+            Icon = "fa-ticket-alt",
+            FAQs = new List<FAQItem>
+            {
+                new FAQItem
+                {
+                    Id = 4,
+                    Question = "How do I book an E-ticket?",
+                    Answer = "Booking an E-ticket is simple and can be done in a few easy steps. You can also watch our video tutorial or download the PDF guide for detailed instructions.",
+                    Steps = new List<string>
+                    {
+                        "Search for trains between your source and destination",
+                        "Select your preferred train and class",
+                        "Enter passenger details",
+                        "Review fare breakdown and apply any discounts",
+                        "Proceed to payment",
+                        "Receive confirmation with PNR number"
+                    },
+                    Links = new List<FAQLink>
+                    {
+                        new FAQLink { Text = "Download PDF Guide", Icon = "fa-file-pdf", Url = "#" },
+                        new FAQLink { Text = "Watch Video Tutorial", Icon = "fa-video", Url = "#" }
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 5,
+                    Question = "How do I book a Tatkal ticket?",
+                    Answer = "Tatkal tickets can be booked one day in advance from the date of journey. These tickets are available for booking from 10:00 AM onwards. Tatkal booking charges are higher than regular tickets.",
+                    Steps = new List<string>
+                    {
+                        "Select 'Tatkal' option while searching trains",
+                        "Choose train and class (Tatkal quota)",
+                        "Fill passenger details quickly",
+                        "Complete payment immediately",
+                        "Tatkal tickets are confirmed on first-come-first-serve basis"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 6,
+                    Question = "How to book tickets for Person With Disability (PwD)?",
+                    Answer = "Special concessions and facilities are available for Persons with Disability. You can book tickets with disability concessions through our platform.",
+                    Steps = new List<string>
+                    {
+                        "Select 'PwD Concession' option during booking",
+                        "Upload disability certificate",
+                        "Select appropriate disability type",
+                        "Choose accessible coach/berth if available",
+                        "Complete booking with concession fare"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 7,
+                    Question = "How do I book concession tickets?",
+                    Answer = "Various concession schemes are available for senior citizens, students, defense personnel, and others. You need to provide valid proof documents to avail concessions.",
+                    Steps = new List<string>
+                    {
+                        "Select 'Concession' option while booking",
+                        "Choose concession type (Senior Citizen, Student, etc.)",
+                        "Upload required documents",
+                        "Verify documents (may take 24-48 hours)",
+                        "Complete booking with discounted fare"
+                    }
+                }
+            }
+        },
+        new FAQCategory
+        {
+            Id = "modification",
+            Title = "Ticket Modification & Cancellation",
+            Icon = "fa-edit",
+            FAQs = new List<FAQItem>
+            {
+                new FAQItem
+                {
+                    Id = 8,
+                    Question = "How do I cancel my E-ticket?",
+                    Answer = "You can cancel your ticket online through your dashboard. Refunds are processed according to railway cancellation rules based on the time of cancellation.",
+                    Steps = new List<string>
+                    {
+                        "Go to 'My Bookings' in your dashboard",
+                        "Select the booking you want to cancel",
+                        "Click on 'Cancel Booking'",
+                        "Confirm cancellation",
+                        "Refund will be processed to your original payment method"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 9,
+                    Question = "How do I change my boarding point?",
+                    Answer = "You can change your boarding point before the chart preparation. This service is available for a nominal fee.",
+                    Steps = new List<string>
+                    {
+                        "Go to 'My Bookings' section",
+                        "Select the booking",
+                        "Click on 'Change Boarding Point'",
+                        "Select new boarding station",
+                        "Pay modification charges if applicable",
+                        "Receive updated ticket"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 10,
+                    Question = "What is the cancellation refund policy?",
+                    Answer = "Refund amount depends on when you cancel your ticket. Cancellation charges apply as per Indian Railways rules. Refunds are processed within 5-7 business days.",
+                    Steps = new List<string>
+                    {
+                        "More than 48 hours before departure: Full refund minus cancellation charges",
+                        "24-48 hours before departure: 25% cancellation charges",
+                        "Less than 24 hours: 50% cancellation charges",
+                        "After chart preparation: No refund (can file TDR)"
+                    }
+                }
+            }
+        },
+        new FAQCategory
+        {
+            Id = "tdr",
+            Title = "TDR (Ticket Deposit Receipt)",
+            Icon = "fa-file-invoice",
+            FAQs = new List<FAQItem>
+            {
+                new FAQItem
+                {
+                    Id = 11,
+                    Question = "What is TDR and when should I file it?",
+                    Answer = "TDR (Ticket Deposit Receipt) is filed when you want to claim a refund due to train cancellation, late running, or other service issues. You can file TDR online through your account.",
+                    Steps = new List<string>
+                    {
+                        "Go to 'My Bookings' section",
+                        "Select the booking for which you want to file TDR",
+                        "Click on 'File TDR' option",
+                        "Select reason for TDR (Train Cancelled, Late Running, etc.)",
+                        "Provide required details and documents",
+                        "Submit TDR request",
+                        "Track TDR status in your dashboard"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 12,
+                    Question = "What are the valid reasons for filing TDR?",
+                    Answer = "You can file TDR for various reasons including train cancellation, train running more than 3 hours late, non-allotment of berth, and other service-related issues.",
+                    Steps = new List<string>
+                    {
+                        "Train cancelled by railways",
+                        "Train running more than 3 hours late",
+                        "Non-allotment of confirmed berth/seat",
+                        "Accident or breakdown",
+                        "Change in train composition"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 13,
+                    Question = "How long does it take to process TDR?",
+                    Answer = "TDR processing time varies based on the reason. Generally, TDRs are processed within 15-30 days. You'll receive updates via email and SMS.",
+                    Steps = new List<string>
+                    {
+                        "TDR submitted: Within 24 hours",
+                        "Verification: 3-5 business days",
+                        "Approval/Rejection: 7-10 business days",
+                        "Refund processing: 5-7 business days after approval",
+                        "Total time: 15-30 days"
+                    }
+                }
+            }
+        },
+        new FAQCategory
+        {
+            Id = "payment",
+            Title = "Payment & Refunds",
+            Icon = "fa-credit-card",
+            FAQs = new List<FAQItem>
+            {
+                new FAQItem
+                {
+                    Id = 14,
+                    Question = "What payment methods are accepted?",
+                    Answer = "We accept various payment methods including credit cards, debit cards, net banking, UPI, and digital wallets for your convenience.",
+                    Steps = new List<string>
+                    {
+                        "Credit/Debit Cards (Visa, Mastercard, RuPay)",
+                        "Net Banking",
+                        "UPI (Google Pay, PhonePe, Paytm)",
+                        "Digital Wallets",
+                        "Cash Cards (for certain transactions)"
+                    }
+                },
+                new FAQItem
+                {
+                    Id = 15,
+                    Question = "How long does refund take?",
+                    Answer = "Refunds are processed to your original payment method. Processing time varies by payment method.",
+                    Steps = new List<string>
+                    {
+                        "Credit/Debit Cards: 5-7 business days",
+                        "Net Banking: 3-5 business days",
+                        "UPI: 2-3 business days",
+                        "Digital Wallets: 1-2 business days"
+                    }
+                }
+            }
+        }
+    };
+
+    private class FAQCategory
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Icon { get; set; }
+        public List<FAQItem> FAQs { get; set; }
+    }
+
+    private class FAQItem
+    {
+        public int Id { get; set; }
+        public string Question { get; set; }
+        public string Answer { get; set; }
+        public List<string> Steps { get; set; }
+        public List<FAQLink> Links { get; set; }
+    }
+
+    private class FAQLink
+    {
+        public string Text { get; set; }
+        public string Icon { get; set; }
+        public string Url { get; set; }
+    }
+}
