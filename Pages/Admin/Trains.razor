@@ -1,8 +1,8 @@
-﻿@page "/trains"
+@page "/trains"
 @using MediatR
-@using Railway_Ticket_Booking.Application.Commands
-@using Railway_Ticket_Booking.Application.Queries
-@using Railway_Ticket_Booking.Domain.Entities
+@using RailwayTicketBooking.Application.Commands
+@using RailwayTicketBooking.Application.Queries
+@using RailwayTicketBooking.Domain.Entities
 @inject IMediator Mediator
 @inject IJSRuntime JSRuntime
 
@@ -275,7 +275,7 @@
                                         <InputNumber class="form-control form-control-custom" @bind-Value="currentClasses[index].SeatCount" min="1" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label-custom" style="font-size: 0.85rem;">Base Price (₹)</label>
+                                        <label class="form-label-custom" style="font-size: 0.85rem;">Base Price (?)</label>
                                         <InputNumber class="form-control form-control-custom" @bind-Value="currentClasses[index].BasePrice" min="0" step="0.01" />
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">

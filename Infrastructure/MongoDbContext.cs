@@ -1,10 +1,10 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 
-namespace Railway_Ticket_Booking.Infrastructure
+namespace RailwayTicketBooking.Infrastructure
 {
     public class MongoDbContext
     {
@@ -33,7 +33,7 @@ namespace Railway_Ticket_Booking.Infrastructure
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
         public IMongoCollection<Train> Trains => _database.GetCollection<Train>("Trains");
         public IMongoCollection<Station> Stations => _database.GetCollection<Station>("Stations");
-        public IMongoCollection<Railway_Ticket_Booking.Domain.Entities.Route> Routes => _database.GetCollection<Railway_Ticket_Booking.Domain.Entities.Route>("Routes");
+        public IMongoCollection<RailwayTicketBooking.Domain.Entities.Route> Routes => _database.GetCollection<RailwayTicketBooking.Domain.Entities.Route>("Routes");
         public IMongoCollection<TrainSchedule> TrainSchedules => _database.GetCollection<TrainSchedule>("TrainSchedules");
         public IMongoCollection<Seat> Seats => _database.GetCollection<Seat>("Seats");
         public IMongoCollection<Booking> Bookings => _database.GetCollection<Booking>("Bookings");

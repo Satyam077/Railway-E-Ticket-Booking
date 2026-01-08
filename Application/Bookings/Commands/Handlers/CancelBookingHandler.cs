@@ -1,13 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
-using Railway_Ticket_Booking.Infrastructure;
-using Railway_Ticket_Booking.Infrastructure.Services;
-using Railway_Ticket_Booking.WebSettings;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
+using RailwayTicketBooking.Infrastructure;
+using RailwayTicketBooking.Infrastructure.Services;
+using RailwayTicketBooking.WebSettings;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
+namespace RailwayTicketBooking.Application.Bookings.Commands.Handlers
 {
     public class CancelBookingHandler : IRequestHandler<CancelBookingCommand, CancelBookingResult>
     {

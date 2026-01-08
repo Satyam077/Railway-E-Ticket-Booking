@@ -1,8 +1,8 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Commands.Handlers
+namespace RailwayTicketBooking.Application.Commands.Handlers
 {
     public class UpdateTrainHandler : IRequestHandler<UpdateTrainCommand, bool>
     {
@@ -26,7 +26,7 @@ namespace Railway_Ticket_Booking.Application.Commands.Handlers
             }
 
             // Create update definition
-            var update = Builders<Railway_Ticket_Booking.Domain.Entities.Train>.Update
+            var update = Builders<RailwayTicketBooking.Domain.Entities.Train>.Update
                 .Set(t => t.TrainNumber, request.TrainNumber)
                 .Set(t => t.Name, request.Name)
                 .Set(t => t.TrainType, request.TrainType)

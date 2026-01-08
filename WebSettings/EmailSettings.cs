@@ -1,4 +1,4 @@
-﻿namespace Railway_Ticket_Booking.WebSettings
+namespace RailwayTicketBooking.WebSettings
 {
     public class EmailSettings
     {

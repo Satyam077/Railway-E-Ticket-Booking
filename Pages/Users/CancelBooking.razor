@@ -1,10 +1,10 @@
 @page "/cancel-booking/{BookingId}"
 @using MediatR
-@using Railway_Ticket_Booking.Application.Bookings.Commands
-@using Railway_Ticket_Booking.Domain.Entities
-@using Railway_Ticket_Booking.Domain.Enums
-@using Railway_Ticket_Booking.Infrastructure
-@using Railway_Ticket_Booking.Infrastructure.Services
+@using RailwayTicketBooking.Application.Bookings.Commands
+@using RailwayTicketBooking.Domain.Entities
+@using RailwayTicketBooking.Domain.Enums
+@using RailwayTicketBooking.Infrastructure
+@using RailwayTicketBooking.Infrastructure.Services
 @using MongoDB.Driver
 @inject IMediator Mediator
 @inject MongoDbContext Db
@@ -204,7 +204,7 @@ else if (booking != null)
     [Parameter]
     public string BookingId { get; set; }
 
-    public Railway_Ticket_Booking.Domain.Entities.Booking booking { get; set; }
+    public RailwayTicketBooking.Domain.Entities.Booking booking { get; set; }
     private CancellationResult cancellationResult { get; set; }
     private CancelBookingCommand cancelCommand = new CancelBookingCommand();
     private bool loading = true;

@@ -1,9 +1,9 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Routes.Queries.Handlers
+namespace RailwayTicketBooking.Application.Routes.Queries.Handlers
 {
     public class GetAllStationsHandler : IRequestHandler<GetAllStationsQuery, List<Station>>
     {

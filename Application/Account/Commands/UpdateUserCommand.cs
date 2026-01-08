@@ -1,8 +1,8 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.Enums;
+using RailwayTicketBooking.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Application.Account.Commands
+namespace RailwayTicketBooking.Application.Account.Commands
 {
     public class UpdateUserCommand : IRequest<bool>
     {

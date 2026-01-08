@@ -1,8 +1,8 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Domain.Entities
+namespace RailwayTicketBooking.Domain.Entities
 {
     public class Route
     {
@@ -35,7 +35,7 @@ namespace Railway_Ticket_Booking.Domain.Entities
 
         // Helper properties
         [BsonIgnore]
-        public string DisplayName => $"{SourceStationId} → {DestinationStationId}";
+        public string DisplayName => $"{SourceStationId} ? {DestinationStationId}";
 
         [BsonIgnore]
         public string StatusText => IsActive ? "Active" : "Inactive";

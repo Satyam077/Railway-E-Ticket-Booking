@@ -1,7 +1,7 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Application.Stations.Commands
+namespace RailwayTicketBooking.Application.Stations.Commands
 {
     public class DeleteStationCommand : IRequest<bool>
     {

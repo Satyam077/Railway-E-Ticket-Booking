@@ -1,7 +1,7 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 
-namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries
+namespace RailwayTicketBooking.Application.TrainSchedules.Queries
 {
     public class SearchTrainsQuery : IRequest<List<TrainSearchResult>>
     {

@@ -1,7 +1,7 @@
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
 
-namespace Railway_Ticket_Booking.Infrastructure.Services
+namespace RailwayTicketBooking.Infrastructure.Services
 {
     public static class SeatGenerator
     {

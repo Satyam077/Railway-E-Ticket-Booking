@@ -1,8 +1,8 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using Railway_Ticket_Booking.Domain.Enums;
+using MongoDB.Bson.Serialization.Attributes;
+using RailwayTicketBooking.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Domain.Entities
+namespace RailwayTicketBooking.Domain.Entities
 {
     public class BookedSeat
     {

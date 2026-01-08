@@ -1,7 +1,7 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Queries
+namespace RailwayTicketBooking.Application.Bookings.Queries
 {
     public class GetBookingByIdQuery : IRequest<Booking>
     {

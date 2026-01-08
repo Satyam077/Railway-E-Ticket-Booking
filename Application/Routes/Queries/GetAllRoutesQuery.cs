@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Railway_Ticket_Booking.Application.Routes.Queries
+namespace RailwayTicketBooking.Application.Routes.Queries
 {
-    public class GetAllRoutesQuery : IRequest<List<Railway_Ticket_Booking.Domain.Entities.Route>> { }
+    public class GetAllRoutesQuery : IRequest<List<RailwayTicketBooking.Domain.Entities.Route>> { }
 }

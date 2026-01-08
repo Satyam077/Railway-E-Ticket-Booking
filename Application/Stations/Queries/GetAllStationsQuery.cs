@@ -1,7 +1,7 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 
-namespace Railway_Ticket_Booking.Application.Stations.Queries
+namespace RailwayTicketBooking.Application.Stations.Queries
 {
     public class GetAllStationsQuery : IRequest<List<Station>> { }
 }

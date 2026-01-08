@@ -1,4 +1,4 @@
-namespace Railway_Ticket_Booking.Domain.DTOs
+namespace RailwayTicketBooking.Domain.DTOs
 {
     public class RegistrationResponseDTO
     {

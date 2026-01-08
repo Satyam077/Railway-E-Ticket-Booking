@@ -1,13 +1,13 @@
-﻿using MediatR;
+using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
-using Railway_Ticket_Booking.EmailServices;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
+using RailwayTicketBooking.EmailServices;
+using RailwayTicketBooking.Infrastructure;
 using BCrypt.Net;
-using Railway_Ticket_Booking.Application.Account.Commands;
+using RailwayTicketBooking.Application.Account.Commands;
 
-namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
+namespace RailwayTicketBooking.Application.Account.Commands.Handlers
 {
     public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, bool>
     {
@@ -112,21 +112,21 @@ namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
 
             // Build changes list
             var changes = new List<string>();
-            if (oldUser.FirstName != request.FirstName) changes.Add($"First Name: {oldUser.FirstName} → {request.FirstName}");
-            if (oldUser.LastName != request.LastName) changes.Add($"Last Name: {oldUser.LastName} → {request.LastName}");
-            if (oldUser.Email != request.Email) changes.Add($"Email: {oldUser.Email} → {request.Email}");
-            if (oldUser.PhoneNumber != request.PhoneNumber) changes.Add($"Phone Number: {oldUser.PhoneNumber} → {request.PhoneNumber}");
-            if (oldUser.Role != request.Role) changes.Add($"Role: {oldUser.Role} → {roleName}");
-            if (oldUser.DateOfBirth != request.DateOfBirth) changes.Add($"Date of Birth: {oldUser.DateOfBirth:dd MMM, yyyy} → {request.DateOfBirth:dd MMM, yyyy}");
-            if (oldUser.Gender != request.Gender) changes.Add($"Gender: {oldUser.Gender ?? "Not specified"} → {request.Gender ?? "Not specified"}");
-            if (oldUser.Address != request.Address) changes.Add($"Address: {oldUser.Address ?? "Not provided"} → {request.Address ?? "Not provided"}");
-            if (oldUser.City != request.City) changes.Add($"City: {oldUser.City ?? "Not provided"} → {request.City ?? "Not provided"}");
-            if (oldUser.State != request.State) changes.Add($"State: {oldUser.State ?? "Not provided"} → {request.State ?? "Not provided"}");
-            if (oldUser.PinCode != request.PinCode) changes.Add($"Pin Code: {oldUser.PinCode ?? "Not provided"} → {request.PinCode ?? "Not provided"}");
-            if (oldUser.Country != request.Country) changes.Add($"Country: {oldUser.Country ?? "India"} → {request.Country ?? "India"}");
-            if (oldUser.IsActive != request.IsActive) changes.Add($"Account Status: {(oldUser.IsActive ? "Active" : "Inactive")} → {(request.IsActive ? "Active" : "Inactive")}");
-            if (oldUser.IsEmailVerified != request.IsEmailVerified) changes.Add($"Email Verified: {(oldUser.IsEmailVerified ? "Yes" : "No")} → {(request.IsEmailVerified ? "Yes" : "No")}");
-            if (oldUser.IsPhoneVerified != request.IsPhoneVerified) changes.Add($"Phone Verified: {(oldUser.IsPhoneVerified ? "Yes" : "No")} → {(request.IsPhoneVerified ? "Yes" : "No")}");
+            if (oldUser.FirstName != request.FirstName) changes.Add($"First Name: {oldUser.FirstName} ? {request.FirstName}");
+            if (oldUser.LastName != request.LastName) changes.Add($"Last Name: {oldUser.LastName} ? {request.LastName}");
+            if (oldUser.Email != request.Email) changes.Add($"Email: {oldUser.Email} ? {request.Email}");
+            if (oldUser.PhoneNumber != request.PhoneNumber) changes.Add($"Phone Number: {oldUser.PhoneNumber} ? {request.PhoneNumber}");
+            if (oldUser.Role != request.Role) changes.Add($"Role: {oldUser.Role} ? {roleName}");
+            if (oldUser.DateOfBirth != request.DateOfBirth) changes.Add($"Date of Birth: {oldUser.DateOfBirth:dd MMM, yyyy} ? {request.DateOfBirth:dd MMM, yyyy}");
+            if (oldUser.Gender != request.Gender) changes.Add($"Gender: {oldUser.Gender ?? "Not specified"} ? {request.Gender ?? "Not specified"}");
+            if (oldUser.Address != request.Address) changes.Add($"Address: {oldUser.Address ?? "Not provided"} ? {request.Address ?? "Not provided"}");
+            if (oldUser.City != request.City) changes.Add($"City: {oldUser.City ?? "Not provided"} ? {request.City ?? "Not provided"}");
+            if (oldUser.State != request.State) changes.Add($"State: {oldUser.State ?? "Not provided"} ? {request.State ?? "Not provided"}");
+            if (oldUser.PinCode != request.PinCode) changes.Add($"Pin Code: {oldUser.PinCode ?? "Not provided"} ? {request.PinCode ?? "Not provided"}");
+            if (oldUser.Country != request.Country) changes.Add($"Country: {oldUser.Country ?? "India"} ? {request.Country ?? "India"}");
+            if (oldUser.IsActive != request.IsActive) changes.Add($"Account Status: {(oldUser.IsActive ? "Active" : "Inactive")} ? {(request.IsActive ? "Active" : "Inactive")}");
+            if (oldUser.IsEmailVerified != request.IsEmailVerified) changes.Add($"Email Verified: {(oldUser.IsEmailVerified ? "Yes" : "No")} ? {(request.IsEmailVerified ? "Yes" : "No")}");
+            if (oldUser.IsPhoneVerified != request.IsPhoneVerified) changes.Add($"Phone Verified: {(oldUser.IsPhoneVerified ? "Yes" : "No")} ? {(request.IsPhoneVerified ? "Yes" : "No")}");
             if (passwordChanged) changes.Add("Password: Changed");
 
             var changesHtml = changes.Any()

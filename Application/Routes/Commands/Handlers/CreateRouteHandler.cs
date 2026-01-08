@@ -1,8 +1,8 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Routes.Commands.Handlers
+namespace RailwayTicketBooking.Application.Routes.Commands.Handlers
 {
     public class CreateRouteHandler : IRequestHandler<CreateRouteCommand, string>
     {
@@ -47,7 +47,7 @@ namespace Railway_Ticket_Booking.Application.Routes.Commands.Handlers
             if (destinationStation == null)
                 throw new InvalidOperationException("Destination station not found.");
 
-            var route = new Railway_Ticket_Booking.Domain.Entities.Route
+            var route = new RailwayTicketBooking.Domain.Entities.Route
             {
                 SourceStationId = request.SourceStationId,
                 DestinationStationId = request.DestinationStationId,

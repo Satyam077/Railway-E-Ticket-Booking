@@ -1,12 +1,12 @@
 @page "/admin/all-bookings"
 @using MediatR
 @using Microsoft.AspNetCore.Authorization
-@using Railway_Ticket_Booking.Application.Account.Queries
-@using Railway_Ticket_Booking.Application.Bookings.Queries
-@using Railway_Ticket_Booking.Application.Queries
-@using Railway_Ticket_Booking.Application.Stations.Queries
-@using Railway_Ticket_Booking.Domain.Entities
-@using Railway_Ticket_Booking.Domain.Enums
+@using RailwayTicketBooking.Application.Account.Queries
+@using RailwayTicketBooking.Application.Bookings.Queries
+@using RailwayTicketBooking.Application.Queries
+@using RailwayTicketBooking.Application.Stations.Queries
+@using RailwayTicketBooking.Domain.Entities
+@using RailwayTicketBooking.Domain.Enums
 @using System.Linq
 @attribute [Authorize(Roles = "Admin,SuperAdmin")]
 @inject IMediator Mediator

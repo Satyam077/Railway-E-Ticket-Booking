@@ -1,12 +1,12 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
-using Railway_Ticket_Booking.Infrastructure;
-using Railway_Ticket_Booking.Infrastructure.Services;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
+using RailwayTicketBooking.Infrastructure;
+using RailwayTicketBooking.Infrastructure.Services;
 using System.Text;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Commands.Handlers
+namespace RailwayTicketBooking.Application.Bookings.Commands.Handlers
 {
     public class CreateBookingHandler : IRequestHandler<CreateBookingCommand, string>
     {

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Domain.ValueObjects
+namespace RailwayTicketBooking.Domain.ValueObjects
 {
     public class Address
     {

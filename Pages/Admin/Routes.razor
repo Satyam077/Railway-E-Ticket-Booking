@@ -1,9 +1,9 @@
-﻿@page "/routes"
+@page "/routes"
 @using MediatR
-@using Railway_Ticket_Booking.Application.Queries
-@using Railway_Ticket_Booking.Application.Routes.Commands
-@using Railway_Ticket_Booking.Application.Routes.Queries
-@using Railway_Ticket_Booking.Domain.Entities
+@using RailwayTicketBooking.Application.Queries
+@using RailwayTicketBooking.Application.Routes.Commands
+@using RailwayTicketBooking.Application.Routes.Queries
+@using RailwayTicketBooking.Domain.Entities
 @inject IMediator Mediator
 @inject IJSRuntime JSRuntime
 
@@ -422,7 +422,7 @@
 @code {
     private CreateRouteCommand newRouteCommand = new CreateRouteCommand();
     private UpdateRouteCommand updateRouteCommand = new UpdateRouteCommand();
-    private List<Railway_Ticket_Booking.Domain.Entities.Route> routes = new List<Railway_Ticket_Booking.Domain.Entities.Route>();
+    private List<RailwayTicketBooking.Domain.Entities.Route> routes = new List<RailwayTicketBooking.Domain.Entities.Route>();
     private List<Station> stations = new List<Station>();
     private List<Train> trains = new List<Train>();
     private bool isCreating = false;

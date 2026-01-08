@@ -1,7 +1,7 @@
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 using System.Security.Claims;
 
-namespace Railway_Ticket_Booking.Infrastructure.Services
+namespace RailwayTicketBooking.Infrastructure.Services
 {
     public interface IJwtService
     {

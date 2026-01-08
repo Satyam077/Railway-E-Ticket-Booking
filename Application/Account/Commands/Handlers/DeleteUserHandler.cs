@@ -1,11 +1,11 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
-using Railway_Ticket_Booking.EmailServices;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
+using RailwayTicketBooking.EmailServices;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
+namespace RailwayTicketBooking.Application.Account.Commands.Handlers
 {
     public class DeleteUserHandler : IRequestHandler<DeleteUserCommand, bool>
     {

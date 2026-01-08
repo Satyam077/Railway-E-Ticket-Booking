@@ -1,8 +1,8 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Queries
+namespace RailwayTicketBooking.Application.Bookings.Queries
 {
     public class GetAllBookingsQuery : IRequest<List<Booking>>
     {

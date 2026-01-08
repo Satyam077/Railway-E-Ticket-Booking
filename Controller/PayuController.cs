@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
-using Railway_Ticket_Booking.Infrastructure;
-using Railway_Ticket_Booking.Infrastructure.Services;
-using Railway_Ticket_Booking.WebSettings;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
+using RailwayTicketBooking.Infrastructure;
+using RailwayTicketBooking.Infrastructure.Services;
+using RailwayTicketBooking.WebSettings;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Railway_Ticket_Booking.Controller
+namespace RailwayTicketBooking.Controller
 {
     [ApiController]
     [Route("api/[controller]")]

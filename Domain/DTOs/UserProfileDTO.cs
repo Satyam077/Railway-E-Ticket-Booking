@@ -1,6 +1,6 @@
-using Railway_Ticket_Booking.Domain.Enums;
+using RailwayTicketBooking.Domain.Enums;
 
-namespace Railway_Ticket_Booking.Domain.DTOs
+namespace RailwayTicketBooking.Domain.DTOs
 {
     public class UserProfileDTO
     {

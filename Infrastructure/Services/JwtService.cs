@@ -1,11 +1,11 @@
 using Microsoft.IdentityModel.Tokens;
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Railway_Ticket_Booking.Infrastructure.Services
+namespace RailwayTicketBooking.Infrastructure.Services
 {
     public class JwtService : IJwtService
     {

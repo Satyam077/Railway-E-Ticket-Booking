@@ -1,7 +1,7 @@
-﻿using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
 
-namespace Railway_Ticket_Booking.EmailTemplates
+namespace RailwayTicketBooking.EmailTemplates
 {
     public static class EmailTemplate
     {
@@ -223,7 +223,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>🎉 Booking Confirmed!</h1>
+            <h1>?? Booking Confirmed!</h1>
             <p>Your railway ticket has been successfully booked</p>
         </div>
 
@@ -238,7 +238,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Booking Summary -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>📋 Booking Summary</h2>
+                    <h2>?? Booking Summary</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -263,7 +263,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Train & Journey Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>🚂 Train & Journey Details</h2>
+                    <h2>?? Train & Journey Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"" style=""grid-column: 1 / -1;"">
@@ -295,7 +295,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Passenger Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>👥 Passenger Details</h2>
+                    <h2>?? Passenger Details</h2>
                 </div>
                 <table class=""table"">
                     <thead>
@@ -318,7 +318,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Payment Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>💳 Payment Details</h2>
+                    <h2>?? Payment Details</h2>
                 </div>
                 {(payment != null ? $@"
                 <div class=""info-grid"">
@@ -344,19 +344,19 @@ namespace Railway_Ticket_Booking.EmailTemplates
                 <div class=""amount-box"">
                     <div class=""amount-row"">
                         <span>Base Fare</span>
-                        <strong>₹{booking.TotalAmount:N2}</strong>
+                        <strong>?{booking.TotalAmount:N2}</strong>
                     </div>
                     <div class=""amount-row"">
                         <span>Tax (18%)</span>
-                        <strong>₹{booking.TaxAmount:N2}</strong>
+                        <strong>?{booking.TaxAmount:N2}</strong>
                     </div>
                     <div class=""amount-row"">
                         <span>Service Charge</span>
-                        <strong>₹{booking.ServiceCharge:N2}</strong>
+                        <strong>?{booking.ServiceCharge:N2}</strong>
                     </div>
                     <div class=""amount-row total"">
                         <span>Total Amount</span>
-                        <span style=""color: #007bff;"">₹{booking.FinalAmount:N2}</span>
+                        <span style=""color: #007bff;"">?{booking.FinalAmount:N2}</span>
                     </div>
                 </div>
             </div>
@@ -364,7 +364,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Contact Information -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>📞 Contact Information</h2>
+                    <h2>?? Contact Information</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -380,7 +380,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
 
             <!-- Important Notes -->
             <div class=""section"" style=""background-color: #fff3cd; padding: 20px; border-radius: 5px; border-left: 4px solid #ffc107;"">
-                <h3 style=""margin-top: 0; color: #856404;"">⚠️ Important Information</h3>
+                <h3 style=""margin-top: 0; color: #856404;"">?? Important Information</h3>
                 <ul style=""margin: 10px 0; padding-left: 20px; color: #856404;"">
                     <li>Please carry a valid ID proof while traveling</li>
                     <li>Arrive at the station at least 30 minutes before departure</li>
@@ -456,7 +456,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>❌ Booking Cancelled</h1>
+            <h1>? Booking Cancelled</h1>
             <p>Your booking has been successfully cancelled</p>
         </div>
 
@@ -471,20 +471,20 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Cancellation Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>📋 Cancellation Details</h2>
+                    <h2>?? Cancellation Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
                         <label>Original Booking Amount</label>
-                        <strong>₹{booking.FinalAmount:N2}</strong>
+                        <strong>?{booking.FinalAmount:N2}</strong>
                     </div>
                     <div class=""info-item"">
                         <label>Cancellation Charges</label>
-                        <strong style=""color: #dc3545;"">₹{cancellationCharge:N2}</strong>
+                        <strong style=""color: #dc3545;"">?{cancellationCharge:N2}</strong>
                     </div>
                     <div class=""info-item"">
                         <label>Refund Amount</label>
-                        <strong style=""color: #28a745; font-size: 20px;"">₹{refundAmount:N2}</strong>
+                        <strong style=""color: #28a745; font-size: 20px;"">?{refundAmount:N2}</strong>
                     </div>
                     <div class=""info-item"">
                         <label>Refund Processing Time</label>
@@ -501,7 +501,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Booking Information -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>🚂 Booking Information</h2>
+                    <h2>?? Booking Information</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"" style=""grid-column: 1 / -1;"">
@@ -529,18 +529,18 @@ namespace Railway_Ticket_Booking.EmailTemplates
 
             <!-- Refund Information -->
             <div class=""refund-box"">
-                <h3>💰 Refund Information</h3>
+                <h3>?? Refund Information</h3>
                 <div class=""amount-row"">
                     <span>Original Amount Paid</span>
-                    <strong>₹{booking.FinalAmount:N2}</strong>
+                    <strong>?{booking.FinalAmount:N2}</strong>
                 </div>
                 <div class=""amount-row"">
                     <span>Cancellation Charges</span>
-                    <strong style=""color: #dc3545;"">-₹{cancellationCharge:N2}</strong>
+                    <strong style=""color: #dc3545;"">-?{cancellationCharge:N2}</strong>
                 </div>
                 <div class=""amount-row total"">
                     <span>Refund Amount</span>
-                    <span style=""color: #28a745; font-size: 22px;"">₹{refundAmount:N2}</span>
+                    <span style=""color: #28a745; font-size: 22px;"">?{refundAmount:N2}</span>
                 </div>
                 <p style=""margin-top: 15px; color: #155724; font-size: 14px;"">
                     <strong>Note:</strong> The refund will be processed to your original payment method within 5-7 business days. 
@@ -550,7 +550,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
 
             <!-- Important Notes -->
             <div class=""warning-box"">
-                <h3 style=""margin-top: 0; color: #856404;"">⚠️ Important Information</h3>
+                <h3 style=""margin-top: 0; color: #856404;"">?? Important Information</h3>
                 <ul style=""margin: 10px 0; padding-left: 20px; color: #856404;"">
                     <li>Your booking has been cancelled successfully</li>
                     <li>Refund will be credited to your original payment method</li>
@@ -627,7 +627,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>✅ Refund Processed Successfully!</h1>
+            <h1>? Refund Processed Successfully!</h1>
             <p>Your refund has been credited to your account</p>
         </div>
 
@@ -641,8 +641,8 @@ namespace Railway_Ticket_Booking.EmailTemplates
 
             <!-- Refund Amount Box -->
             <div class=""refund-box"">
-                <h3>💰 Refund Amount</h3>
-                <div class=""refund-amount"">₹{refundAmount:N2}</div>
+                <h3>?? Refund Amount</h3>
+                <div class=""refund-amount"">?{refundAmount:N2}</div>
                 <p style=""color: #155724; margin: 10px 0 0 0;"">
                     This amount has been credited to your original payment method
                 </p>
@@ -651,7 +651,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Refund Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>📋 Refund Details</h2>
+                    <h2>?? Refund Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -664,7 +664,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
                     </div>
                     <div class=""info-item"">
                         <label>Refund Amount</label>
-                        <strong style=""color: #28a745; font-size: 18px;"">₹{refundAmount:N2}</strong>
+                        <strong style=""color: #28a745; font-size: 18px;"">?{refundAmount:N2}</strong>
                     </div>
                     <div class=""info-item"">
                         <label>Refund Completed On</label>
@@ -685,7 +685,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
             <!-- Booking Information -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>🚂 Cancelled Booking Details</h2>
+                    <h2>?? Cancelled Booking Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"" style=""grid-column: 1 / -1;"">
@@ -713,9 +713,9 @@ namespace Railway_Ticket_Booking.EmailTemplates
 
             <!-- Success Message -->
             <div class=""success-box"">
-                <h3 style=""margin-top: 0; color: #0c5460;"">✅ Refund Credited</h3>
+                <h3 style=""margin-top: 0; color: #0c5460;"">? Refund Credited</h3>
                 <p style=""color: #0c5460; margin: 10px 0;"">
-                    Your refund of <strong>₹{refundAmount:N2}</strong> has been successfully processed and credited to your original payment method.
+                    Your refund of <strong>?{refundAmount:N2}</strong> has been successfully processed and credited to your original payment method.
                     The amount should reflect in your account within 1-2 business days depending on your bank.
                 </p>
                 <p style=""color: #0c5460; margin: 10px 0 0 0;"">
@@ -725,7 +725,7 @@ namespace Railway_Ticket_Booking.EmailTemplates
 
             <!-- Important Notes -->
             <div class=""section"" style=""background-color: #fff3cd; padding: 20px; border-radius: 5px; border-left: 4px solid #ffc107;"">
-                <h3 style=""margin-top: 0; color: #856404;"">📌 Important Information</h3>
+                <h3 style=""margin-top: 0; color: #856404;"">?? Important Information</h3>
                 <ul style=""margin: 10px 0; padding-left: 20px; color: #856404;"">
                     <li>The refund has been processed to your original payment method</li>
                     <li>It may take 1-2 business days for the amount to reflect in your account</li>

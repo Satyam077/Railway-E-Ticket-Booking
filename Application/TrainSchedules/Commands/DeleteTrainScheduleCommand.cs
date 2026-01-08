@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace Railway_Ticket_Booking.Application.TrainSchedules.Commands
+namespace RailwayTicketBooking.Application.TrainSchedules.Commands
 {
     public class DeleteTrainScheduleCommand : IRequest<bool>
     {

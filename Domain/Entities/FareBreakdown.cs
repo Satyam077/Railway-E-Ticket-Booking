@@ -1,4 +1,4 @@
-﻿namespace Railway_Ticket_Booking.Domain.Entities
+namespace RailwayTicketBooking.Domain.Entities
 {
     public class FareBreakdown
     {

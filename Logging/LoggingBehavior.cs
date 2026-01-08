@@ -1,6 +1,6 @@
-﻿using MediatR;
+using MediatR;
 
-namespace Railway_Ticket_Booking.Logging
+namespace RailwayTicketBooking.Logging
 {
     public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     {

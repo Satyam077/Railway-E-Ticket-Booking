@@ -1,6 +1,6 @@
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Services
+namespace RailwayTicketBooking.Application.Bookings.Services
 {
     public static class FareCalculationService
     {
@@ -128,7 +128,7 @@ namespace Railway_Ticket_Booking.Application.Bookings.Services
         /// Calculates distance between two stations from route
         /// </summary>
         public static double CalculateDistanceBetweenStations(
-            Railway_Ticket_Booking.Domain.Entities.Route route,
+            RailwayTicketBooking.Domain.Entities.Route route,
             string sourceStationId,
             string destinationStationId)
         {

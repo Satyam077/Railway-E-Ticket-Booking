@@ -1,9 +1,9 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Queries.Handlers
+namespace RailwayTicketBooking.Application.Bookings.Queries.Handlers
 {
     public class GetBookingByPNRHandler : IRequestHandler<GetBookingByPNRQuery, Booking>
     {

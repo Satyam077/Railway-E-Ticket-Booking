@@ -2,7 +2,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Domain.Entities
+namespace RailwayTicketBooking.Domain.Entities
 {
     public class TrainSchedule
     {

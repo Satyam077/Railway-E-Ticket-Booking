@@ -1,4 +1,4 @@
-﻿namespace Railway_Ticket_Booking.EmailServices
+namespace RailwayTicketBooking.EmailServices
 {
     public interface IEmailService
     {

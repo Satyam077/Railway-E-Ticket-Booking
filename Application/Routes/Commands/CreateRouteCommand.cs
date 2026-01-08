@@ -1,8 +1,8 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.Entities;
+using RailwayTicketBooking.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Application.Routes.Commands
+namespace RailwayTicketBooking.Application.Routes.Commands
 {
     public class CreateRouteCommand : IRequest<string>
     {

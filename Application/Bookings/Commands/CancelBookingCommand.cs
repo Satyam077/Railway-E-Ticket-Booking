@@ -1,7 +1,7 @@
 using MediatR;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Application.Bookings.Commands
+namespace RailwayTicketBooking.Application.Bookings.Commands
 {
     public class CancelBookingCommand : IRequest<CancelBookingResult>
     {

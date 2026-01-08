@@ -1,4 +1,4 @@
-namespace Railway_Ticket_Booking.Domain.Enums
+namespace RailwayTicketBooking.Domain.Enums
 {
     public enum PaymentMethod
     {

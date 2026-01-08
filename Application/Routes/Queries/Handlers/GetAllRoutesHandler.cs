@@ -1,10 +1,10 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Routes.Queries.Handlers
+namespace RailwayTicketBooking.Application.Routes.Queries.Handlers
 {
-    public class GetAllRoutesHandler : IRequestHandler<GetAllRoutesQuery, List<Railway_Ticket_Booking.Domain.Entities.Route>>
+    public class GetAllRoutesHandler : IRequestHandler<GetAllRoutesQuery, List<RailwayTicketBooking.Domain.Entities.Route>>
     {
         private readonly MongoDbContext _context;
 
@@ -13,7 +13,7 @@ namespace Railway_Ticket_Booking.Application.Routes.Queries.Handlers
             _context = context;
         }
 
-        public async Task<List<Railway_Ticket_Booking.Domain.Entities.Route>> Handle(GetAllRoutesQuery request, CancellationToken cancellationToken)
+        public async Task<List<RailwayTicketBooking.Domain.Entities.Route>> Handle(GetAllRoutesQuery request, CancellationToken cancellationToken)
         {
             return await _context.Routes.Find(_ => true).ToListAsync(cancellationToken);
         }

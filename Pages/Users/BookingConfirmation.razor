@@ -1,9 +1,9 @@
-﻿@page "/booking-confirmation/{BookingId}"
+@page "/booking-confirmation/{BookingId}"
 
-@using Railway_Ticket_Booking.Infrastructure
+@using RailwayTicketBooking.Infrastructure
 @using MongoDB.Driver
-@using Railway_Ticket_Booking.Domain.Entities
-@using Railway_Ticket_Booking.Domain.Enums
+@using RailwayTicketBooking.Domain.Entities
+@using RailwayTicketBooking.Domain.Enums
 @using System.Text.Json
 @inject MongoDbContext Db
 @inject NavigationManager Nav
@@ -64,7 +64,7 @@ else if (booking != null)
                         <i class="fas fa-check-circle fa-3x text-white"></i>
                     </div>
                     <div class="flex-grow-1">
-                        <h3 class="text-white mb-1 fw-bold">🎉 Booking Confirmed!</h3>
+                        <h3 class="text-white mb-1 fw-bold">?? Booking Confirmed!</h3>
                         <p class="text-white mb-0">Your ticket has been booked successfully. PNR: <strong>@booking.PNR</strong></p>
                     </div>
                 </div>
@@ -320,7 +320,7 @@ else if (booking != null)
                                 </div>
                                 <div class="mb-3">
                                     <small class="text-muted d-block">Refund Amount</small>
-                                    <strong class="text-success">₹@payment.Refund.RefundAmount.ToString("N2")</strong>
+                                    <strong class="text-success">?@payment.Refund.RefundAmount.ToString("N2")</strong>
                                 </div>
                                 <div class="mb-3">
                                     <small class="text-muted d-block">Refund Status</small>
@@ -347,20 +347,20 @@ else if (booking != null)
                         }
                         <div class="mb-2 d-flex justify-content-between">
                             <span class="text-muted">Base Fare</span>
-                            <strong>₹@booking.TotalAmount.ToString("N2")</strong>
+                            <strong>?@booking.TotalAmount.ToString("N2")</strong>
                         </div>
                         <div class="mb-2 d-flex justify-content-between">
                             <span class="text-muted">Tax (18%)</span>
-                            <strong>₹@booking.TaxAmount.ToString("N2")</strong>
+                            <strong>?@booking.TaxAmount.ToString("N2")</strong>
                         </div>
                         <div class="mb-2 d-flex justify-content-between">
                             <span class="text-muted">Service Charge</span>
-                            <strong>₹@booking.ServiceCharge.ToString("N2")</strong>
+                            <strong>?@booking.ServiceCharge.ToString("N2")</strong>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Total Amount</h5>
-                            <h4 class="mb-0 text-primary fw-bold">₹@booking.FinalAmount.ToString("N2")</h4>
+                            <h4 class="mb-0 text-primary fw-bold">?@booking.FinalAmount.ToString("N2")</h4>
                         </div>
                     </div>
                 </div>
@@ -404,7 +404,7 @@ else if (booking != null)
                         <div class="alert alert-info mt-3">
                             <small>
                                 <i class="fas fa-info-circle me-1"></i>
-                                <strong>Refund Status:</strong> ₹@booking.RefundAmount.ToString("N2") will be refunded within 5-7 business days.
+                                <strong>Refund Status:</strong> ?@booking.RefundAmount.ToString("N2") will be refunded within 5-7 business days.
                             </small>
                         </div>
                     }
@@ -418,7 +418,7 @@ else if (booking != null)
     [Parameter]
     public string BookingId { get; set; }
     
-    private Railway_Ticket_Booking.Domain.Entities.Booking booking { get; set; }
+    private RailwayTicketBooking.Domain.Entities.Booking booking { get; set; }
     private Payment payment { get; set; }
     private Train train { get; set; }
     private TrainSchedule schedule { get; set; }

@@ -1,8 +1,8 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Routes.Commands.Handlers
+namespace RailwayTicketBooking.Application.Routes.Commands.Handlers
 {
     public class UpdateRouteHandler : IRequestHandler<UpdateRouteCommand, bool>
     {
@@ -33,7 +33,7 @@ namespace Railway_Ticket_Booking.Application.Routes.Commands.Handlers
                 throw new InvalidOperationException("Another route between these stations already exists.");
             }
 
-            var update = Builders<Railway_Ticket_Booking.Domain.Entities.Route>.Update
+            var update = Builders<RailwayTicketBooking.Domain.Entities.Route>.Update
                 .Set(r => r.SourceStationId, request.SourceStationId)
                 .Set(r => r.DestinationStationId, request.DestinationStationId)
                 .Set(r => r.Stations, request.Stations)

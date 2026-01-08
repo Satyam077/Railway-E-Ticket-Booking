@@ -1,10 +1,10 @@
-﻿using MediatR;
+using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Domain.Enums;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Domain.Enums;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
+namespace RailwayTicketBooking.Application.TrainSchedules.Queries.Handlers
 {
     public class SearchTrainsHandler : IRequestHandler<SearchTrainsQuery, List<TrainSearchResult>>
     {
@@ -21,12 +21,12 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
 
             try
             {
-                // 1️⃣ Load required collections once
+                // 1?? Load required collections once
                 var trainsTask = _context.Trains.Find(_ => true).ToListAsync(cancellationToken);
                 var routesTask = _context.Routes.Find(_ => true).ToListAsync(cancellationToken);
                 var stationsTask = _context.Stations.Find(_ => true).ToListAsync(cancellationToken);
 
-                // 2️⃣ Get all schedules valid for selected date
+                // 2?? Get all schedules valid for selected date
                 var schedules = await _context.TrainSchedules
                     .Find(ts =>
                         ts.IsActive
@@ -37,7 +37,7 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                 var routes = await routesTask;
                 var stations = await stationsTask;
 
-                // 3️⃣ Resolve user-selected stations
+                // 3?? Resolve user-selected stations
                 var fromStation = stations.FirstOrDefault(s => s.Id == request.FromStationId);
                 var toStation = stations.FirstOrDefault(s => s.Id == request.ToStationId);
                 if (fromStation == null || toStation == null)
@@ -46,7 +46,7 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                 // Get the day of week for the travel date
                 var travelDayOfWeek = request.TravelDate.DayOfWeek;
 
-                // 4️⃣ Load all bookings for the travel date once (for performance)
+                // 4?? Load all bookings for the travel date once (for performance)
                 var journeyDateStart = request.TravelDate.Date;
                 var journeyDateEnd = journeyDateStart.AddDays(1).AddTicks(-1);
                 
@@ -81,19 +81,19 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                     if (routeStations == null || routeStations.Count == 0)
                         continue;
 
-                    // 4️⃣ Check route contains FROM and TO
+                    // 4?? Check route contains FROM and TO
                     var fromRoute = routeStations.FirstOrDefault(s => s.StationId == request.FromStationId);
                     var toRoute = routeStations.FirstOrDefault(s => s.StationId == request.ToStationId);
 
                     if (fromRoute == null || toRoute == null)
                         continue;
 
-                    // 5️⃣ Check correct travel direction using route station order
+                    // 5?? Check correct travel direction using route station order
                     // (Schedule stations may be a subset, so we use route order for validation)
                     if (fromRoute.StationOrder >= toRoute.StationOrder)
                         continue;
 
-                    // 6️⃣ Resolve time from schedule if available, otherwise from route timing
+                    // 6?? Resolve time from schedule if available, otherwise from route timing
                     var scheduleStations = schedule.Stations?.OrderBy(s => s.StationOrder).ToList();
                     var fromSchedule = scheduleStations?.FirstOrDefault(s => s.StationId == request.FromStationId);
                     var toSchedule = scheduleStations?.FirstOrDefault(s => s.StationId == request.ToStationId);
@@ -170,7 +170,7 @@ namespace Railway_Ticket_Booking.Application.TrainSchedules.Queries.Handlers
                     if (request.TrainWithAvailableBerth && !classesInfo.Any(c => c.AvailableSeats > 0))
                         continue;
 
-                    // 8️⃣ Build final result
+                    // 8?? Build final result
                     results.Add(new TrainSearchResult
                     {
                         TrainId = train.Id,

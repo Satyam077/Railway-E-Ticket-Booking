@@ -1,10 +1,10 @@
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.EmailServices;
-using Railway_Ticket_Booking.EmailTemplates;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.EmailServices;
+using RailwayTicketBooking.EmailTemplates;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Infrastructure.Services
+namespace RailwayTicketBooking.Infrastructure.Services
 {
     public class BookingEmailService
     {

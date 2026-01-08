@@ -1,10 +1,10 @@
-﻿@page "/train-schedules"
+@page "/train-schedules"
 @using MediatR
-@using Railway_Ticket_Booking.Application.TrainSchedules.Commands
-@using Railway_Ticket_Booking.Application.TrainSchedules.Queries
-@using Railway_Ticket_Booking.Application.Queries
-@using Railway_Ticket_Booking.Application.Routes.Queries
-@using Railway_Ticket_Booking.Domain.Entities
+@using RailwayTicketBooking.Application.TrainSchedules.Commands
+@using RailwayTicketBooking.Application.TrainSchedules.Queries
+@using RailwayTicketBooking.Application.Queries
+@using RailwayTicketBooking.Application.Routes.Queries
+@using RailwayTicketBooking.Domain.Entities
 @inject IMediator Mediator
 @inject IJSRuntime JSRuntime
 
@@ -503,7 +503,7 @@
         trains.FirstOrDefault(t => t.Id == id)?.DisplayName ?? "Unknown";
 
     private string GetRouteDisplay(Route r) =>
-        $"{GetStationName(r.SourceStationId)} → {GetStationName(r.DestinationStationId)}";
+        $"{GetStationName(r.SourceStationId)} ? {GetStationName(r.DestinationStationId)}";
 
     private string GetRouteDisplayById(string id) =>
         GetRouteDisplay(routes.FirstOrDefault(r => r.Id == id));

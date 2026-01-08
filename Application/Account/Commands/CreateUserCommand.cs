@@ -1,11 +1,11 @@
 using MediatR;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
-using Railway_Ticket_Booking.Domain.Enums;
+using RailwayTicketBooking.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
-using Railway_Ticket_Booking.Domain.DTOs;
+using RailwayTicketBooking.Domain.DTOs;
 
-namespace Railway_Ticket_Booking.Application.Account.Commands
+namespace RailwayTicketBooking.Application.Account.Commands
 {
     public class CreateUserCommand : IRequest<RegistrationResponseDTO>
     {

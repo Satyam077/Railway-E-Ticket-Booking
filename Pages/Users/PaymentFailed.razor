@@ -1,6 +1,6 @@
-﻿@page "/payment-failed/{BookingId}"
+@page "/payment-failed/{BookingId}"
 
-@using Railway_Ticket_Booking.Infrastructure
+@using RailwayTicketBooking.Infrastructure
 @using MongoDB.Driver
 @inject MongoDbContext Db
 @inject NavigationManager Nav
@@ -24,7 +24,7 @@ else
 {
     <div class="container mt-4">
         <div class="alert alert-danger">
-            <h3 class="fw-bold">❌ Payment Failed!</h3>
+            <h3 class="fw-bold">? Payment Failed!</h3>
             <p>Your payment could not be processed.</p>
         </div>
 
@@ -47,8 +47,8 @@ else
 @code {
     [Parameter] public string BookingId { get; set; }
 
-    Railway_Ticket_Booking.Domain.Entities.Booking booking { get; set; }
-    Railway_Ticket_Booking.Domain.Entities.Payment payment { get; set; }
+    RailwayTicketBooking.Domain.Entities.Booking booking { get; set; }
+    RailwayTicketBooking.Domain.Entities.Payment payment { get; set; }
     bool loading = true;
     string error = null;
 

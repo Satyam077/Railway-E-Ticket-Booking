@@ -1,8 +1,8 @@
 using MediatR;
-using Railway_Ticket_Booking.Domain.DTOs;
+using RailwayTicketBooking.Domain.DTOs;
 using System.ComponentModel.DataAnnotations;
 
-namespace Railway_Ticket_Booking.Application.Account.Commands
+namespace RailwayTicketBooking.Application.Account.Commands
 {
     public class LoginCommand : IRequest<LoginResponseDTO>
     {

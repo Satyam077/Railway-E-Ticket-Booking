@@ -1,6 +1,6 @@
-﻿using MediatR;
-using Railway_Ticket_Booking.Domain.Entities;
-namespace Railway_Ticket_Booking.Application.Queries
+using MediatR;
+using RailwayTicketBooking.Domain.Entities;
+namespace RailwayTicketBooking.Application.Queries
 {
     public class GetAllTrainsQuery : IRequest<List<Train>> { }
 }

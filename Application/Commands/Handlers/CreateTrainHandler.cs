@@ -1,9 +1,9 @@
-﻿using MediatR;
+using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Commands.Handlers
+namespace RailwayTicketBooking.Application.Commands.Handlers
 {
     public class CreateTrainHandler : IRequestHandler<CreateTrainCommand, string>
     {

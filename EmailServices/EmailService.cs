@@ -1,11 +1,11 @@
-﻿using MailKit.Security;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Railway_Ticket_Booking.EmailServices;
-using Railway_Ticket_Booking.WebSettings;
+using RailwayTicketBooking.EmailServices;
+using RailwayTicketBooking.WebSettings;
 using MailKit.Net.Smtp;
 
-namespace Railway_Ticket_Booking.EmailServices
+namespace RailwayTicketBooking.EmailServices
 {
     public class EmailService : IEmailService
     {

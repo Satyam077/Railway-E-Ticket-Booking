@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Security.Claims;
 
-namespace Railway_Ticket_Booking.Infrastructure.Services
+namespace RailwayTicketBooking.Infrastructure.Services
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {

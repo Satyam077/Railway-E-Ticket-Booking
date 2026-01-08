@@ -1,12 +1,12 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Infrastructure;
 using BCrypt.Net;
-using Railway_Ticket_Booking.Infrastructure.Services;
-using Railway_Ticket_Booking.Domain.DTOs;
-using Railway_Ticket_Booking.Application.Account.Commands;
+using RailwayTicketBooking.Infrastructure.Services;
+using RailwayTicketBooking.Domain.DTOs;
+using RailwayTicketBooking.Application.Account.Commands;
 
-namespace Railway_Ticket_Booking.Application.Account.Commands.Handlers
+namespace RailwayTicketBooking.Application.Account.Commands.Handlers
 {
     public class LoginHandler : IRequestHandler<LoginCommand, LoginResponseDTO>
     {

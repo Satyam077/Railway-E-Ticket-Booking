@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Options;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.WebSettings;
+using Microsoft.Extensions.Options;
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.WebSettings;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace Railway_Ticket_Booking.Infrastructure.Services
+namespace RailwayTicketBooking.Infrastructure.Services
 {
     public class PayuService
     {

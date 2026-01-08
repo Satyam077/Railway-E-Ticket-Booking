@@ -1,9 +1,9 @@
-﻿// Application/Queries/Handlers/GetAllTrainsHandler.cs
+// Application/Queries/Handlers/GetAllTrainsHandler.cs
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Domain.Entities;
-using Railway_Ticket_Booking.Infrastructure;
-namespace Railway_Ticket_Booking.Application.Queries.Handlers
+using RailwayTicketBooking.Domain.Entities;
+using RailwayTicketBooking.Infrastructure;
+namespace RailwayTicketBooking.Application.Queries.Handlers
 {
     public class GetAllTrainsHandler : IRequestHandler<GetAllTrainsQuery, List<Train>>
     {

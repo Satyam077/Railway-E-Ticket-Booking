@@ -3,11 +3,11 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @using MediatR
-@using Railway_Ticket_Booking.Application.Bookings.Queries
-@using Railway_Ticket_Booking.Application.Queries
-@using Railway_Ticket_Booking.Domain.Entities
-@using Railway_Ticket_Booking.Domain.Enums
-@using Railway_Ticket_Booking.Infrastructure
+@using RailwayTicketBooking.Application.Bookings.Queries
+@using RailwayTicketBooking.Application.Queries
+@using RailwayTicketBooking.Domain.Entities
+@using RailwayTicketBooking.Domain.Enums
+@using RailwayTicketBooking.Infrastructure
 @using MongoDB.Driver
 @inject IMediator Mediator
 @inject MongoDbContext Db
@@ -515,14 +515,14 @@ else
     private string userId = null;
     private string userName = "";
     private User user = null;
-    private List<Railway_Ticket_Booking.Domain.Entities.Booking> allBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
-    private List<Railway_Ticket_Booking.Domain.Entities.Booking> upcomingBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
-    private List<Railway_Ticket_Booking.Domain.Entities.Booking> pastBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
-    private List<Railway_Ticket_Booking.Domain.Entities.Booking> recentBookings = new List<Railway_Ticket_Booking.Domain.Entities.Booking>();
-    private List<Railway_Ticket_Booking.Domain.Entities.Payment> paymentHistory = new List<Railway_Ticket_Booking.Domain.Entities.Payment>();
+    private List<RailwayTicketBooking.Domain.Entities.Booking> allBookings = new List<RailwayTicketBooking.Domain.Entities.Booking>();
+    private List<RailwayTicketBooking.Domain.Entities.Booking> upcomingBookings = new List<RailwayTicketBooking.Domain.Entities.Booking>();
+    private List<RailwayTicketBooking.Domain.Entities.Booking> pastBookings = new List<RailwayTicketBooking.Domain.Entities.Booking>();
+    private List<RailwayTicketBooking.Domain.Entities.Booking> recentBookings = new List<RailwayTicketBooking.Domain.Entities.Booking>();
+    private List<RailwayTicketBooking.Domain.Entities.Payment> paymentHistory = new List<RailwayTicketBooking.Domain.Entities.Payment>();
     private List<RefundInfo> refundsInProgress = new List<RefundInfo>();
     private List<RecommendedTrip> recommendedTrips = new List<RecommendedTrip>();
-    private Railway_Ticket_Booking.Domain.Entities.Booking nextJourney = null;
+    private RailwayTicketBooking.Domain.Entities.Booking nextJourney = null;
     private Dictionary<string, Station> stations = new Dictionary<string, Station>();
     private int profileCompletion = 0;
 
@@ -698,7 +698,7 @@ else
         };
     }
 
-    private bool IsBookingCancellable(Railway_Ticket_Booking.Domain.Entities.Booking booking)
+    private bool IsBookingCancellable(RailwayTicketBooking.Domain.Entities.Booking booking)
     {
         if (booking == null || booking.Status != BookingStatus.Confirmed)
             return false;

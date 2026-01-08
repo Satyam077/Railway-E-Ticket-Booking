@@ -1,8 +1,8 @@
 using MediatR;
 using MongoDB.Driver;
-using Railway_Ticket_Booking.Infrastructure;
+using RailwayTicketBooking.Infrastructure;
 
-namespace Railway_Ticket_Booking.Application.Routes.Commands.Handlers
+namespace RailwayTicketBooking.Application.Routes.Commands.Handlers
 {
     public class DeleteRouteHandler : IRequestHandler<DeleteRouteCommand, bool>
     {
