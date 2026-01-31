@@ -189,7 +189,7 @@
                     <h5 class="user-name mb-3">Vande Bharat Express</h5>
                     <p class="text-white opacity-75">Experience the fastest trains in India</p>
                     <div class="position-absolute bottom-0 end-0 m-3">
-                        <span class="meta-badge" style="background: linear-gradient(135deg, #4facfe, #00f2fe); font-size: 0.9rem;">
+                        <span class="" style="background: linear-gradient(135deg, #4facfe, #00f2fe); font-size: 0.9rem;">
                             <p class="text-white opacity-75 mb-3">@(searchResults?.Count ?? 0) trains found for <strong>@GetStationName(searchQuery.FromStationId)</strong> to <strong>@GetStationName(searchQuery.ToStationId)</strong></p>
                         </span>
                         
@@ -426,7 +426,7 @@
     private string GetStationName(string stationId)
     {
         var station = stations.FirstOrDefault(s => s.Id == stationId);
-        return station != null ? $"{station.StationName} ({station.StationCode})" : "Unknown";
+        return station != null ? $"{station.StationName} ({station.StationCode})" : "No Search";
     }
 
     private string FormatDuration(TimeSpan duration)

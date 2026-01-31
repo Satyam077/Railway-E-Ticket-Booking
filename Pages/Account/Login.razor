@@ -131,6 +131,13 @@
                 await Task.Delay(500);
                 StateHasChanged();
 
+                var userRole = result.Role; 
+                if(userRole == "Admin" || userRole == "SuperAdmin")
+                {
+                    // Admins redirected to dashboard
+                    NavigationManager.NavigateTo("/dashboard");
+                    return;
+                }
                 // Check if there's a pending booking
                 var pendingBooking = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "pendingBooking");
                 
@@ -148,8 +155,6 @@
                 }
                 else
                 {
-                    // Redirect based on user role
-                    var userRole = result.Role;
                     if (userRole == "Admin" || userRole == "SuperAdmin")
                     {
                         NavigationManager.NavigateTo("/dashboard");

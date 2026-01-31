@@ -55,10 +55,7 @@ namespace RailwayTicketBooking.EmailTemplates
                     <td>Phone Number:</td>
                     <td>{user.PhoneNumber}</td>
                 </tr>
-                <tr>
-                    <td>Role:</td>
-                    <td>{roleName}</td>
-                </tr>
+               
                 <tr>
                     <td>Account Status:</td>
                     <td>{(user.IsActive ? "Active" : "Inactive")}</td>
@@ -223,7 +220,7 @@ namespace RailwayTicketBooking.EmailTemplates
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>?? Booking Confirmed!</h1>
+            <h1>Booking Confirmed!</h1>
             <p>Your railway ticket has been successfully booked</p>
         </div>
 
@@ -238,7 +235,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Booking Summary -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Booking Summary</h2>
+                    <h2>Booking Summary</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -263,7 +260,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Train & Journey Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Train & Journey Details</h2>
+                    <h2>Train & Journey Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"" style=""grid-column: 1 / -1;"">
@@ -295,7 +292,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Passenger Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Passenger Details</h2>
+                    <h2>Passenger Details</h2>
                 </div>
                 <table class=""table"">
                     <thead>
@@ -318,7 +315,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Payment Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Payment Details</h2>
+                    <h2>Payment Details</h2>
                 </div>
                 {(payment != null ? $@"
                 <div class=""info-grid"">
@@ -344,19 +341,19 @@ namespace RailwayTicketBooking.EmailTemplates
                 <div class=""amount-box"">
                     <div class=""amount-row"">
                         <span>Base Fare</span>
-                        <strong>?{booking.TotalAmount:N2}</strong>
+                        <strong>&#8377; {booking.TotalAmount:N2}</strong>
                     </div>
                     <div class=""amount-row"">
                         <span>Tax (18%)</span>
-                        <strong>?{booking.TaxAmount:N2}</strong>
+                        <strong>&#8377; {booking.TaxAmount:N2}</strong>
                     </div>
                     <div class=""amount-row"">
                         <span>Service Charge</span>
-                        <strong>?{booking.ServiceCharge:N2}</strong>
+                        <strong>&#8377; {booking.ServiceCharge:N2}</strong>
                     </div>
                     <div class=""amount-row total"">
                         <span>Total Amount</span>
-                        <span style=""color: #007bff;"">?{booking.FinalAmount:N2}</span>
+                        <span style=""color: #007bff;"">&#8377; {booking.FinalAmount:N2}</span>
                     </div>
                 </div>
             </div>
@@ -364,7 +361,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Contact Information -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Contact Information</h2>
+                    <h2>Contact Information</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -380,7 +377,7 @@ namespace RailwayTicketBooking.EmailTemplates
 
             <!-- Important Notes -->
             <div class=""section"" style=""background-color: #fff3cd; padding: 20px; border-radius: 5px; border-left: 4px solid #ffc107;"">
-                <h3 style=""margin-top: 0; color: #856404;"">?? Important Information</h3>
+                <h3 style=""margin-top: 0; color: #856404;"">Important Information</h3>
                 <ul style=""margin: 10px 0; padding-left: 20px; color: #856404;"">
                     <li>Please carry a valid ID proof while traveling</li>
                     <li>Arrive at the station at least 30 minutes before departure</li>
@@ -394,7 +391,7 @@ namespace RailwayTicketBooking.EmailTemplates
         <div class=""footer"">
             <p>&copy; {DateTime.Now.Year} Railway Ticket Booking System. All rights reserved.</p>
             <p>This is an automated email, please do not reply.</p>
-            <p style=""margin-top: 10px; opacity: 0.8;"">For support, please contact us at support@railwaybooking.com</p>
+            <p style=""margin-top: 10px; opacity: 0.8;"">For support, please contact us at uniquextech7@gmail.com</p>
         </div>
     </div>
 </body>
@@ -456,7 +453,7 @@ namespace RailwayTicketBooking.EmailTemplates
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>? Booking Cancelled</h1>
+            <h1>Booking Cancelled</h1>
             <p>Your booking has been successfully cancelled</p>
         </div>
 
@@ -471,7 +468,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Cancellation Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Cancellation Details</h2>
+                    <h2>Cancellation Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -501,7 +498,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Booking Information -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Booking Information</h2>
+                    <h2>Booking Information</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"" style=""grid-column: 1 / -1;"">
@@ -529,7 +526,7 @@ namespace RailwayTicketBooking.EmailTemplates
 
             <!-- Refund Information -->
             <div class=""refund-box"">
-                <h3>?? Refund Information</h3>
+                <h3>Refund Information</h3>
                 <div class=""amount-row"">
                     <span>Original Amount Paid</span>
                     <strong>?{booking.FinalAmount:N2}</strong>
@@ -627,7 +624,7 @@ namespace RailwayTicketBooking.EmailTemplates
 <body>
     <div class=""container"">
         <div class=""header"">
-            <h1>? Refund Processed Successfully!</h1>
+            <h1>Refund Processed Successfully!</h1>
             <p>Your refund has been credited to your account</p>
         </div>
 
@@ -641,7 +638,7 @@ namespace RailwayTicketBooking.EmailTemplates
 
             <!-- Refund Amount Box -->
             <div class=""refund-box"">
-                <h3>?? Refund Amount</h3>
+                <h3>Refund Amount</h3>
                 <div class=""refund-amount"">?{refundAmount:N2}</div>
                 <p style=""color: #155724; margin: 10px 0 0 0;"">
                     This amount has been credited to your original payment method
@@ -651,7 +648,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Refund Details -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Refund Details</h2>
+                    <h2>Refund Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"">
@@ -685,7 +682,7 @@ namespace RailwayTicketBooking.EmailTemplates
             <!-- Booking Information -->
             <div class=""section"">
                 <div class=""section-title"">
-                    <h2>?? Cancelled Booking Details</h2>
+                    <h2>Cancelled Booking Details</h2>
                 </div>
                 <div class=""info-grid"">
                     <div class=""info-item"" style=""grid-column: 1 / -1;"">

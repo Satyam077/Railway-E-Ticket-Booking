@@ -1,6 +1,4 @@
 using MediatR;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
 using RailwayTicketBooking.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using RailwayTicketBooking.Domain.DTOs;
@@ -17,15 +15,15 @@ namespace RailwayTicketBooking.Application.Account.Commands
         [StringLength(50)]
         public string LastName { get; set; }
 
-        //[Required]
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
 
-        // [Required]
+        [Required]
         [Phone]
         public string PhoneNumber { get; set; }
 
-        // [Required]
+        [Required]
         [StringLength(100, MinimumLength = 6)]
         public string Password { get; set; }
 

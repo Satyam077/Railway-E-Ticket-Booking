@@ -9,12 +9,10 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient();
 
-// Register MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddSingleton<MongoDbContext>();
@@ -31,10 +29,8 @@ builder.Services.AddScoped<SeatAllocationService>();
 builder.Services.AddScoped<CancellationService>();
 builder.Services.AddScoped<BookingEmailService>();
 
-// Register JWT Service
 builder.Services.AddScoped<IJwtService, JwtService>();
 
-// Configure Authentication and Authorization
 builder.Services.AddOptions();
 builder.Services.AddAuthorizationCore(options =>
 {
@@ -45,7 +41,6 @@ builder.Services.AddAuthorizationCore(options =>
     options.AddPolicy("AuthenticatedUsers", policy => policy.RequireAuthenticatedUser());
 });
 
-// Register Custom Authentication State Provider
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 var app = builder.Build();

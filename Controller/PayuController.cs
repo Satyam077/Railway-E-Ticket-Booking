@@ -107,7 +107,7 @@ namespace RailwayTicketBooking.Controller
                 fields["hash"] = hash;
 
                 var form = _payu.BuildForm(fields);
-                return Content(form, "text/html");
+                return Content(form, "text/html"); 
             }
             catch (Exception ex)
             {
